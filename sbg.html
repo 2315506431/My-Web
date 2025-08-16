@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
     <title>绝区零随便观热卖</title>
     
-    <!-- 引入自定义字体并设置不同字重 -->
+    <!-- 引入入自定义字体并设置不同字重 -->
     <style>
         @font-face {
             font-family: 'CustomFont';
@@ -123,7 +123,7 @@
                 margin-top: -2px;
                 margin-bottom: 4px;
                 text-align: center;
-                font-weight: 400; /* 减轻倒计时字体重量 */
+                font-weight: 400;
             }
             .timer-container {
                 text-align: center;
@@ -156,7 +156,7 @@
                 text-align: center;
                 padding: 10px;
                 font-size: 0.8rem;
-                font-weight: 400; /* 减轻错误信息字体重量 */
+                font-weight: 400;
             }
             .content-image {
                 width: 70%;
@@ -192,7 +192,7 @@
             .recommend-value {
                 font-size: 0.9rem;
                 color: #64748b;
-                font-weight: 400; /* 减轻数值字体重量 */
+                font-weight: 400;
                 margin-top: 4px;
                 background-color: #f1f5f9;
                 padding: 2px 10px;
@@ -208,7 +208,7 @@
                 color: #d97706;
                 background-color: #fffbeb;
                 border: 1.5px solid #fde68a;
-                font-weight: 600; /* 高亮数值适当加粗 */
+                font-weight: 600;
                 box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
                 padding: 2px 12px;
                 transform: scale(1.05);
@@ -217,7 +217,7 @@
             .recommend-value .bonus {
                 color: #ef4444;
                 font-size: 0.8rem;
-                font-weight: 600; /* 调整bonus字体重量 */
+                font-weight: 600;
                 margin-left: 4px;
                 display: inline-flex;
                 align-items: center;
@@ -264,13 +264,6 @@
                 border: 1px dashed #cbd5e1;
                 color: #94a3b8;
             }
-            .refresh-button {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 900;
-                font-weight: 400; /* 减轻按钮文字重量 */
-            }
             
             /* 作者信息样式 */
             .author-info {
@@ -282,24 +275,24 @@
                 border-top: 1px solid #e2e8f0;
                 opacity: 0.8;
                 transition: opacity 0.3s ease;
-                font-weight: 400; /* 减轻作者信息字体重量 */
+                font-weight: 400;
             }
             .author-info:hover {
                 opacity: 1;
             }
             .author-name {
                 color: #d4af37;
-                font-weight: 600; /* 作者名适当加粗 */
+                font-weight: 600;
                 margin: 0 4px;
             }
             
             /* 趋势和推荐文本样式调整 */
             [data-id$="-text"] {
-                font-weight: 400; /* 减轻趋势文本重量 */
+                font-weight: 400;
             }
             
             h2 {
-                font-weight: 600 !important; /* 标题适当加粗但不过分 */
+                font-weight: 600 !important;
             }
             
             /* 基础趋势区域布局 */
@@ -325,6 +318,11 @@
                 .recommend-value { font-size: 0.8rem; padding: 1px 8px; }
                 .recommend-value .bonus { font-size: 0.7rem; margin-left: 2px; }
                 .author-info { font-size: 0.8rem; padding: 0.5rem; }
+                
+                /* 调整更新提示位置 */
+                .update-indicator {
+                    bottom: 20px !important;
+                }
             }
             
             @media (min-width: 320px) and (max-width: 480px) {
@@ -345,12 +343,6 @@
     </div>
     
     <div class="update-indicator" id="updateIndicator">内容已更新</div>
-    
-    <!-- 手动刷新按钮 -->
-    <button class="refresh-button bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow transition-all flex items-center gap-2" id="manualRefresh">
-        <i class="fa fa-refresh"></i>
-        <span>刷新</span>
-    </button>
     
     <div class="container mx-auto px-2 sm:px-4 py-6 max-w-7xl">
         <!-- 顶部趋势区域 -->
@@ -605,7 +597,6 @@
             const countdownElement = document.getElementById('countdownTimer');
             const errorMessage = document.getElementById('errorMessage');
             const loadingOverlay = document.getElementById('loadingOverlay');
-            const manualRefreshBtn = document.getElementById('manualRefresh');
             let countdownTimer = null;
             let isTrendSwitched = false;
             let originalData = null;
@@ -619,7 +610,7 @@
                 clearTimeout(loadingTimeout);
                 loadingTimeout = setTimeout(() => {
                     hideLoading();
-                    showError('加载超时，请点击刷新按钮重试');
+                    showError('加载超时，请刷新页面重试');
                 }, MAX_LOADING_TIME);
             }
             
@@ -1120,9 +1111,9 @@
                     }
                     
                     // 更详细的错误信息
-                    let errorMsg = '加载失败，请重试';
+                    let errorMsg = '加载失败，请刷新页面重试';
                     if (error.name === 'AbortError') {
-                        errorMsg = '请求超时，请重试';
+                        errorMsg = '请求超时，请刷新页面重试';
                     } else if (error.message.includes('Failed to fetch')) {
                         errorMsg = '网络连接失败，请检查网络';
                     }
@@ -1144,16 +1135,11 @@
                     startCountdown(seconds || 0);
                 } catch (error) {
                     console.error('初始化失败:', error);
-                    showError(error.message || '加载失败，请重试');
+                    showError(error.message || '加载失败，请刷新页面重试');
                 } finally {
                     hideLoading();
                 }
             }
-            
-            // 手动刷新按钮事件
-            manualRefreshBtn.addEventListener('click', () => {
-                fetchAndInit();
-            });
             
             // 启动应用
             fetchAndInit();
