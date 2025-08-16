@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
+    <title>绝区零随便观热卖</title>
+    <!-- 嵌入Google字体 - 思源黑体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        neutral: '#f1f5f9',
+                        current: '#d4af37', // 金色
+                        next: '#64748b',    // 下期灰色
+                        border: '#e2e8f0',  // 边框颜色
+                        highlight: '#d97706', // 高亮数值颜色
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .section-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .field-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+                border: 2px solid #e2e8f0;
+            }
+            .field-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+                border-color: #d4af37;
+            }
+            .image-container {
+                position: relative;
+                overflow: visible;
+                padding: 4px;
+            }
+            .current-image-container {
+                position: relative;
+                overflow: hidden;
+                border-radius: 50%;
+                background-color: #d4af37;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+            }
+            .next-image-container {
+                position: relative;
+                overflow: hidden;
+                border-radius: 50%;
+                background-color: #64748b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+            }
+            .corner-image {
+                position: absolute;
+                top: -6px;
+                left: -6px;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                object-fit: contain;
+                z-index: 10;
+                background: transparent;
+                padding: 0;
+                box-shadow: none;
+            }
+            .corner-placeholder {
+                position: absolute;
+                top: -6px;
+                left: -6px;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                z-index: 10;
+                background-color: #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: none;
+            }
+            .countdown-timer {
+                font-size: 0.8rem;
+                color: #dc2626;
+                margin-top: -2px;
+                margin-bottom: 4px;
+                text-align: center;
+                font-weight: 500;
+            }
+            .timer-container {
+                text-align: center;
+                margin-bottom: 4px;
+                min-height: 20px;
+            }
+            .update-indicator {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                background-color: #3b82f6;
+                color: white;
+                border-radius: 4px;
+                font-size: 0.9rem;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+            .update-indicator.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .content-transition {
+                transition: all 0.5s ease-in-out;
+            }
+            .error-message {
+                color: #dc2626;
+                text-align: center;
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+            .content-image {
+                width: 70%;
+                height: 70%;
+                object-fit: contain;
+                border-radius: inherit;
+            }
+            .recommend-placeholder {
+                background-color: #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #94a3b8;
+                width: 100%;
+                height: 100%;
+            }
+            .recommend-image-container {
+                width: 100%;
+                max-width: 160px;
+                margin: 0 auto;
+            }
+            .recommend-text-container {
+                width: 100%;
+                padding: 0 4px;
+                text-align: center;
+                margin-top: 0.5rem;
+                min-height: 3.5rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .recommend-value {
+                font-size: 0.9rem;
+                color: #64748b; /* 降低普通数值的对比度 */
+                font-weight: 500; /* 降低普通数值的权重 */
+                margin-top: 4px;
+                background-color: #f1f5f9;
+                padding: 2px 10px;
+                border-radius: 12px;
+                min-width: 48px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 1.5px solid #cbd5e1;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+            .recommend-value.highlight {
+                color: #d97706;
+                background-color: #fffbeb;
+                border: 1.5px solid #fde68a;
+                font-weight: 700; /* 提高高亮数值的权重 */
+                box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2); /* 增加高亮阴影 */
+                padding: 2px 12px; /* 增加内边距 */
+                transform: scale(1.05); /* 轻微放大 */
+                transition: all 0.2s ease;
+            }
+            .recommend-value .bonus {
+                color: #ef4444; /* 使用更鲜艳的红色突出显示+20% */
+                font-size: 0.8rem;
+                font-weight: 800;
+                margin-left: 4px;
+                display: inline-flex;
+                align-items: center;
+            }
+            .recommend-value .bonus::before {
+                content: "+";
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.1); }
+            }
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+            .loading-overlay.active {
+                opacity: 1;
+                pointer-events: all;
+            }
+            .empty-state {
+                min-height: 120px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #94a3b8;
+            }
+            .trend-item {
+                min-height: 60px;
+            }
+            .empty-trend {
+                background-color: #f8fafc;
+                border: 1px dashed #cbd5e1;
+                color: #94a3b8;
+            }
+            .refresh-button {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 900;
+            }
+            
+            /* 作者信息样式 */
+            .author-info {
+                text-align: center;
+                margin-top: 2rem;
+                padding: 1rem;
+                color: #64748b;
+                font-size: 0.9rem;
+                border-top: 1px solid #e2e8f0;
+                opacity: 0.8;
+                transition: opacity 0.3s ease;
+            }
+            .author-info:hover {
+                opacity: 1;
+            }
+            .author-name {
+                color: #d4af37;
+                font-weight: 700;
+                margin: 0 4px;
+            }
+            
+            /* 基础趋势区域布局 */
+            .trends-container {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 4px !important;
+            }
+            
+            /* 响应式调整 */
+            @media (max-width: 320px) {
+                .trends-container { flex-direction: column !important; }
+                #currentTrendSection, #nextTrendSection {
+                    flex: 1 0 100% !important;
+                    min-width: 100% !important;
+                    padding: 4px !important;
+                }
+                h2 { font-size: 0.9rem !important; margin-bottom: 2px !important; }
+                .image-container { width: 56px !important; height: 56px !important; }
+                [data-id$="-text"] { font-size: 0.75rem !important; }
+                .countdown-timer { font-size: 0.7rem !important; }
+                #currentRecommendSection .grid, #nextRecommendSection .grid { grid-template-columns: 1fr !important; }
+                .recommend-value { font-size: 0.8rem; padding: 1px 8px; }
+                .recommend-value .bonus { font-size: 0.7rem; margin-left: 2px; }
+                .author-info { font-size: 0.8rem; padding: 0.5rem; }
+            }
+            
+            @media (min-width: 320px) and (max-width: 480px) {
+                #currentTrendSection, #nextTrendSection { flex: 1 0 48% !important; }
+                .trend-item { flex-direction: column !important; align-items: center !important; text-align: center; }
+                #currentRecommendSection .grid, #nextRecommendSection .grid { grid-template-columns: repeat(2, 1fr) !important; }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <i class="fa fa-circle-o-notch fa-spin text-4xl text-current mb-4"></i>
+            <p class="text-gray-700">加载中...</p>
+        </div>
+    </div>
+    
+    <div class="update-indicator" id="updateIndicator">内容已更新</div>
+    
+    <!-- 手动刷新按钮 -->
+    <button class="refresh-button bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow transition-all flex items-center gap-2" id="manualRefresh">
+        <i class="fa fa-refresh"></i>
+        <span>刷新</span>
+    </button>
+    
+    <div class="container mx-auto px-2 sm:px-4 py-6 max-w-7xl">
+        <!-- 顶部趋势区域 -->
+        <div class="trends-container mb-8">
+            <!-- 本期趋势 -->
+            <div class="bg-white rounded-xl p-3 sm:p-6 section-shadow content-transition flex-1 min-w-[140px]" id="currentTrendSection">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">本期趋势</h2>
+                <div class="timer-container invisible">
+                    <p class="countdown-timer text-sm sm:text-base">
+                        <i class="fa fa-clock-o mr-1"></i>占位区域
+                    </p>
+                </div>
+                
+                <div class="space-y-4 sm:space-y-6">
+                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
+                            <div class="corner-placeholder" data-for="current1">
+                                <i class="fa fa-spinner fa-spin text-gray-500"></i>
+                            </div>
+                            <div class="current-image-container" data-id="current1">
+                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-gray-700 truncate" data-id="current1-text">加载中...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
+                            <div class="corner-placeholder" data-for="current2">
+                                <i class="fa fa-spinner fa-spin text-gray-500"></i>
+                            </div>
+                            <div class="current-image-container" data-id="current2">
+                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-gray-700 truncate" data-id="current2-text">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 下期趋势 -->
+            <div class="bg-white rounded-xl p-3 sm:p-6 section-shadow content-transition flex-1 min-w-[140px]" id="nextTrendSection">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">下期趋势</h2>
+                <div class="timer-container">
+                    <p class="countdown-timer text-sm sm:text-base" id="countdownTimer">
+                        <i class="fa fa-clock-o mr-1"></i>刷新时间：计算中...
+                    </p>
+                </div>
+                <p class="error-message hidden text-sm" id="errorMessage"></p>
+                
+                <div class="space-y-4 sm:space-y-6">
+                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
+                            <div class="next-image-container" data-id="next1">
+                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-gray-700 truncate" data-id="next1-text">加载中...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
+                            <div class="next-image-container" data-id="next2">
+                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-gray-700 truncate" data-id="next2-text">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 本期推荐 -->
+        <div class="bg-white rounded-xl p-6 section-shadow mb-8 content-transition" id="currentRecommendSection">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">本期推荐</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="currentRec1">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="currentRec1-text">加载中...</p>
+                        <span class="recommend-value" data-id="currentRec1-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="currentRec2">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="currentRec2-text">加载中...</p>
+                        <span class="recommend-value" data-id="currentRec2-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="currentRec3">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="currentRec3-text">加载中...</p>
+                        <span class="recommend-value" data-id="currentRec3-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="currentRec4">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="currentRec4-text">加载中...</p>
+                        <span class="recommend-value" data-id="currentRec4-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 下期推荐 -->
+        <div class="bg-white rounded-xl p-6 section-shadow content-transition" id="nextRecommendSection">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">下期推荐</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="nextRec1">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="nextRec1-text">加载中...</p>
+                        <span class="recommend-value" data-id="nextRec1-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="nextRec2">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="nextRec2-text">加载中...</p>
+                        <span class="recommend-value" data-id="nextRec2-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="nextRec3">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="nextRec3-text">加载中...</p>
+                        <span class="recommend-value" data-id="nextRec3-value"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
+                        <div class="recommend-placeholder" data-id="nextRec4">
+                            <i class="fa fa-spinner fa-spin text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="recommend-text-container">
+                        <p class="text-gray-700" data-id="nextRec4-text">加载中...</p>
+                        <span class="recommend-value" data-id="nextRec4-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 作者信息 -->
+        <div class="author-info">
+            <p>by <span class="author-name">雨雾杰</span> | 绝区零随便观热卖参考</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 配置与映射关系
+            const API_URL = 'https://img.yuwujie.top/sbg.json';
+            const FIXED_CORNER_IMAGE = "https://img.yuwujie.top/sbg/hot.png"; 
+            const MAX_LOADING_TIME = 15000; // 最大加载时间15秒
+            
+            // 趋势文本与图片URL的映射关系
+            const TREND_IMAGE_MAP = {
+                "器引百味": "https://img.yuwujie.top/sbg/qybw.png",
+                "节礼贺幛": "https://img.yuwujie.top/sbg/jlhz.png",
+                "游方巧器": "https://img.yuwujie.top/sbg/yfqq.png",
+                "虚室坐修": "https://img.yuwujie.top/sbg/xszx.png",
+                "本草方剂": "https://img.yuwujie.top/sbg/bcfj.png",
+                "素裳岳履": "https://img.yuwujie.top/sbg/ssyl.png"
+            };
+            
+            // 推荐物品与图片URL的映射关系
+            const RECOMMEND_IMAGE_MAP = {
+                "异构抗凝膏": "https://img.yuwujie.top/sbg/ygkng.png",
+                "镇厄面": "https://img.yuwujie.top/sbg/zem.png",
+                "守一玄佩": "https://img.yuwujie.top/sbg/syxp.png",
+                "相位桩": "https://img.yuwujie.top/sbg/xwz.png",
+                "醒心促愈素": "https://img.yuwujie.top/sbg/xxcys.png",
+                "松烟釜": "https://img.yuwujie.top/sbg/syf.png",
+                "云魄琴炉": "https://img.yuwujie.top/sbg/ypql.png",
+                "静笃护腕": "https://img.yuwujie.top/sbg/jdhw.png",
+                "云门叠": "https://img.yuwujie.top/sbg/ymd.png"
+            };
+            
+            // 物品默认数值
+            const ITEM_BASE_VALUES = {
+                "异构抗凝膏": 100,
+                "镇厄面": 95,
+                "醒心促愈素": 90,
+                "云门叠": 87,
+                "云魄琴炉": 86,
+                "静笃护腕": 85,
+                "守一玄佩": 82,
+                "松烟釜": 81,
+                "相位桩": 80
+            };
+            
+            // 类别与物品的对应关系
+            const CATEGORY_ITEMS = {
+                "本草方剂": ["异构抗凝膏", "醒心促愈素"],
+                "节礼贺幛": ["镇厄面", "云门叠"],
+                "虚室坐修": ["云魄琴炉", "守一玄佩"],
+                "素裳岳履": ["静笃护腕"],
+                "器引百味": ["松烟釜"],
+                "游方巧器": ["相位桩"]
+            };
+            
+            // 元素引用
+            const updateIndicator = document.getElementById('updateIndicator');
+            const countdownElement = document.getElementById('countdownTimer');
+            const errorMessage = document.getElementById('errorMessage');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const manualRefreshBtn = document.getElementById('manualRefresh');
+            let countdownTimer = null;
+            let isTrendSwitched = false;
+            let originalData = null;
+            let loadingTimeout = null;
+            
+            // 显示/隐藏加载遮罩
+            function showLoading() {
+                loadingOverlay.classList.add('active');
+                
+                // 设置最大加载时间，超时后强制隐藏加载状态
+                clearTimeout(loadingTimeout);
+                loadingTimeout = setTimeout(() => {
+                    hideLoading();
+                    showError('加载超时，请点击刷新按钮重试');
+                }, MAX_LOADING_TIME);
+            }
+            
+            function hideLoading() {
+                loadingOverlay.classList.remove('active');
+                clearTimeout(loadingTimeout);
+            }
+            
+            // 显示更新提示
+            function showUpdateIndicator() {
+                updateIndicator.classList.add('show');
+                setTimeout(() => updateIndicator.classList.remove('show'), 5000);
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+                
+                // 5秒后自动隐藏非关键错误
+                if (!message.includes('超时') && !message.includes('失败')) {
+                    setTimeout(() => {
+                        errorMessage.classList.add('hidden');
+                    }, 5000);
+                }
+            }
+            
+            // 重置为加载中状态
+            function resetToLoadingState() {
+                isTrendSwitched = false;
+                originalData = null;
+                
+                // 重置所有趋势项
+                ['current1', 'current2', 'next1', 'next2'].forEach(id => {
+                    const container = document.querySelector(`[data-id="${id}"]`);
+                    if (container) {
+                        container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
+                    }
+                    
+                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                    if (textEl) {
+                        textEl.textContent = '加载中...';
+                    }
+                    
+                    // 重置角落图标
+                    if (id.startsWith('current')) {
+                        const placeholder = document.querySelector(`.corner-placeholder[data-for="${id}"]`);
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-gray-500"></i>';
+                        }
+                    }
+                });
+                
+                // 重置推荐项
+                ['currentRec', 'nextRec'].forEach(prefix => {
+                    for (let i = 1; i <= 4; i++) {
+                        const id = `${prefix}${i}`;
+                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-3xl"></i>';
+                        }
+                        
+                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                        if (textEl) {
+                            textEl.textContent = '加载中...';
+                        }
+                        
+                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                        if (valueEl) {
+                            valueEl.textContent = '';
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+                });
+                
+                countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>刷新时间：计算中...';
+                errorMessage.classList.add('hidden');
+            }
+            
+            // 创建角落图片
+            function createCornerImage(targetId) {
+                const img = document.createElement('img');
+                img.src = FIXED_CORNER_IMAGE;
+                img.className = 'corner-image';
+                img.alt = `${targetId}热门标识`;
+                
+                const placeholder = document.querySelector(`.corner-placeholder[data-for="${targetId}"]`);
+                if (placeholder) placeholder.remove();
+                
+                img.onerror = () => {
+                    const errorIcon = document.createElement('div');
+                    errorIcon.className = 'corner-image flex items-center justify-center';
+                    errorIcon.innerHTML = '<i class="fa fa-exclamation text-red-500"></i>';
+                    img.parentNode.replaceChild(errorIcon, img);
+                };
+                
+                return img;
+            }
+            
+            // 根据趋势文本获取对应的图片URL
+            function getImageUrlByTrendText(text) {
+                // 检查文本是否包含任何趋势关键词
+                for (const [key, url] of Object.entries(TREND_IMAGE_MAP)) {
+                    if (text.includes(key)) {
+                        return url;
+                    }
+                }
+                
+                // 如果没有匹配到，使用默认图片
+                return "https://img.yuwujie.top/sbg/default.png";
+            }
+            
+            // 分析趋势文本，提取相关类别
+            function extractCategoriesFromTrends(trendTexts) {
+                const categories = new Set();
+                const trendText = trendTexts.join(' ');
+                
+                // 检查每个类别是否出现在趋势文本中
+                Object.keys(CATEGORY_ITEMS).forEach(category => {
+                    if (trendText.includes(category)) {
+                        categories.add(category);
+                    }
+                });
+                
+                return Array.from(categories);
+            }
+            
+            // 根据趋势文本生成推荐列表
+            function generateRecommendations(trendTexts) {
+                // 1. 提取相关类别
+                const categories = extractCategoriesFromTrends(trendTexts);
+                
+                // 2. 计算每个物品的最终数值
+                const itemValues = {};
+                
+                // 初始化所有物品的基础数值
+                Object.keys(ITEM_BASE_VALUES).forEach(item => {
+                    itemValues[item] = {
+                        baseValue: ITEM_BASE_VALUES[item],
+                        finalValue: ITEM_BASE_VALUES[item],
+                        hasBonus: false
+                    };
+                });
+                
+                // 对相关类别的物品增加20%数值
+                categories.forEach(category => {
+                    const items = CATEGORY_ITEMS[category] || [];
+                    items.forEach(item => {
+                        if (itemValues[item]) {
+                            itemValues[item].finalValue = Math.round(itemValues[item].baseValue * 1.2);
+                            itemValues[item].hasBonus = true;
+                        }
+                    });
+                });
+                
+                // 3. 转换为数组并按最终数值降序排序
+                const sortedItems = Object.keys(itemValues)
+                    .map(item => ({
+                        name: item,
+                        ...itemValues[item]
+                    }))
+                    .sort((a, b) => b.finalValue - a.finalValue);
+                
+                // 4. 取前四名
+                return sortedItems.slice(0, 4);
+            }
+            
+            // 更新推荐区域
+            function updateRecommendations(trendTexts, isCurrent, shouldEmpty = false) {
+                const prefix = isCurrent ? "currentRec" : "nextRec";
+                
+                if (shouldEmpty) {
+                    // 清空推荐区域
+                    for (let i = 1; i <= 4; i++) {
+                        const id = `${prefix}${i}`;
+                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
+                        }
+                        
+                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                        if (textEl) {
+                            textEl.textContent = '';
+                        }
+                        
+                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                        if (valueEl) {
+                            valueEl.textContent = '';
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+                    return;
+                }
+                
+                const recommendations = generateRecommendations(trendTexts);
+                
+                for (let i = 0; i < 4; i++) {
+                    const rec = recommendations[i];
+                    if (!rec) break;
+                    
+                    const id = `${prefix}${i + 1}`;
+                    
+                    // 更新文本
+                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                    if (textEl) {
+                        textEl.textContent = rec.name;
+                    }
+                    
+                    // 更新数值和+20%标记
+                    const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                    if (valueEl) {
+                        if (rec.hasBonus) {
+                            // 对于有加成的，使用更醒目的格式
+                            valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
+                            valueEl.classList.add('highlight');
+                        } else {
+                            // 对于无加成的，使用更低调的格式
+                            valueEl.textContent = rec.finalValue;
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+                    
+                    // 更新图片
+                    const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+                    if (placeholder && RECOMMEND_IMAGE_MAP[rec.name]) {
+                        placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-3xl"></i>';
+                        
+                        const img = document.createElement('img');
+                        img.src = RECOMMEND_IMAGE_MAP[rec.name];
+                        img.className = 'w-full h-full object-cover';
+                        img.alt = rec.name;
+                        
+                        img.onload = () => {
+                            placeholder.parentNode.replaceChild(img, placeholder);
+                        };
+                        
+                        img.onerror = () => {
+                            placeholder.innerHTML = `<i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i>`;
+                            console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
+                        };
+                    }
+                }
+            }
+            
+            // 切换趋势：将下期趋势移动到本期，下期留空
+            function switchTrends() {
+                // 防止重复切换
+                if (isTrendSwitched || !originalData) return;
+                
+                // 从原始数据中获取下期趋势
+                const next1Data = originalData.trends?.next1;
+                const next2Data = originalData.trends?.next2;
+                
+                // 验证下期趋势数据是否存在
+                if (!next1Data || !next2Data || !next1Data.text || !next2Data.text) {
+                    console.error("下期趋势数据不完整，无法切换");
+                    return;
+                }
+                
+                // 更新本期趋势文本
+                document.querySelector('p[data-id="current1-text"]').textContent = next1Data.text;
+                document.querySelector('p[data-id="current2-text"]').textContent = next2Data.text;
+                
+                // 更新本期趋势图片
+                const current1Container = document.querySelector('[data-id="current1"]');
+                const current2Container = document.querySelector('[data-id="current2"]');
+                
+                // 为current1设置图片
+                if (current1Container) {
+                    current1Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
+                    const imageUrl = getImageUrlByTrendText(next1Data.text);
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.className = 'content-image';
+                    img.alt = next1Data.text;
+                    
+                    img.onload = () => {
+                        current1Container.innerHTML = '';
+                        current1Container.appendChild(img);
+                        // 添加热门标识
+                        const cornerImg = createCornerImage('current1');
+                        current1Container.closest('.image-container').appendChild(cornerImg);
+                    };
+                    
+                    img.onerror = () => {
+                        current1Container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
+                    };
+                }
+                
+                // 为current2设置图片
+                if (current2Container) {
+                    current2Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
+                    const imageUrl = getImageUrlByTrendText(next2Data.text);
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.className = 'content-image';
+                    img.alt = next2Data.text;
+                    
+                    img.onload = () => {
+                        current2Container.innerHTML = '';
+                        current2Container.appendChild(img);
+                        // 添加热门标识
+                        const cornerImg = createCornerImage('current2');
+                        current2Container.closest('.image-container').appendChild(cornerImg);
+                    };
+                    
+                    img.onerror = () => {
+                        current2Container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
+                    };
+                }
+                
+                // 清空下期趋势
+                const next1Container = document.querySelector('[data-id="next1"]');
+                const next2Container = document.querySelector('[data-id="next2"]');
+                if (next1Container) next1Container.innerHTML = '';
+                if (next2Container) next2Container.innerHTML = '';
+                
+                document.querySelector('p[data-id="next1-text"]').textContent = '';
+                document.querySelector('p[data-id="next2-text"]').textContent = '';
+                
+                // 更新推荐内容
+                updateRecommendations([next1Data.text, next2Data.text], true);  // 本期推荐
+                updateRecommendations([], false, true);  // 清空下期推荐
+                
+                // 更新倒计时显示
+                countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>已更新';
+                
+                // 标记为已切换
+                isTrendSwitched = true;
+                
+                // 显示更新提示
+                showUpdateIndicator();
+            }
+            
+            // 更新页面内容
+            function updatePageContent(data) {
+                if (!data || typeof data !== 'object' || !data.trends) {
+                    showError('数据格式错误');
+                    return;
+                }
+                
+                // 存储原始数据，用于后续可能的切换
+                originalData = data;
+                
+                // 提取趋势文本
+                const currentTrendTexts = [];
+                const nextTrendTexts = [];
+                
+                // 处理趋势内容
+                Object.keys(data.trends).forEach(id => {
+                    const item = data.trends[id];
+                    if (!item || typeof item !== 'object' || !item.text) {
+                        const container = document.querySelector(`[data-id="${id}"]`);
+                        if (container) {
+                            container.innerHTML = '<i class="fa fa-exclamation-triangle text-2xl sm:text-3xl text-white/80"></i>';
+                        }
+                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                        if (textEl) textEl.textContent = '数据错误';
+                        return;
+                    }
+                    
+                    const container = document.querySelector(`[data-id="${id}"]`);
+                    if (!container) return;
+                    
+                    // 根据文本获取图片URL
+                    const imageUrl = getImageUrlByTrendText(item.text);
+                    
+                    container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
+                    
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.className = 'content-image';
+                    img.alt = item.text || '图片';
+                    
+                    img.onload = () => {
+                        container.innerHTML = '';
+                        container.appendChild(img);
+                        
+                        if (id.startsWith('current')) {
+                            // 添加固定的左上角热门图片
+                            const cornerImg = createCornerImage(id);
+                            container.closest('.image-container').appendChild(cornerImg);
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
+                    };
+                    
+                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                    if (textEl) {
+                        textEl.textContent = item.text;
+                        
+                        if (id.startsWith('current')) {
+                            currentTrendTexts.push(item.text);
+                        } else if (id.startsWith('next')) {
+                            nextTrendTexts.push(item.text);
+                        }
+                    }
+                });
+                
+                // 检查是否需要立即切换（如果倒计时为0）
+                const seconds = calculateTimeDifference(data?.nextUpdateTime);
+                if (seconds <= 0) {
+                    // 使用setTimeout确保DOM已更新
+                    setTimeout(switchTrends, 300);
+                } else {
+                    // 正常更新推荐
+                    updateRecommendations(currentTrendTexts, true);  // 本期推荐
+                    updateRecommendations(nextTrendTexts, false);    // 下期推荐
+                }
+            }
+            
+            // 计算倒计时
+            function calculateTimeDifference(targetTimeString) {
+                if (!targetTimeString) return 3600; // 默认1小时
+                
+                const targetTime = new Date(targetTimeString);
+                const currentTime = new Date();
+                const differenceMs = targetTime - currentTime;
+                
+                // 当倒计时不为正数时返回0
+                return differenceMs > 0 ? Math.floor(differenceMs / 1000) : 0;
+            }
+            
+            // 启动倒计时
+            function startCountdown(durationSeconds) {
+                if (countdownTimer) clearInterval(countdownTimer);
+                
+                // 确保开始时就是正确的值（不为负数）
+                let seconds = Math.max(0, durationSeconds);
+                
+                // 如果初始就是0，立即切换
+                if (seconds === 0) {
+                    countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
+                    return;
+                }
+                
+                function updateCountdown() {
+                    if (seconds <= 0) {
+                        clearInterval(countdownTimer);
+                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
+                        switchTrends();
+                        return;
+                    }
+                    
+                    const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+                    const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+                    const secs = (seconds % 60).toString().padStart(2, '0');
+                    
+                    // 超窄屏幕优化显示
+                    let displayText = `${hours}:${minutes}:${secs}`;
+                    if (window.innerWidth < 320) {
+                        displayText = `${minutes}:${secs}`;
+                    }
+                    
+                    countdownElement.innerHTML = `<i class="fa fa-clock-o mr-1"></i>刷新：${displayText}`;
+                    seconds--;
+                }
+                
+                updateCountdown();
+                countdownTimer = setInterval(updateCountdown, 1000);
+            }
+            
+            // 获取数据 - 带重试机制
+            async function fetchDataWithRetry(url, retries = 2, delay = 1000) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 单次请求超时8秒
+                    
+                    const response = await fetch(`${url}?t=${new Date().getTime()}`, {
+                        signal: controller.signal,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        if (retries > 0) {
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            return fetchDataWithRetry(url, retries - 1, delay * 2);
+                        }
+                        throw new Error(`服务器错误: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('数据格式错误');
+                    }
+                } catch (error) {
+                    if (retries > 0 && error.name !== 'AbortError') {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchDataWithRetry(url, retries - 1, delay * 2);
+                    }
+                    
+                    // 更详细的错误信息
+                    let errorMsg = '加载失败，请重试';
+                    if (error.name === 'AbortError') {
+                        errorMsg = '请求超时，请重试';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMsg = '网络连接失败，请检查网络';
+                    }
+                    
+                    throw new Error(errorMsg);
+                }
+            }
+            
+            // 初始化流程
+            async function fetchAndInit() {
+                try {
+                    showLoading();
+                    resetToLoadingState();
+                    
+                    const data = await fetchDataWithRetry(API_URL);
+                    updatePageContent(data);
+                    
+                    const seconds = calculateTimeDifference(data?.nextUpdateTime);
+                    startCountdown(seconds || 0);
+                } catch (error) {
+                    console.error('初始化失败:', error);
+                    showError(error.message || '加载失败，请重试');
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // 手动刷新按钮事件
+            manualRefreshBtn.addEventListener('click', () => {
+                fetchAndInit();
+            });
+            
+            // 启动应用
+            fetchAndInit();
+            
+            // 离线检测
+            window.addEventListener('offline', () => {
+                showError('网络已断开，请检查连接');
+            });
+            
+            // 在线恢复检测
+            window.addEventListener('online', () => {
+                showUpdateIndicator();
+                updateIndicator.textContent = '网络已恢复，正在重新加载...';
+                fetchAndInit();
+            });
+        });
+    </script>
+</body>
+</html>
+    
