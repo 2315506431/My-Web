@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
     <title>绝区零随便观热卖</title>
-    <!-- 嵌入Google字体 - 思源黑体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入自定义字体 -->
+    <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('/font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap; /* 优化加载策略，提升性能 */
+        }
+    </style>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -25,7 +32,7 @@
                         highlight: '#d97706', // 高亮数值颜色
                     },
                     fontFamily: {
-                        sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
+                        sans: ['CustomFont', 'system-ui', 'sans-serif'], // 使用自定义字体
                     },
                 }
             }
@@ -308,7 +315,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen font-sans"> <!-- 应用自定义字体 -->
     <!-- 加载遮罩 -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="text-center">
@@ -522,32 +529,32 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 配置与映射关系
-            const API_URL = 'https://img.yuwujie.top/sbg.json';
-            const FIXED_CORNER_IMAGE = "https://img.yuwujie.top/sbg/hot.png"; 
+            // 配置与映射关系 - 使用本地字体和图片，数据保持网络获取
+            const API_URL = 'https://img.yuwujie.top/sbg.json'; // 保持原网络地址
+            const FIXED_CORNER_IMAGE = "sbg/hot.png"; // 本地图片
             const MAX_LOADING_TIME = 15000; // 最大加载时间15秒
             
-            // 趋势文本与图片URL的映射关系
+            // 趋势文本与图片URL的映射关系 - 使用本地路径
             const TREND_IMAGE_MAP = {
-                "器引百味": "https://img.yuwujie.top/sbg/qybw.png",
-                "节礼贺幛": "https://img.yuwujie.top/sbg/jlhz.png",
-                "游方巧器": "https://img.yuwujie.top/sbg/yfqq.png",
-                "虚室坐修": "https://img.yuwujie.top/sbg/xszx.png",
-                "本草方剂": "https://img.yuwujie.top/sbg/bcfj.png",
-                "素裳岳履": "https://img.yuwujie.top/sbg/ssyl.png"
+                "器引百味": "sbg/qybw.png",
+                "节礼贺幛": "sbg/jlhz.png",
+                "游方巧器": "sbg/yfqq.png",
+                "虚室坐修": "sbg/xszx.png",
+                "本草方剂": "sbg/bcfj.png",
+                "素裳岳履": "sbg/ssyl.png"
             };
             
-            // 推荐物品与图片URL的映射关系
+            // 推荐物品与图片URL的映射关系 - 使用本地路径
             const RECOMMEND_IMAGE_MAP = {
-                "异构抗凝膏": "https://img.yuwujie.top/sbg/ygkng.png",
-                "镇厄面": "https://img.yuwujie.top/sbg/zem.png",
-                "守一玄佩": "https://img.yuwujie.top/sbg/syxp.png",
-                "相位桩": "https://img.yuwujie.top/sbg/xwz.png",
-                "醒心促愈素": "https://img.yuwujie.top/sbg/xxcys.png",
-                "松烟釜": "https://img.yuwujie.top/sbg/syf.png",
-                "云魄琴炉": "https://img.yuwujie.top/sbg/ypql.png",
-                "静笃护腕": "https://img.yuwujie.top/sbg/jdhw.png",
-                "云门叠": "https://img.yuwujie.top/sbg/ymd.png"
+                "异构抗凝膏": "sbg/ygkng.png",
+                "镇厄面": "sbg/zem.png",
+                "守一玄佩": "sbg/syxp.png",
+                "相位桩": "sbg/xwz.png",
+                "醒心促愈素": "sbg/xxcys.png",
+                "松烟釜": "sbg/syf.png",
+                "云魄琴炉": "sbg/ypql.png",
+                "静笃护腕": "sbg/jdhw.png",
+                "云门叠": "sbg/ymd.png"
             };
             
             // 物品默认数值
@@ -701,8 +708,8 @@
                     }
                 }
                 
-                // 如果没有匹配到，使用默认图片
-                return "https://img.yuwujie.top/sbg/default.png";
+                // 如果没有匹配到，使用本地默认图片
+                return "sbg/default.png";
             }
             
             // 分析趋势文本，提取相关类别
