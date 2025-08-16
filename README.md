@@ -1,1 +1,0 @@
-# Suibian-Temple-hot
