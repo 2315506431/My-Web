@@ -5,14 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
     <title>绝区零随便观热卖</title>
     
-    <!-- 引入自定义字体 -->
+    <!-- 引入自定义字体并设置不同字重 -->
     <style>
         @font-face {
             font-family: 'CustomFont';
             src: url('/font.ttf') format('truetype');
-            font-weight: normal;
+            font-weight: 400; /* 正常字重 */
             font-style: normal;
-            font-display: swap; /* 优化加载策略，提升性能 */
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('/font.ttf') format('truetype');
+            font-weight: 600; /* 中等加粗 */
+            font-style: normal;
+            font-display: swap;
         }
     </style>
     
@@ -115,7 +123,7 @@
                 margin-top: -2px;
                 margin-bottom: 4px;
                 text-align: center;
-                font-weight: 500;
+                font-weight: 400; /* 减轻倒计时字体重量 */
             }
             .timer-container {
                 text-align: center;
@@ -148,6 +156,7 @@
                 text-align: center;
                 padding: 10px;
                 font-size: 0.8rem;
+                font-weight: 400; /* 减轻错误信息字体重量 */
             }
             .content-image {
                 width: 70%;
@@ -182,8 +191,8 @@
             }
             .recommend-value {
                 font-size: 0.9rem;
-                color: #64748b; /* 降低普通数值的对比度 */
-                font-weight: 500; /* 降低普通数值的权重 */
+                color: #64748b;
+                font-weight: 400; /* 减轻数值字体重量 */
                 margin-top: 4px;
                 background-color: #f1f5f9;
                 padding: 2px 10px;
@@ -199,16 +208,16 @@
                 color: #d97706;
                 background-color: #fffbeb;
                 border: 1.5px solid #fde68a;
-                font-weight: 700; /* 提高高亮数值的权重 */
-                box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2); /* 增加高亮阴影 */
-                padding: 2px 12px; /* 增加内边距 */
-                transform: scale(1.05); /* 轻微放大 */
+                font-weight: 600; /* 高亮数值适当加粗 */
+                box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+                padding: 2px 12px;
+                transform: scale(1.05);
                 transition: all 0.2s ease;
             }
             .recommend-value .bonus {
-                color: #ef4444; /* 使用更鲜艳的红色突出显示+20% */
+                color: #ef4444;
                 font-size: 0.8rem;
-                font-weight: 800;
+                font-weight: 600; /* 调整bonus字体重量 */
                 margin-left: 4px;
                 display: inline-flex;
                 align-items: center;
@@ -260,6 +269,7 @@
                 top: 20px;
                 right: 20px;
                 z-index: 900;
+                font-weight: 400; /* 减轻按钮文字重量 */
             }
             
             /* 作者信息样式 */
@@ -272,14 +282,24 @@
                 border-top: 1px solid #e2e8f0;
                 opacity: 0.8;
                 transition: opacity 0.3s ease;
+                font-weight: 400; /* 减轻作者信息字体重量 */
             }
             .author-info:hover {
                 opacity: 1;
             }
             .author-name {
                 color: #d4af37;
-                font-weight: 700;
+                font-weight: 600; /* 作者名适当加粗 */
                 margin: 0 4px;
+            }
+            
+            /* 趋势和推荐文本样式调整 */
+            [data-id$="-text"] {
+                font-weight: 400; /* 减轻趋势文本重量 */
+            }
+            
+            h2 {
+                font-weight: 600 !important; /* 标题适当加粗但不过分 */
             }
             
             /* 基础趋势区域布局 */
@@ -315,7 +335,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans"> <!-- 应用自定义字体 -->
+<body class="bg-gray-50 min-h-screen font-sans">
     <!-- 加载遮罩 -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="text-center">
