@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
     <title>绝区零随便观热卖</title>
     
-    <!-- 引入入自定义字体并设置不同字重 -->
+    <!-- 引入自定义字体并设置不同字重 -->
     <style>
         @font-face {
             font-family: 'CustomFont';
@@ -347,6 +347,7 @@
             }
             .form-field {
                 margin-bottom: 1rem;
+                position: relative;
             }
             .form-label {
                 display: block;
@@ -366,6 +367,19 @@
                 outline: none;
                 border-color: #3b82f6;
                 box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+            .form-select.error {
+                border-color: #ef4444;
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+            }
+            .validation-message {
+                color: #ef4444;
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+                display: none;
+            }
+            .validation-message.show {
+                display: block;
             }
             .settings-button {
                 position: fixed;
@@ -422,7 +436,125 @@
                 margin-bottom: 1rem;
             }
             
-            /* 响应式调整 - 修复下期推荐布局问题 */
+            /* 多选下拉框样式 */
+            .multiselect-container {
+                position: relative;
+                opacity: 1 !important;
+                background-color: white !important;
+            }
+            
+            /* 本期趋势选择框 - 提高z-index确保显示在上方 */
+            #currentTrendsContainer {
+                z-index: 2100;
+            }
+            
+            /* 下期趋势选择框 - 降低z-index确保显示在下方 */
+            #nextTrendsContainer {
+                z-index: 2050;
+            }
+            
+            .multiselect-selected {
+                padding: 0.5rem 0.75rem;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                cursor: pointer;
+                min-height: 42px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                align-items: center;
+                background-color: white;
+                opacity: 1;
+            }
+            .multiselect-selected.error {
+                border-color: #ef4444;
+                box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+            }
+            .multiselect-options {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                background-color: white;
+                max-height: 200px;
+                overflow-y: auto;
+                margin-top: 2px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                opacity: 1 !important;
+                display: none;
+            }
+            
+            /* 为本期趋势选项框设置更高的z-index */
+            #currentTrendsOptions {
+                z-index: 2110;
+            }
+            
+            /* 为下期趋势选项框设置较低的z-index */
+            #nextTrendsOptions {
+                z-index: 2060;
+            }
+            
+            .multiselect-options.visible {
+                display: block !important;
+            }
+            .multiselect-option {
+                padding: 0.5rem 0.75rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .multiselect-option:hover {
+                background-color: #f1f5f9;
+            }
+            .multiselect-option.selected {
+                background-color: #eff6ff;
+            }
+            .multiselect-option.selected::before {
+                content: "✓";
+                color: #3b82f6;
+                font-weight: bold;
+            }
+            .multiselect-option.disabled {
+                color: #94a3b8;
+                cursor: not-allowed;
+                background-color: #f8fafc;
+            }
+            .multiselect-option.disabled:hover {
+                background-color: #f8fafc;
+            }
+            .multiselect-tag {
+                background-color: #eff6ff;
+                color: #3b82f6;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .multiselect-tag-remove {
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 1rem;
+                line-height: 1;
+            }
+            .multiselect-placeholder {
+                color: #94a3b8;
+                font-size: 1rem;
+                flex-grow: 1;
+            }
+            .multiselect-arrow {
+                position: absolute;
+                right: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+            }
+            
+            /* 响应式调整 */
             @media (max-width: 320px) {
                 .trends-container { flex-direction: column !important; }
                 #currentTrendSection, #nextTrendSection {
@@ -511,82 +643,90 @@
             </button>
         </div>
         <div class="settings-content">
+            <!-- 新增数据来源设置 -->
             <div class="settings-group">
+                <h4 class="settings-group-title">数据来源</h4>
+                <div class="form-field">
+                    <div class="flex items-center gap-2">
+                        <input type="radio" id="dataSourceLocal" name="dataSource" value="local" checked>
+                        <label for="dataSourceLocal" class="form-label m-0">本地设置</label>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <input type="radio" id="dataSourceJson" name="dataSource" value="json">
+                        <label for="dataSourceJson" class="form-label m-0">JSON 网址</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- JSON网址设置 -->
+            <div class="settings-group" id="jsonUrlGroup" style="display: none;">
+                <h4 class="settings-group-title">JSON 数据配置</h4>
+                <div class="form-field">
+                    <label class="form-label" for="jsonUrl">数据来源网址</label>
+                    <input type="url" id="jsonUrl" class="form-input" placeholder="https://example.com/data.json">
+                    <div class="validation-message" id="jsonUrlError">请输入有效的URL</div>
+                </div>
+                <p class="text-sm text-gray-500 mt-1 mb-4">
+                    JSON数据应包含这5个键值：current1, current2, next1, next2, nextUpdateTime
+                </p>
+            </div>
+            
+            <!-- 本地设置区域 -->
+            <div class="settings-group" id="localSettingsGroup">
                 <h4 class="settings-group-title">本期趋势</h4>
                 <div class="form-field">
-                    <label class="form-label" for="current1Type">趋势类型 1</label>
-                    <select id="current1Type" class="form-select">
-                        <option value="">请选择...</option>
-                        <option value="器引百味">器引百味</option>
-                        <option value="节礼贺幛">节礼贺幛</option>
-                        <option value="游方巧器">游方巧器</option>
-                        <option value="虚室坐修">虚室坐修</option>
-                        <option value="本草方剂">本草方剂</option>
-                        <option value="素裳岳履">素裳岳履</option>
-                    </select>
-                </div>
-                
-                <div class="form-field">
-                    <label class="form-label" for="current2Type">趋势类型 2</label>
-                    <select id="current2Type" class="form-select">
-                        <option value="">请选择...</option>
-                        <option value="器引百味">器引百味</option>
-                        <option value="节礼贺幛">节礼贺幛</option>
-                        <option value="游方巧器">游方巧器</option>
-                        <option value="虚室坐修">虚室坐修</option>
-                        <option value="本草方剂">本草方剂</option>
-                        <option value="素裳岳履">素裳岳履</option>
-                    </select>
+                    <label class="form-label" for="currentTrends">选择2个趋势类型</label>
+                    <div class="multiselect-container" id="currentTrendsContainer">
+                        <div class="multiselect-selected" id="currentTrendsSelected">
+                            <span class="multiselect-placeholder">请选择2个类型...</span>
+                        </div>
+                        <div class="multiselect-options" id="currentTrendsOptions">
+                            <div class="multiselect-option" data-value="游方巧器">游方巧器</div>
+                            <div class="multiselect-option" data-value="本草方剂">本草方剂</div>
+                            <div class="multiselect-option" data-value="器引百味">器引百味</div>
+                            <div class="multiselect-option" data-value="虚室坐修">虚室坐修</div>
+                            <div class="multiselect-option" data-value="素裳岳履">素裳岳履</div>
+                            <div class="multiselect-option" data-value="节礼贺幛">节礼贺幛</div>
+                        </div>
+                        <div class="multiselect-arrow">
+                            <i class="fa fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="validation-message" id="currentTrendsError">请选择2个不同的趋势类型</div>
                 </div>
             </div>
             
-            <div class="settings-group">
+            <div class="settings-group" id="localNextTrendsGroup">
                 <h4 class="settings-group-title">下期趋势</h4>
                 <div class="form-field">
-                    <label class="form-label" for="next1Type">趋势类型 1</label>
-                    <select id="next1Type" class="form-select">
-                        <option value="">请选择...</option>
-                        <option value="器引百味">器引百味</option>
-                        <option value="节礼贺幛">节礼贺幛</option>
-                        <option value="游方巧器">游方巧器</option>
-                        <option value="虚室坐修">虚室坐修</option>
-                        <option value="本草方剂">本草方剂</option>
-                        <option value="素裳岳履">素裳岳履</option>
-                    </select>
-                </div>
-                
-                <div class="form-field">
-                    <label class="form-label" for="next2Type">趋势类型 2</label>
-                    <select id="next2Type" class="form-select">
-                        <option value="">请选择...</option>
-                        <option value="器引百味">器引百味</option>
-                        <option value="节礼贺幛">节礼贺幛</option>
-                        <option value="游方巧器">游方巧器</option>
-                        <option value="虚室坐修">虚室坐修</option>
-                        <option value="本草方剂">本草方剂</option>
-                        <option value="素裳岳履">素裳岳履</option>
-                    </select>
+                    <label class="form-label" for="nextTrends">选择2个趋势类型</label>
+                    <div class="multiselect-container" id="nextTrendsContainer">
+                        <div class="multiselect-selected" id="nextTrendsSelected">
+                            <span class="multiselect-placeholder">请选择2个类型...</span>
+                        </div>
+                        <div class="multiselect-options" id="nextTrendsOptions">
+                            <div class="multiselect-option" data-value="游方巧器">游方巧器</div>
+                            <div class="multiselect-option" data-value="本草方剂">本草方剂</div>
+                            <div class="multiselect-option" data-value="器引百味">器引百味</div>
+                            <div class="multiselect-option" data-value="虚室坐修">虚室坐修</div>
+                            <div class="multiselect-option" data-value="素裳岳履">素裳岳履</div>
+                            <div class="multiselect-option" data-value="节礼贺幛">节礼贺幛</div>
+                        </div>
+                        <div class="multiselect-arrow">
+                            <i class="fa fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="validation-message" id="nextTrendsError">请选择2个不同的趋势类型</div>
                 </div>
             </div>
             
-            <div class="settings-group">
+            <div class="settings-group" id="localUpdateGroup">
                 <h4 class="settings-group-title">更新设置</h4>
                 <div class="form-field">
                     <label class="form-label" for="updateDate">下次更新日期</label>
                     <input type="date" id="updateDate" class="form-input">
                 </div>
-                <p class="text-sm text-gray-500 mt-1 mb-4">更新时间固定为凌晨4点</p>
-                
-                <div class="form-field">
-                    <label class="form-label" for="updateInterval">自动更新间隔（天）</label>
-                    <select id="updateInterval" class="form-select">
-                        <option value="1">1天</option>
-                        <option value="2">2天</option>
-                        <option value="3">3天</option>
-                        <option value="7" selected>1周</option>
-                        <option value="14">2周</option>
-                    </select>
-                </div>
+                <p class="text-sm text-gray-500 mt-1 mb-4">更新时间固定为UTC+8凌晨4点</p>
             </div>
         </div>
         <div class="settings-footer">
@@ -609,7 +749,7 @@
                 <i class="fa fa-database"></i>
             </div>
             <h3 class="text-xl font-semibold mb-2">欢迎使用</h3>
-            <p class="mb-4 text-gray-600">这是一个本地数据版本的绝区零观热卖参考工具</p>
+            <p class="mb-4 text-gray-600">这是一个支持本地数据和JSON网址的绝区零观热卖参考工具</p>
             <p class="mb-6 text-gray-600">所有数据将保存在您的设备上，请点击右上角的设置按钮配置您的趋势数据</p>
             <button id="gotItButton" class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors">
                 知道了
@@ -668,7 +808,6 @@
                         <i class="fa fa-clock-o mr-1"></i>请设置更新日期
                     </p>
                 </div>
-                <p class="error-message hidden text-sm" id="nextTrendErrorMessage"></p>
                 
                 <div class="space-y-4 sm:space-y-6">
                     <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
@@ -817,15 +956,16 @@
             // 配置与映射关系
             const FIXED_CORNER_IMAGE = "sbg/hot.png"; // 本地图片
             const MAX_LOADING_TIME = 15000; // 最大加载时间15秒
+            const JSON_FETCH_INTERVAL = 300000; // JSON数据自动刷新间隔(5分钟)
             
             // 趋势文本与图片URL的映射关系 - 使用本地路径
             const TREND_IMAGE_MAP = {
-                "器引百味": "sbg/qybw.png",
-                "节礼贺幛": "sbg/jlhz.png",
                 "游方巧器": "sbg/yfqq.png",
-                "虚室坐修": "sbg/xszx.png",
                 "本草方剂": "sbg/bcfj.png",
-                "素裳岳履": "sbg/ssyl.png"
+                "器引百味": "sbg/qybw.png",
+                "虚室坐修": "sbg/xszx.png",
+                "素裳岳履": "sbg/ssyl.png",
+                "节礼贺幛": "sbg/jlhz.png"
             };
             
             // 推荐物品与图片URL的映射关系 - 使用本地路径
@@ -856,18 +996,17 @@
             
             // 类别与物品的对应关系
             const CATEGORY_ITEMS = {
+                "游方巧器": ["相位桩"],
                 "本草方剂": ["异构抗凝膏", "醒心促愈素"],
-                "节礼贺幛": ["镇厄面", "云门叠"],
+                "器引百味": ["松烟釜"],
                 "虚室坐修": ["云魄琴炉", "守一玄佩"],
                 "素裳岳履": ["静笃护腕"],
-                "器引百味": ["松烟釜"],
-                "游方巧器": ["相位桩"]
+                "节礼贺幛": ["镇厄面", "云门叠"]
             };
             
             // 元素引用
             const updateIndicator = document.getElementById('updateIndicator');
             const countdownElement = document.getElementById('countdownTimer');
-            const nextTrendErrorMessage = document.getElementById('nextTrendErrorMessage');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const settingsButton = document.getElementById('settingsButton');
             const settingsPanel = document.getElementById('settingsPanel');
@@ -878,18 +1017,275 @@
             const firstVisitGuide = document.getElementById('firstVisitGuide');
             const gotItButton = document.getElementById('gotItButton');
             
+            // 数据来源选项
+            const dataSourceLocal = document.getElementById('dataSourceLocal');
+            const dataSourceJson = document.getElementById('dataSourceJson');
+            const jsonUrlGroup = document.getElementById('jsonUrlGroup');
+            const localSettingsGroup = document.getElementById('localSettingsGroup');
+            const localNextTrendsGroup = document.getElementById('localNextTrendsGroup');
+            const localUpdateGroup = document.getElementById('localUpdateGroup');
+            
+            // JSON设置
+            const jsonUrl = document.getElementById('jsonUrl');
+            const jsonUrlError = document.getElementById('jsonUrlError');
+            
             // 表单元素
-            const current1Type = document.getElementById('current1Type');
-            const current2Type = document.getElementById('current2Type');
-            const next1Type = document.getElementById('next1Type');
-            const next2Type = document.getElementById('next2Type');
+            const currentTrendsSelected = document.getElementById('currentTrendsSelected');
+            const currentTrendsOptions = document.getElementById('currentTrendsOptions');
+            const currentTrendsContainer = document.getElementById('currentTrendsContainer');
+            const nextTrendsSelected = document.getElementById('nextTrendsSelected');
+            const nextTrendsOptions = document.getElementById('nextTrendsOptions');
+            const nextTrendsContainer = document.getElementById('nextTrendsContainer');
             const updateDate = document.getElementById('updateDate');
-            const updateInterval = document.getElementById('updateInterval');
+            
+            // 错误提示元素
+            const currentTrendsError = document.getElementById('currentTrendsError');
+            const nextTrendsError = document.getElementById('nextTrendsError');
             
             let countdownTimer = null;
+            let jsonFetchTimer = null;
             let isTrendSwitched = false;
             let originalData = null;
             let loadingTimeout = null;
+            let currentTrends = [];
+            let nextTrends = [];
+            let currentMultiselect = null;
+            let nextMultiselect = null;
+            let currentDataSource = 'local';
+            
+            // 初始化多选下拉框
+            function initMultiselects() {
+                // 本期趋势多选
+                currentMultiselect = setupMultiselect(
+                    currentTrendsSelected,
+                    currentTrendsOptions,
+                    currentTrendsContainer,
+                    currentTrendsError,
+                    (selectedValues) => {
+                        currentTrends = selectedValues;
+                        // 当本期趋势选择框打开时，关闭下期趋势选择框
+                        if (nextMultiselect) nextMultiselect.closeOptions();
+                    }
+                );
+                
+                // 下期趋势多选
+                nextMultiselect = setupMultiselect(
+                    nextTrendsSelected,
+                    nextTrendsOptions,
+                    nextTrendsContainer,
+                    nextTrendsError,
+                    (selectedValues) => {
+                        nextTrends = selectedValues;
+                    }
+                );
+            }
+            
+            // 设置多选下拉框
+            function setupMultiselect(selectedEl, optionsEl, containerEl, errorEl, onChange) {
+                let selectedValues = [];
+                const placeholder = selectedEl.querySelector('.multiselect-placeholder');
+                const options = optionsEl.querySelectorAll('.multiselect-option');
+                let isOpen = false;
+                
+                // 点击选择框切换选项显示状态
+                selectedEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleOptions();
+                });
+                
+                // 点击选项
+                options.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const value = option.getAttribute('data-value');
+                        
+                        // 检查是否已选择
+                        if (selectedValues.includes(value)) {
+                            // 取消选择
+                            selectedValues = selectedValues.filter(v => v !== value);
+                            option.classList.remove('selected');
+                        } else {
+                            // 限制最多选择2个
+                            if (selectedValues.length < 2) {
+                                // 添加选择
+                                selectedValues.push(value);
+                                option.classList.add('selected');
+                            }
+                        }
+                        
+                        // 更新选项状态
+                        updateOptionStates();
+                        
+                        // 更新显示
+                        updateSelectedDisplay(selectedEl, selectedValues, placeholder);
+                        
+                        // 验证选择
+                        validateSelection(selectedValues, containerEl, errorEl);
+                        
+                        // 触发回调
+                        onChange([...selectedValues]);
+                    });
+                });
+                
+                // 点击其他地方关闭选项
+                document.addEventListener('click', () => {
+                    if (isOpen) {
+                        closeOptions();
+                    }
+                });
+                
+                // 阻止事件冒泡
+                optionsEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+                
+                // 切换选项显示状态
+                function toggleOptions() {
+                    if (isOpen) {
+                        closeOptions();
+                    } else {
+                        openOptions();
+                    }
+                }
+                
+                // 打开选项
+                function openOptions() {
+                    optionsEl.classList.add('visible');
+                    isOpen = true;
+                    updateOptionStates(); // 更新选项状态
+                }
+                
+                // 关闭选项
+                function closeOptions() {
+                    optionsEl.classList.remove('visible');
+                    isOpen = false;
+                }
+                
+                // 更新选项状态（启用/禁用）
+                function updateOptionStates() {
+                    options.forEach(option => {
+                        const value = option.getAttribute('data-value');
+                        
+                        // 如果已经选中，保持选中状态
+                        if (selectedValues.includes(value)) {
+                            option.classList.add('selected');
+                            option.classList.remove('disabled');
+                        } else {
+                            // 如果未选中且已选数量达到2个，则禁用
+                            if (selectedValues.length >= 2) {
+                                option.classList.add('disabled');
+                            } else {
+                                option.classList.remove('disabled');
+                            }
+                            option.classList.remove('selected');
+                        }
+                    });
+                }
+                
+                // 清除所有选择
+                const clearSelections = () => {
+                    selectedValues = [];
+                    options.forEach(option => {
+                        option.classList.remove('selected', 'disabled');
+                    });
+                    updateSelectedDisplay(selectedEl, selectedValues, placeholder);
+                    validateSelection(selectedValues, containerEl, errorEl);
+                    onChange([...selectedValues]);
+                };
+                
+                // 设置选择值
+                const setSelections = (values) => {
+                    // 清除现有选择
+                    selectedValues = [];
+                    options.forEach(option => {
+                        option.classList.remove('selected', 'disabled');
+                    });
+                    
+                    // 添加新选择，最多2个
+                    const newValues = Array.isArray(values) ? values : [];
+                    newValues.slice(0, 2).forEach(value => {
+                        selectedValues.push(value);
+                        const option = optionsEl.querySelector(`.multiselect-option[data-value="${value}"]`);
+                        if (option) {
+                            option.classList.add('selected');
+                        }
+                    });
+                    
+                    // 更新选项状态
+                    updateOptionStates();
+                    
+                    // 更新显示
+                    updateSelectedDisplay(selectedEl, selectedValues, placeholder);
+                    validateSelection(selectedValues, containerEl, errorEl);
+                    onChange([...selectedValues]);
+                };
+                
+                // 获取当前选择值
+                const getSelections = () => [...selectedValues];
+                
+                // 暴露公共方法
+                return {
+                    clearSelections,
+                    setSelections,
+                    getSelections,
+                    openOptions,
+                    closeOptions
+                };
+            }
+            
+            // 更新选择显示
+            function updateSelectedDisplay(selectedEl, values, placeholder) {
+                // 清除现有标签（保留占位符）
+                Array.from(selectedEl.children).forEach(child => {
+                    if (!child.classList.contains('multiselect-placeholder')) {
+                        child.remove();
+                    }
+                });
+                
+                // 显示占位符或标签
+                if (values.length === 0) {
+                    placeholder.style.display = 'block';
+                } else {
+                    placeholder.style.display = 'none';
+                    
+                    // 添加标签
+                    values.forEach(value => {
+                        const tag = document.createElement('div');
+                        tag.className = 'multiselect-tag';
+                        tag.innerHTML = `${value}<span class="multiselect-tag-remove">×</span>`;
+                        
+                        // 标签移除功能
+                        tag.querySelector('.multiselect-tag-remove').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const option = selectedEl.nextElementSibling.querySelector(`.multiselect-option[data-value="${value}"]`);
+                            if (option) {
+                                option.click(); // 触发选项点击事件来处理移除
+                            }
+                        });
+                        
+                        selectedEl.appendChild(tag);
+                    });
+                }
+            }
+            
+            // 验证选择
+            function validateSelection(values, containerEl, errorEl) {
+                let isValid = true;
+                
+                if (values.length !== 2) {
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    containerEl.querySelector('.multiselect-selected').classList.remove('error');
+                    errorEl.classList.remove('show');
+                } else {
+                    containerEl.querySelector('.multiselect-selected').classList.add('error');
+                    errorEl.classList.add('show');
+                }
+                
+                return isValid;
+            }
             
             // 检查是否是首次访问
             function checkFirstVisit() {
@@ -902,6 +1298,20 @@
                 }
             }
             
+            // 切换数据来源显示
+            function toggleDataSourceDisplay() {
+                const isLocal = dataSourceLocal.checked;
+                
+                // 保存当前数据源
+                currentDataSource = isLocal ? 'local' : 'json';
+                
+                // 显示/隐藏对应的设置区域
+                jsonUrlGroup.style.display = isLocal ? 'none' : 'block';
+                localSettingsGroup.style.display = isLocal ? 'block' : 'none';
+                localNextTrendsGroup.style.display = isLocal ? 'block' : 'none';
+                localUpdateGroup.style.display = isLocal ? 'block' : 'none';
+            }
+            
             // 设置面板控制
             function openSettings() {
                 settingsPanel.classList.add('open');
@@ -909,12 +1319,26 @@
                 // 从本地存储加载数据到表单
                 loadDataToForm();
                 document.body.style.overflow = 'hidden';
+                
+                // 确保下拉框关闭
+                if (currentMultiselect) currentMultiselect.closeOptions();
+                if (nextMultiselect) nextMultiselect.closeOptions();
+                
+                // 强制刷新UI，解决透明度问题
+                setTimeout(() => {
+                    currentTrendsContainer.style.opacity = 1;
+                    currentTrendsContainer.style.visibility = 'visible';
+                }, 50);
             }
             
             function closeSettingsPanel() {
                 settingsPanel.classList.remove('open');
                 settingsOverlay.classList.remove('open');
                 document.body.style.overflow = '';
+                
+                // 关闭所有下拉框
+                if (currentMultiselect) currentMultiselect.closeOptions();
+                if (nextMultiselect) nextMultiselect.closeOptions();
             }
             
             // 从本地存储获取数据
@@ -939,24 +1363,100 @@
                 }
             }
             
+            // 从JSON URL获取数据
+            async function fetchJsonData(url) {
+                if (!url) return null;
+                
+                try {
+                    showLoading();
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        cache: 'no-cache'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return data;
+                } catch (e) {
+                    console.error('获取JSON数据失败:', e);
+                    showUpdateIndicator();
+                    updateIndicator.textContent = 'JSON数据获取失败';
+                    return null;
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // 开始JSON数据定时刷新
+            function startJsonFetchTimer(url) {
+                // 清除现有定时器
+                if (jsonFetchTimer) {
+                    clearInterval(jsonFetchTimer);
+                }
+                
+                // 设置新定时器
+                jsonFetchTimer = setInterval(async () => {
+                    const data = await fetchJsonData(url);
+                    if (data) {
+                        originalData = data;
+                        updatePageContent(data);
+                        showUpdateIndicator();
+                        updateIndicator.textContent = 'JSON数据已更新';
+                    }
+                }, JSON_FETCH_INTERVAL);
+            }
+            
             // 从表单加载数据
             function loadDataToForm() {
                 const data = getLocalData();
-                if (!data || !data.trends) return;
+                
+                // 加载数据来源设置
+                const savedSource = data?.dataSource || 'local';
+                dataSourceLocal.checked = savedSource === 'local';
+                dataSourceJson.checked = savedSource === 'json';
+                toggleDataSourceDisplay();
+                
+                // 加载JSON URL设置
+                jsonUrl.value = data?.jsonUrl || '';
+                
+                if (!data) return;
                 
                 // 加载本期趋势
-                current1Type.value = data.trends.current1?.type || '';
-                current2Type.value = data.trends.current2?.type || '';
+                const currentTypes = [
+                    data.current1 || '',
+                    data.current2 || ''
+                ].filter(Boolean);
+                if (currentMultiselect) {
+                    currentMultiselect.setSelections(currentTypes);
+                }
                 
                 // 加载下期趋势
-                next1Type.value = data.trends.next1?.type || '';
-                next2Type.value = data.trends.next2?.type || '';
+                const nextTypes = [
+                    data.next1 || '',
+                    data.next2 || ''
+                ].filter(Boolean);
+                if (nextMultiselect) {
+                    nextMultiselect.setSelections(nextTypes);
+                }
                 
-                // 加载更新日期
+                // 处理时区偏移问题，明确为UTC+8
                 if (data.nextUpdateTime) {
-                    const date = new Date(data.nextUpdateTime);
-                    // 仅设置日期部分
-                    updateDate.value = date.toISOString().split('T')[0];
+                    // 创建UTC时间对象
+                    const utcTime = new Date(data.nextUpdateTime);
+                    
+                    // 转换为UTC+8时间
+                    const utc8Time = new Date(utcTime);
+                    utc8Time.setHours(utc8Time.getHours() + 8); // UTC+8偏移量
+                    
+                    // 设置表单值
+                    updateDate.value = utc8Time.toISOString().split('T')[0];
                 } else {
                     // 设置默认日期为明天
                     const tomorrow = new Date();
@@ -964,77 +1464,140 @@
                     updateDate.value = tomorrow.toISOString().split('T')[0];
                 }
                 
-                // 加载更新间隔
-                if (data.updateInterval) {
-                    updateInterval.value = data.updateInterval;
+                // 清除所有错误提示
+                clearAllErrors();
+            }
+            
+            // 验证趋势类型是否符合要求
+            function validateTrendSelections() {
+                let isValid = true;
+                clearAllErrors();
+                
+                // 根据数据源类型验证不同的字段
+                if (dataSourceLocal.checked) {
+                    // 验证本期趋势
+                    if (currentTrends.length !== 2) {
+                        currentTrendsContainer.querySelector('.multiselect-selected').classList.add('error');
+                        currentTrendsError.classList.add('show');
+                        isValid = false;
+                    }
+                    
+                    // 验证下期趋势（下期可以不设置）
+                    if (nextTrends.length > 0 && nextTrends.length !== 2) {
+                        nextTrendsContainer.querySelector('.multiselect-selected').classList.add('error');
+                        nextTrendsError.classList.add('show');
+                        isValid = false;
+                    }
+                } else {
+                    // 验证JSON URL
+                    if (!jsonUrl.value || !isValidUrl(jsonUrl.value)) {
+                        jsonUrl.classList.add('error');
+                        jsonUrlError.classList.add('show');
+                        isValid = false;
+                    }
                 }
+                
+                return isValid;
+            }
+            
+            // 验证URL是否有效
+            function isValidUrl(url) {
+                try {
+                    new URL(url);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            // 清除所有错误提示
+            function clearAllErrors() {
+                [currentTrendsContainer, nextTrendsContainer].forEach(el => {
+                    if (el) {
+                        el.querySelector('.multiselect-selected').classList.remove('error');
+                    }
+                });
+                
+                [currentTrendsError, nextTrendsError, jsonUrlError].forEach(el => {
+                    if (el) {
+                        el.classList.remove('show');
+                    }
+                });
+                
+                jsonUrl.classList.remove('error');
             }
             
             // 从表单收集数据
             function collectDataFromForm() {
-                // 确保更新日期不为空，默认为明天
-                let updateDateValue = updateDate.value;
-                if (!updateDateValue) {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    updateDateValue = tomorrow.toISOString().split('T')[0];
+                const dataSource = dataSourceLocal.checked ? 'local' : 'json';
+                const result = {
+                    dataSource: dataSource,
+                    jsonUrl: jsonUrl.value
+                };
+                
+                // 如果是本地数据源，收集本地设置
+                if (dataSource === 'local') {
+                    // 确保更新日期不为空，默认为明天
+                    let updateDateValue = updateDate.value;
+                    if (!updateDateValue) {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        updateDateValue = tomorrow.toISOString().split('T')[0];
+                    }
+                    
+                    // 明确设置为UTC+8时区的凌晨4点
+                    const [year, month, day] = updateDateValue.split('-').map(Number);
+                    // 创建UTC时间，然后加上8小时偏移量得到UTC+8的凌晨4点
+                    const utcTime = new Date(Date.UTC(year, month - 1, day, 4 - 8, 0, 0, 0));
+                    
+                    // 生成简化的5个键值对结构
+                    result.current1 = currentTrends[0] || '';
+                    result.current2 = currentTrends[1] || '';
+                    result.next1 = nextTrends[0] || '';
+                    result.next2 = nextTrends[1] || '';
+                    result.nextUpdateTime = utcTime.toISOString();
                 }
                 
-                // 创建更新时间：指定日期的凌晨4点
-                const updateTime = new Date(updateDateValue);
-                updateTime.setHours(4, 0, 0, 0); // 固定为凌晨4点
-                
-                // 生成趋势文本（仅类型，不包含描述）
-                const formatTrendText = (type) => {
-                    return type || '';
-                };
-                
-                return {
-                    trends: {
-                        current1: { 
-                            type: current1Type.value,
-                            text: formatTrendText(current1Type.value)
-                        },
-                        current2: { 
-                            type: current2Type.value,
-                            text: formatTrendText(current2Type.value)
-                        },
-                        next1: { 
-                            type: next1Type.value,
-                            text: formatTrendText(next1Type.value)
-                        },
-                        next2: { 
-                            type: next2Type.value,
-                            text: formatTrendText(next2Type.value)
-                        }
-                    },
-                    nextUpdateTime: updateTime.toISOString(),
-                    updateInterval: updateInterval.value
-                };
+                return result;
             }
             
             // 保存设置
-            function handleSaveSettings() {
-                // 简单验证
-                if (!current1Type.value && !current2Type.value) {
-                    showError('请至少设置一个本期趋势类型', true);
-                    return;
-                }
-                
-                if (!updateDate.value) {
-                    showError('请设置下次更新日期', true);
-                    return;
+            async function handleSaveSettings() {
+                // 验证设置
+                if (!validateTrendSelections()) {
+                    return; // 验证失败，不保存
                 }
                 
                 const data = collectDataFromForm();
+                
                 if (saveLocalData(data)) {
                     showUpdateIndicator();
                     updateIndicator.textContent = '设置已保存';
                     closeSettingsPanel();
-                    // 重新加载数据
-                    fetchAndInit();
+                    
+                    // 根据数据源类型加载数据
+                    if (data.dataSource === 'local') {
+                        // 清除JSON定时刷新
+                        if (jsonFetchTimer) {
+                            clearInterval(jsonFetchTimer);
+                        }
+                        // 加载本地数据
+                        fetchAndInit();
+                    } else {
+                        // 从JSON URL加载数据
+                        const jsonData = await fetchJsonData(data.jsonUrl);
+                        if (jsonData) {
+                            originalData = jsonData;
+                            updatePageContent(jsonData);
+                            // 设置定时刷新
+                            startJsonFetchTimer(data.jsonUrl);
+                        } else {
+                            // JSON加载失败，使用本地数据
+                            fetchAndInit();
+                        }
+                    }
                 } else {
-                    showError('保存设置失败，请重试', true);
+                    alert('保存设置失败，请重试');
                 }
             }
             
@@ -1042,12 +1605,23 @@
             function handleResetSettings() {
                 if (confirm('确定要重置所有数据吗？这将清除您的所有设置。')) {
                     localStorage.removeItem('juequData');
-                    // 重置表单
-                    current1Type.value = '';
-                    current2Type.value = '';
-                    next1Type.value = '';
-                    next2Type.value = '';
+                    
+                    // 清除JSON定时刷新
+                    if (jsonFetchTimer) {
+                        clearInterval(jsonFetchTimer);
+                    }
+                    
+                    // 重置多选框
+                    if (currentMultiselect) currentMultiselect.clearSelections();
+                    if (nextMultiselect) nextMultiselect.clearSelections();
+                    
                     updateDate.value = '';
+                    jsonUrl.value = '';
+                    dataSourceLocal.checked = true;
+                    toggleDataSourceDisplay();
+                    
+                    // 清除错误提示
+                    clearAllErrors();
                     
                     showUpdateIndicator();
                     updateIndicator.textContent = '数据已重置';
@@ -1077,22 +1651,6 @@
             function showUpdateIndicator() {
                 updateIndicator.classList.add('show');
                 setTimeout(() => updateIndicator.classList.remove('show'), 3000);
-            }
-            
-            // 显示错误信息 - 添加参数区分是本期还是下期趋势的错误
-            function showError(message, isCurrent = true) {
-                const errorElement = isCurrent ? document.getElementById('errorMessage') : nextTrendErrorMessage;
-                if (errorElement) {
-                    errorElement.textContent = message;
-                    errorElement.classList.remove('hidden');
-                    
-                    // 5秒后自动隐藏非关键错误
-                    if (!message.includes('超时') && !message.includes('失败')) {
-                        setTimeout(() => {
-                            errorElement.classList.add('hidden');
-                        }, 5000);
-                    }
-                }
             }
             
             // 重置为加载中状态
@@ -1144,7 +1702,6 @@
                 });
                 
                 countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>请设置更新日期';
-                if (nextTrendErrorMessage) nextTrendErrorMessage.classList.add('hidden');
             }
             
             // 创建角落图片
@@ -1229,7 +1786,6 @@
             // 更新推荐区域
             function updateRecommendations(trendTypes, isCurrent, shouldEmpty = false) {
                 const prefix = isCurrent ? "currentRec" : "nextRec";
-                const container = isCurrent ? document.getElementById('currentRecommendSection') : document.getElementById('nextRecommendSection');
                 
                 if (shouldEmpty) {
                     // 清空推荐区域
@@ -1255,7 +1811,7 @@
                 }
                 
                 // 如果没有趋势类型，显示提示
-                if (!trendTypes || trendTypes.length === 0 || (!trendTypes[0] && !trendTypes[1])) {
+                if (!trendTypes || trendTypes.length === 0) {
                     for (let i = 1; i <= 4; i++) {
                         const id = `${prefix}${i}`;
                         const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
@@ -1333,33 +1889,32 @@
                 if (isTrendSwitched || !originalData) return;
                 
                 // 从原始数据中获取下期趋势
-                const next1Data = originalData.trends?.next1;
-                const next2Data = originalData.trends?.next2;
+                const next1Data = originalData.next1;
+                const next2Data = originalData.next2;
                 
                 // 验证下期趋势数据是否存在
-                if (!next1Data || !next2Data || (!next1Data.type && !next2Data.type)) {
+                if (!next1Data || !next2Data) {
                     console.error("下期趋势数据不完整，无法切换");
-                    showError("下期趋势数据不完整，无法自动更新", false);
                     return;
                 }
                 
                 // 更新本期趋势文本和类型
-                document.querySelector('p[data-id="current1-text"]').textContent = next1Data.text || '';
-                document.querySelector('p[data-id="current2-text"]').textContent = next2Data.text || '';
+                document.querySelector('p[data-id="current1-text"]').textContent = next1Data;
+                document.querySelector('p[data-id="current2-text"]').textContent = next2Data;
                 
                 // 更新本期趋势图片
                 const current1Container = document.querySelector('[data-id="current1"]');
                 const current2Container = document.querySelector('[data-id="current2"]');
                 
                 // 为current1设置图片
-                if (current1Container && next1Data.type) {
+                if (current1Container && next1Data) {
                     current1Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    const imageUrl = getImageUrlByTrendType(next1Data.type);
+                    const imageUrl = getImageUrlByTrendType(next1Data);
                     
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.className = 'content-image';
-                    img.alt = next1Data.text;
+                    img.alt = next1Data;
                     
                     img.onload = () => {
                         current1Container.innerHTML = '';
@@ -1377,14 +1932,14 @@
                 }
                 
                 // 为current2设置图片
-                if (current2Container && next2Data.type) {
+                if (current2Container && next2Data) {
                     current2Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    const imageUrl = getImageUrlByTrendType(next2Data.type);
+                    const imageUrl = getImageUrlByTrendType(next2Data);
                     
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.className = 'content-image';
-                    img.alt = next2Data.text;
+                    img.alt = next2Data;
                     
                     img.onload = () => {
                         current2Container.innerHTML = '';
@@ -1411,30 +1966,29 @@
                 document.querySelector('p[data-id="next2-text"]').textContent = '';
                 
                 // 更新推荐内容
-                const currentTrendTypes = [next1Data.type, next2Data.type].filter(Boolean);
+                const currentTrendTypes = [next1Data, next2Data].filter(Boolean);
                 updateRecommendations(currentTrendTypes, true);  // 本期推荐
                 updateRecommendations([], false, true);  // 清空下期推荐
                 
-                // 计算下次更新时间（当前更新时间 + 间隔天数）
-                const intervalDays = parseInt(originalData.updateInterval) || 7;
+                // 计算下次更新时间（当前更新时间 + 3天）
                 const newUpdateTime = new Date(originalData.nextUpdateTime);
-                newUpdateTime.setDate(newUpdateTime.getDate() + intervalDays);
-                newUpdateTime.setHours(4, 0, 0, 0); // 保持凌晨4点
+                newUpdateTime.setDate(newUpdateTime.getDate() + 3); // 加3天
                 
-                // 更新本地数据
-                const updatedData = {
-                    ...originalData,
-                    trends: {
+                // 如果是本地数据源，更新本地数据
+                if (currentDataSource === 'local') {
+                    // 更新本地数据为简化的5个键值对结构
+                    const updatedData = {
+                        ...originalData,
                         current1: next1Data,
                         current2: next2Data,
-                        next1: { type: '', text: '' },
-                        next2: { type: '', text: '' }
-                    },
-                    nextUpdateTime: newUpdateTime.toISOString()
-                };
-                
-                saveLocalData(updatedData);
-                originalData = updatedData;
+                        next1: '',
+                        next2: '',
+                        nextUpdateTime: newUpdateTime.toISOString()
+                    };
+                    
+                    saveLocalData(updatedData);
+                    originalData = updatedData;
+                }
                 
                 // 更新倒计时显示
                 countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>已更新';
@@ -1444,15 +1998,26 @@
                 
                 // 显示更新提示
                 showUpdateIndicator();
+                
+                // 启动新的倒计时
+                const seconds = calculateTimeDifference(originalData.nextUpdateTime);
+                startCountdown(seconds || 0);
             }
             
-            // 更新页面内容
+            // 更新页面内容 - 适配简化JSON格式
             function updatePageContent(data) {
-                if (!data || typeof data !== 'object' || !data.trends) {
+                if (!data || typeof data !== 'object') {
                     resetToLoadingState();
-                    // 只在本期趋势显示配置提示，下期趋势不显示
-                    showError('请点击右上角设置按钮配置数据', true);
-                    if (nextTrendErrorMessage) nextTrendErrorMessage.classList.add('hidden');
+                    return;
+                }
+                
+                // 验证简化JSON的5个必要字段
+                const requiredFields = ['current1', 'current2', 'next1', 'next2', 'nextUpdateTime'];
+                const hasAllFields = requiredFields.every(field => field in data);
+                
+                if (!hasAllFields) {
+                    console.error('JSON数据缺少必要字段，请确保包含：current1, current2, next1, next2, nextUpdateTime');
+                    resetToLoadingState();
                     return;
                 }
                 
@@ -1460,27 +2025,17 @@
                 originalData = data;
                 
                 // 提取趋势类型
-                const currentTrendTypes = [];
-                const nextTrendTypes = [];
+                const currentTrendTypes = [data.current1, data.current2].filter(Boolean);
+                const nextTrendTypes = [data.next1, data.next2].filter(Boolean);
                 
                 // 处理趋势内容
-                Object.keys(data.trends).forEach(id => {
-                    const item = data.trends[id];
-                    if (!item || typeof item !== 'object') {
-                        const container = document.querySelector(`[data-id="${id}"]`);
-                        if (container) {
-                            container.innerHTML = '<i class="fa fa-exclamation-triangle text-2xl sm:text-3xl text-white/80"></i>';
-                        }
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) textEl.textContent = '数据错误';
-                        return;
-                    }
-                    
+                ['current1', 'current2', 'next1', 'next2'].forEach(id => {
+                    const type = data[id];
                     const container = document.querySelector(`[data-id="${id}"]`);
                     if (!container) return;
                     
                     // 类型为空时的处理
-                    if (!item.type) {
+                    if (!type) {
                         container.innerHTML = '<i class="fa fa-pencil text-2xl sm:text-3xl text-white/60"></i>';
                         
                         const textEl = document.querySelector(`p[data-id="${id}-text"]`);
@@ -1491,14 +2046,14 @@
                     }
                     
                     // 根据类型获取图片URL
-                    const imageUrl = getImageUrlByTrendType(item.type);
+                    const imageUrl = getImageUrlByTrendType(type);
                     
                     container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
                     
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.className = 'content-image';
-                    img.alt = item.text || item.type;
+                    img.alt = type;
                     
                     img.onload = () => {
                         container.innerHTML = '';
@@ -1517,21 +2072,12 @@
                     
                     const textEl = document.querySelector(`p[data-id="${id}-text"]`);
                     if (textEl) {
-                        textEl.textContent = item.text || item.type;
-                        
-                        if (id.startsWith('current')) {
-                            currentTrendTypes.push(item.type);
-                        } else if (id.startsWith('next')) {
-                            nextTrendTypes.push(item.type);
-                        }
+                        textEl.textContent = type;
                     }
                 });
                 
-                // 隐藏下期趋势的错误提示
-                if (nextTrendErrorMessage) nextTrendErrorMessage.classList.add('hidden');
-                
                 // 检查是否需要立即切换（如果倒计时为0）
-                const seconds = calculateTimeDifference(data?.nextUpdateTime);
+                const seconds = calculateTimeDifference(data.nextUpdateTime);
                 if (seconds <= 0) {
                     // 使用setTimeout确保DOM已更新
                     setTimeout(switchTrends, 300);
@@ -1607,25 +2153,40 @@
                 try {
                     showLoading();
                     
-                    // 从本地存储获取数据，替代原来的API请求
-                    const data = getLocalData();
+                    // 从本地存储获取设置
+                    const settings = getLocalData();
+                    currentDataSource = settings?.dataSource || 'local';
+                    
+                    let data = null;
+                    
+                    // 根据数据源类型获取数据
+                    if (currentDataSource === 'json' && settings?.jsonUrl) {
+                        // 从JSON URL获取数据
+                        data = await fetchJsonData(settings.jsonUrl);
+                        // 设置定时刷新
+                        startJsonFetchTimer(settings.jsonUrl);
+                    }
+                    
+                    // 如果JSON数据获取失败或使用本地数据源，使用本地数据
+                    if (!data || currentDataSource === 'local') {
+                        data = settings;
+                        // 清除JSON定时刷新
+                        if (jsonFetchTimer) {
+                            clearInterval(jsonFetchTimer);
+                        }
+                    }
                     
                     if (!data) {
-                        // 如果没有数据，显示提示（只在本期趋势显示）
+                        // 如果没有数据，显示提示
                         resetToLoadingState();
-                        showError('请点击右上角设置按钮配置数据', true);
-                        if (nextTrendErrorMessage) nextTrendErrorMessage.classList.add('hidden');
                     } else {
                         updatePageContent(data);
                         
-                        const seconds = calculateTimeDifference(data?.nextUpdateTime);
+                        const seconds = calculateTimeDifference(data.nextUpdateTime);
                         startCountdown(seconds || 0);
                     }
                 } catch (error) {
                     console.error('初始化失败:', error);
-                    // 错误提示只在本期趋势显示
-                    showError('加载数据失败，请检查设置', true);
-                    if (nextTrendErrorMessage) nextTrendErrorMessage.classList.add('hidden');
                 } finally {
                     hideLoading();
                 }
@@ -1637,6 +2198,21 @@
             settingsOverlay.addEventListener('click', closeSettingsPanel);
             saveSettings.addEventListener('click', handleSaveSettings);
             resetSettings.addEventListener('click', handleResetSettings);
+            
+            // 数据来源切换
+            dataSourceLocal.addEventListener('change', toggleDataSourceDisplay);
+            dataSourceJson.addEventListener('change', toggleDataSourceDisplay);
+            
+            // JSON URL验证
+            jsonUrl.addEventListener('input', () => {
+                if (jsonUrl.value && !isValidUrl(jsonUrl.value)) {
+                    jsonUrl.classList.add('error');
+                    jsonUrlError.classList.add('show');
+                } else {
+                    jsonUrl.classList.remove('error');
+                    jsonUrlError.classList.remove('show');
+                }
+            });
             
             // 修复弹窗关闭问题：使用更可靠的关闭逻辑
             gotItButton.addEventListener('click', () => {
@@ -1662,6 +2238,9 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             updateDate.value = tomorrow.toISOString().split('T')[0];
             
+            // 初始化多选下拉框
+            initMultiselects();
+            
             // 启动应用
             fetchAndInit();
             checkFirstVisit();
@@ -1669,3 +2248,4 @@
     </script>
 </body>
 </html>
+    
