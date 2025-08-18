@@ -1580,34 +1580,50 @@
             
             // 新增：局部刷新页面内容的核心函数
             async function refreshPageContent(newData) {
-                // 标记内容为加载中状态
-                const contentSections = [
-                    document.getElementById('currentTrendSection'),
-                    document.getElementById('nextTrendSection'),
-                    document.getElementById('currentRecommendSection'),
-                    document.getElementById('nextRecommendSection')
-                ];
-                
-                contentSections.forEach(section => {
-                    if (section) section.classList.add('content-loading');
-                });
-                
-                // 短暂延迟让加载状态可见
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // 更新数据并刷新页面内容
-                originalData = newData;
-                updatePageContent(newData);
-                
-                // 重新计算倒计时
-                const seconds = calculateTimeDifference(newData.nextUpdateTime);
-                startCountdown(seconds || 0);
-                
-                // 移除加载状态
-                contentSections.forEach(section => {
-                    if (section) section.classList.remove('content-loading');
-                });
-            }
+    // 标记内容为加载中状态
+    const contentSections = [
+        document.getElementById('currentTrendSection'),
+        document.getElementById('nextTrendSection'),
+        document.getElementById('currentRecommendSection'),
+        document.getElementById('nextRecommendSection')
+    ];
+    
+    contentSections.forEach(section => {
+        if (section) section.classList.add('content-loading');
+    });
+    
+    // 短暂延迟让加载状态可见
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // 更新数据并刷新页面内容
+    originalData = newData;
+    
+    // 关键修改：如果是JSON数据源，直接使用JSON数据更新而不是表单数据
+    if (newData.dataSource === 'json' && newData.jsonUrl) {
+        const jsonData = await fetchJsonData(newData.jsonUrl);
+        if (jsonData) {
+            updatePageContent(jsonData);
+            // 启动定时刷新
+            startJsonFetchTimer(newData.jsonUrl);
+        } else {
+            // 显示错误信息
+            updateIndicator.textContent = '无法加载JSON数据';
+            showUpdateIndicator();
+        }
+    } else {
+        updatePageContent(newData);
+    }
+    
+    // 重新计算倒计时
+    const seconds = calculateTimeDifference(originalData?.nextUpdateTime);
+    startCountdown(seconds || 0);
+    
+    // 移除加载状态
+    contentSections.forEach(section => {
+        if (section) section.classList.remove('content-loading');
+    });
+}
+
             
             function showLoading() {
                 loadingOverlay.classList.add('active');
