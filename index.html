@@ -1763,100 +1763,92 @@
             }
             
             function updateRecommendations(trendTypes, isCurrent, shouldEmpty = false) {
-                const prefix = isCurrent ? "currentRec" : "nextRec";
-                
-                if (shouldEmpty) {
-                    for (let i = 1; i <= 4; i++) {
-                        const id = `${prefix}${i}`;
-                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
-                        }
-                        
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) {
-                            textEl.textContent = '';
-                        }
-                        
-                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                        if (valueEl) {
-                            valueEl.textContent = '';
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                    return;
-                }
-                
-                if (!trendTypes || trendTypes.length === 0) {
-                    for (let i = 1; i <= 4; i++) {
-                        const id = `${prefix}${i}`;
-                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa fa-sliders text-3xl"></i>';
-                        }
-                        
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) {
-                            textEl.textContent = '请设置数据';
-                        }
-                        
-                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                        if (valueEl) {
-                            valueEl.textContent = '';
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                    return;
-                }
-                
-                const recommendations = generateRecommendations(trendTypes);
-                
-                for (let i = 0; i < 4; i++) {
-                    const rec = recommendations[i];
-                    if (!rec) break;
-                    
-                    const id = `${prefix}${i + 1}`;
-                    
-                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                    if (textEl) {
-                        textEl.textContent = rec.name;
-                    }
-                    
-                    const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                    if (valueEl) {
-                        if (rec.hasBonus) {
-                            valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
-                            valueEl.classList.add('highlight');
-                        } else {
-                            valueEl.textContent = rec.finalValue;
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                    
-                    const container = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) || 
-                                     document.querySelector(`.recommend-image-container:nth-child(${i+1})`);
-                    
-                    if (container && RECOMMEND_IMAGE_MAP[rec.name]) {
-                        container.innerHTML = '<div class="recommend-placeholder" data-id="' + id + '"><i class="fa fa-spinner fa-spin text-3xl"></i></div>';
-                        
-                        const img = document.createElement('img');
-                        // 新增：添加时间戳参数，避免缓存
-                        img.src = `${RECOMMEND_IMAGE_MAP[rec.name]}?t=${getCacheBuster()}`;
-                        img.className = 'w-full h-full object-cover';
-                        img.alt = rec.name;
-                        
-                        img.onload = () => {
-                            container.innerHTML = '';
-                            container.appendChild(img);
-                        };
-                        
-                        img.onerror = () => {
-                            container.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
-                            console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
-                        };
-                    }
-                }
+    const prefix = isCurrent? "currentRec" : "nextRec";
+
+    if (shouldEmpty) {
+        for (let i = 1; i <= 4; i++) {
+            const id = `${prefix}${i}`;
+            const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+            if (placeholder) {
+                placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
             }
+            const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+            if (textEl) {
+                textEl.textContent = '';
+            }
+            const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+            if (valueEl) {
+                valueEl.textContent = '';
+                valueEl.classList.remove('highlight');
+            }
+        }
+        return;
+    }
+
+    if (!trendTypes || trendTypes.length === 0) {
+        for (let i = 1; i <= 4; i++) {
+            const id = `${prefix}${i}`;
+            const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+            if (placeholder) {
+                placeholder.innerHTML = '<i class="fa fa-sliders text-3xl"></i>';
+            }
+            const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+            if (textEl) {
+                textEl.textContent = '请设置数据';
+            }
+            const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+            if (valueEl) {
+                valueEl.textContent = '';
+                valueEl.classList.remove('highlight');
+            }
+        }
+        return;
+    }
+
+    const recommendations = generateRecommendations(trendTypes);
+
+    for (let i = 0; i < 4; i++) {
+        const rec = recommendations[i];
+        if (!rec) break;
+
+        const id = `${prefix}${i + 1}`;
+
+        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+        if (textEl) {
+            textEl.textContent = rec.name;
+        }
+
+        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+        if (valueEl) {
+            if (rec.hasBonus) {
+                valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
+                valueEl.classList.add('highlight');
+            } else {
+                valueEl.textContent = rec.finalValue;
+                valueEl.classList.remove('highlight');
+            }
+        }
+
+        const container = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
+            document.querySelector(`.recommend-image-container:nth-child(${i + 1})`);
+
+        if (container && RECOMMEND_IMAGE_MAP[rec.name]) {
+            container.innerHTML = '<div class="recommend-placeholder" data-id="' + id + '"><i class="fa fa-spinner fa-spin text-3xl"></i></div>';
+            const img = document.createElement('img');
+            img.src = `${RECOMMEND_IMAGE_MAP[rec.name]}?t=${getCacheBuster()}`;
+            img.className = 'w-full h-full object-cover';
+            img.alt = rec.name;
+            img.onload = () => {
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
+            img.onerror = () => {
+                container.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
+                console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
+            };
+        }
+    }
+}
             
             function switchTrends() {
                 if (isTrendSwitched || !originalData) return;
