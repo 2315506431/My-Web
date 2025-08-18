@@ -953,6 +953,9 @@
                     document.body.style.overflow = 'hidden';
                     // 强制触发重绘
                     void settingsPanel.offsetWidth;
+                    
+                    // 核心修复：每次打开设置面板都加载数据
+                    loadDataToForm();
                 }
 
                 // 关闭设置面板函数
@@ -978,7 +981,6 @@
                 console.log('设置按钮功能已修复并初始化');
             })();
 
-            // 以下为原有功能代码，仅修改了倒计时格式
             const FIXED_CORNER_IMAGE = "sbg/hot.png";
             const MAX_LOADING_TIME = 15000;
             const JSON_FETCH_INTERVAL = 300000;
@@ -1288,6 +1290,7 @@
                 if (currentMultiselect) currentMultiselect.closeOptions();
                 if (nextMultiselect) nextMultiselect.closeOptions();
                 
+                // 确保每次打开都加载数据
                 loadDataToForm();
             }
             
@@ -1501,7 +1504,9 @@
                         if (jsonFetchTimer) {
                             clearInterval(jsonFetchTimer);
                         }
-                        fetchAndInit();
+                        // 关键修复：更新数据后立即刷新推荐内容
+                        originalData = data;
+                        updatePageContent(data);
                     } else {
                         const jsonData = await fetchJsonData(data.jsonUrl);
                         if (jsonData) {
@@ -1509,7 +1514,8 @@
                             updatePageContent(jsonData);
                             startJsonFetchTimer(data.jsonUrl);
                         } else {
-                            fetchAndInit();
+                            // 即使JSON获取失败，也刷新当前内容
+                            updatePageContent(getLocalData());
                         }
                     }
                 } else {
@@ -1538,6 +1544,8 @@
                     showUpdateIndicator();
                     updateIndicator.textContent = '数据已重置';
                     closeSettingsPanel();
+                    // 重置后刷新推荐内容
+                    resetToLoadingState();
                     fetchAndInit();
                 }
             }
@@ -1747,21 +1755,32 @@
                         }
                     }
                     
-                    const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                    if (placeholder && RECOMMEND_IMAGE_MAP[rec.name]) {
-                        placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-3xl"></i>';
+                    // 关键修复：确保每次更新推荐时都重新设置图片
+                    const container = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) || 
+                                     document.querySelector(`.recommend-image-container:has(img[alt="${rec.name}"])`) ||
+                                     document.querySelector(`.recommend-image-container:has(img[alt="${document.querySelector(`p[data-id="${id}-text"]`)?.textContent || ''}"])`) ||
+                                     document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
+                                     document.querySelector(`.recommend-image-container:nth-child(${i+1})`);
+                    
+                    if (container && RECOMMEND_IMAGE_MAP[rec.name]) {
+                        // 先清除现有内容
+                        container.innerHTML = '<div class="recommend-placeholder" data-id="' + id + '"><i class="fa fa-spinner fa-spin text-3xl"></i></div>';
                         
+                        // 创建新图片元素
                         const img = document.createElement('img');
                         img.src = RECOMMEND_IMAGE_MAP[rec.name];
                         img.className = 'w-full h-full object-cover';
                         img.alt = rec.name;
                         
+                        // 图片加载完成后替换占位符
                         img.onload = () => {
-                            placeholder.parentNode.replaceChild(img, placeholder);
+                            container.innerHTML = '';
+                            container.appendChild(img);
                         };
                         
+                        // 图片加载失败处理
                         img.onerror = () => {
-                            placeholder.innerHTML = `<i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i>`;
+                            container.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
                             console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
                         };
                     }
@@ -1972,7 +1991,7 @@
                     
                     if (seconds <= 0) {
                         clearInterval(countdownTimer);
-                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
+                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"><i class="fa fa-clock-o mr-1"></i>正在更新...';
                         switchTrends();
                         return;
                     }
