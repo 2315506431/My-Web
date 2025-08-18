@@ -993,7 +993,10 @@
             const MAX_LOADING_TIME = 15000;
             const JSON_FETCH_INTERVAL = 300000;
             
-            // 新增：生成唯一时间戳参数，避免图片缓存
+            // 图片加载锁，防止重复加载
+            let isImageLoading = false;
+            
+            // 生成唯一时间戳参数，避免图片缓存
             function getCacheBuster() {
                 return new Date().getTime();
             }
@@ -1342,7 +1345,7 @@
                 try {
                     showLoading();
                     
-                    // 新增：为JSON请求添加时间戳，避免缓存
+                    // 为JSON请求添加时间戳，避免缓存
                     const urlWithCacheBuster = new URL(url);
                     urlWithCacheBuster.searchParams.set('t', getCacheBuster());
                     
@@ -1506,6 +1509,11 @@
             }
             
             async function handleSaveSettings() {
+                // 如果正在加载图片，阻止重复保存
+                if (isImageLoading) {
+                    return;
+                }
+                
                 if (!validateTrendSelections()) {
                     return;
                 }
@@ -1513,34 +1521,33 @@
                 const data = collectDataFromForm();
     
                 if (saveLocalData(data)) {
-                // 显示保存成功提示
-                showUpdateIndicator();
-                updateIndicator.textContent = '设置已更新';
-        
-                // 关闭设置面板
-                closeSettingsPanel();
-        
-                // 局部刷新页面内容，而非全页面重载
-                refreshPageContent(data);
-        
-                // 新增：如果是JSON模式，立即从URL加载数据
-                if (data.dataSource === 'json' && data.jsonUrl) {
-                    const jsonData = await fetchJsonData(data.jsonUrl);
-                    if (jsonData) {
-                        originalData = jsonData;
-                        updatePageContent(jsonData);
-                        showUpdateIndicator();
-                        updateIndicator.textContent = 'JSON数据已加载';
-                
-                        // 启动定时刷新
-                        startJsonFetchTimer(data.jsonUrl);
+                    // 显示保存成功提示
+                    showUpdateIndicator();
+                    updateIndicator.textContent = '设置已更新';
+            
+                    // 关闭设置面板
+                    closeSettingsPanel();
+            
+                    // 局部刷新页面内容
+                    refreshPageContent(data);
+            
+                    // 如果是JSON模式，立即从URL加载数据
+                    if (data.dataSource === 'json' && data.jsonUrl) {
+                        const jsonData = await fetchJsonData(data.jsonUrl);
+                        if (jsonData) {
+                            originalData = jsonData;
+                            updatePageContent(jsonData);
+                            showUpdateIndicator();
+                            updateIndicator.textContent = 'JSON数据已加载';
+                    
+                            // 启动定时刷新
+                            startJsonFetchTimer(data.jsonUrl);
+                        }
                     }
+                } else {
+                    alert('保存设置失败，请重试');
                 }
-            } else {
-                alert('保存设置失败，请重试');
             }
-        }
-
             
             function handleResetSettings() {
                 if (confirm('确定要重置所有数据吗？这将清除您的所有设置。')) {
@@ -1578,52 +1585,64 @@
                 }
             }
             
-            // 新增：局部刷新页面内容的核心函数
+            // 局部刷新页面内容的核心函数
             async function refreshPageContent(newData) {
-    // 标记内容为加载中状态
-    const contentSections = [
-        document.getElementById('currentTrendSection'),
-        document.getElementById('nextTrendSection'),
-        document.getElementById('currentRecommendSection'),
-        document.getElementById('nextRecommendSection')
-    ];
-    
-    contentSections.forEach(section => {
-        if (section) section.classList.add('content-loading');
-    });
-    
-    // 短暂延迟让加载状态可见
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // 更新数据并刷新页面内容
-    originalData = newData;
-    
-    // 关键修改：如果是JSON数据源，直接使用JSON数据更新而不是表单数据
-    if (newData.dataSource === 'json' && newData.jsonUrl) {
-        const jsonData = await fetchJsonData(newData.jsonUrl);
-        if (jsonData) {
-            updatePageContent(jsonData);
-            // 启动定时刷新
-            startJsonFetchTimer(newData.jsonUrl);
-        } else {
-            // 显示错误信息
-            updateIndicator.textContent = '无法加载JSON数据';
-            showUpdateIndicator();
-        }
-    } else {
-        updatePageContent(newData);
-    }
-    
-    // 重新计算倒计时
-    const seconds = calculateTimeDifference(originalData?.nextUpdateTime);
-    startCountdown(seconds || 0);
-    
-    // 移除加载状态
-    contentSections.forEach(section => {
-        if (section) section.classList.remove('content-loading');
-    });
-}
-
+                // 如果正在加载图片，取消此次刷新
+                if (isImageLoading) {
+                    return;
+                }
+                
+                // 标记为正在加载
+                isImageLoading = true;
+                
+                // 标记内容为加载中状态
+                const contentSections = [
+                    document.getElementById('currentTrendSection'),
+                    document.getElementById('nextTrendSection'),
+                    document.getElementById('currentRecommendSection'),
+                    document.getElementById('nextRecommendSection')
+                ];
+                
+                contentSections.forEach(section => {
+                    if (section) section.classList.add('content-loading');
+                });
+                
+                // 短暂延迟让加载状态可见
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                try {
+                    // 更新数据并刷新页面内容
+                    originalData = newData;
+                    
+                    // 如果是JSON数据源，直接使用JSON数据更新而不是表单数据
+                    if (newData.dataSource === 'json' && newData.jsonUrl) {
+                        const jsonData = await fetchJsonData(newData.jsonUrl);
+                        if (jsonData) {
+                            updatePageContent(jsonData);
+                            // 启动定时刷新
+                            startJsonFetchTimer(newData.jsonUrl);
+                        } else {
+                            // 显示错误信息
+                            updateIndicator.textContent = '无法加载JSON数据';
+                            showUpdateIndicator();
+                        }
+                    } else {
+                        updatePageContent(newData);
+                    }
+                    
+                    // 重新计算倒计时
+                    const seconds = calculateTimeDifference(originalData?.nextUpdateTime);
+                    startCountdown(seconds || 0);
+                } finally {
+                    // 移除加载状态
+                    contentSections.forEach(section => {
+                        if (section) section.classList.remove('content-loading');
+                    });
+                    
+                    // 重置加载状态
+                    isImageLoading = false;
+                }
+            }
             
             function showLoading() {
                 loadingOverlay.classList.add('active');
@@ -1693,7 +1712,6 @@
             
             function createCornerImage(targetId) {
                 const img = document.createElement('img');
-                // 新增：添加时间戳参数，避免缓存
                 img.src = `${FIXED_CORNER_IMAGE}?t=${getCacheBuster()}`;
                 img.className = 'corner-image';
                 img.alt = `${targetId}热门标识`;
@@ -1713,7 +1731,6 @@
             
             function getImageUrlByTrendType(type) {
                 const baseUrl = TREND_IMAGE_MAP[type] || "sbg/default.png";
-                // 新增：添加时间戳参数，避免缓存
                 return `${baseUrl}?t=${getCacheBuster()}`;
             }
             
@@ -1763,103 +1780,108 @@
             }
             
             function updateRecommendations(trendTypes, isCurrent, shouldEmpty = false) {
-    const prefix = isCurrent? "currentRec" : "nextRec";
+                // 如果正在加载图片，取消此次更新
+                if (isImageLoading) {
+                    return;
+                }
+                
+                const prefix = isCurrent? "currentRec" : "nextRec";
 
-    if (shouldEmpty) {
-        for (let i = 1; i <= 4; i++) {
-            const id = `${prefix}${i}`;
-            const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-            if (placeholder) {
-                placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
+                if (shouldEmpty) {
+                    for (let i = 1; i <= 4; i++) {
+                        const id = `${prefix}${i}`;
+                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
+                        }
+                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                        if (textEl) {
+                            textEl.textContent = '';
+                        }
+                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                        if (valueEl) {
+                            valueEl.textContent = '';
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+                    return;
+                }
+
+                if (!trendTypes || trendTypes.length === 0) {
+                    for (let i = 1; i <= 4; i++) {
+                        const id = `${prefix}${i}`;
+                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
+                        if (placeholder) {
+                            placeholder.innerHTML = '<i class="fa fa-sliders text-3xl"></i>';
+                        }
+                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                        if (textEl) {
+                            textEl.textContent = '请设置数据';
+                        }
+                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                        if (valueEl) {
+                            valueEl.textContent = '';
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+                    return;
+                }
+
+                const recommendations = generateRecommendations(trendTypes);
+
+                for (let i = 0; i < 4; i++) {
+                    const rec = recommendations[i];
+                    if (!rec) break;
+
+                    const id = `${prefix}${i + 1}`;
+
+                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
+                    if (textEl) {
+                        textEl.textContent = rec.name;
+                    }
+
+                    const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
+                    if (valueEl) {
+                        if (rec.hasBonus) {
+                            valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
+                            valueEl.classList.add('highlight');
+                        } else {
+                            valueEl.textContent = rec.finalValue;
+                            valueEl.classList.remove('highlight');
+                        }
+                    }
+
+                    // 修复：确保找到正确的推荐图片容器
+                    const imageContainer = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
+                                          document.querySelectorAll('.recommend-image-container')[i];
+
+                    if (imageContainer && RECOMMEND_IMAGE_MAP[rec.name]) {
+                        // 先显示加载状态
+                        imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-spinner fa-spin text-3xl"></i></div>`;
+                        
+                        // 创建并加载图片
+                        const img = document.createElement('img');
+                        img.src = `${RECOMMEND_IMAGE_MAP[rec.name]}?t=${getCacheBuster()}`;
+                        img.className = 'w-full h-full object-cover';
+                        img.alt = rec.name;
+                        
+                        // 图片加载成功后显示
+                        img.onload = () => {
+                            imageContainer.innerHTML = '';
+                            imageContainer.appendChild(img);
+                        };
+                        
+                        // 图片加载失败时显示错误图标
+                        img.onerror = () => {
+                            imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
+                            console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
+                        };
+                    }
+                }
             }
-            const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-            if (textEl) {
-                textEl.textContent = '';
-            }
-            const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-            if (valueEl) {
-                valueEl.textContent = '';
-                valueEl.classList.remove('highlight');
-            }
-        }
-        return;
-    }
-
-    if (!trendTypes || trendTypes.length === 0) {
-        for (let i = 1; i <= 4; i++) {
-            const id = `${prefix}${i}`;
-            const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-            if (placeholder) {
-                placeholder.innerHTML = '<i class="fa fa-sliders text-3xl"></i>';
-            }
-            const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-            if (textEl) {
-                textEl.textContent = '请设置数据';
-            }
-            const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-            if (valueEl) {
-                valueEl.textContent = '';
-                valueEl.classList.remove('highlight');
-            }
-        }
-        return;
-    }
-
-    const recommendations = generateRecommendations(trendTypes);
-
-    for (let i = 0; i < 4; i++) {
-        const rec = recommendations[i];
-        if (!rec) break;
-
-        const id = `${prefix}${i + 1}`;
-
-        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-        if (textEl) {
-            textEl.textContent = rec.name;
-        }
-
-        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-        if (valueEl) {
-            if (rec.hasBonus) {
-                valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
-                valueEl.classList.add('highlight');
-            } else {
-                valueEl.textContent = rec.finalValue;
-                valueEl.classList.remove('highlight');
-            }
-        }
-
-        // 修复：确保找到正确的推荐图片容器
-        const imageContainer = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
-            document.querySelectorAll('.recommend-image-container')[i];
-
-        if (imageContainer && RECOMMEND_IMAGE_MAP[rec.name]) {
-            // 先显示加载状态
-            imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-spinner fa-spin text-3xl"></i></div>`;
-            
-            // 创建并加载图片
-            const img = document.createElement('img');
-            img.src = `${RECOMMEND_IMAGE_MAP[rec.name]}?t=${getCacheBuster()}`;
-            img.className = 'w-full h-full object-cover';
-            img.alt = rec.name;
-            
-            // 图片加载成功后显示
-            img.onload = () => {
-                imageContainer.innerHTML = '';
-                imageContainer.appendChild(img);
-            };
-            
-            // 图片加载失败时显示错误图标
-            img.onerror = () => {
-                imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
-                console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
-            };
-        }
-    }
-}
             
             function switchTrends() {
-                if (isTrendSwitched || !originalData) return;
+                if (isTrendSwitched || !originalData || isImageLoading) return;
                 
                 const next1Data = originalData.next1;
                 const next2Data = originalData.next2;
@@ -1887,7 +1909,7 @@
                     img.onload = () => {
                         current1Container.innerHTML = '';
                         current1Container.appendChild(img);
-                        // 新增：添加淡入效果
+                        // 添加淡入效果
                         setTimeout(() => {
                             img.classList.remove('loading');
                         }, 50);
@@ -1914,7 +1936,7 @@
                     img.onload = () => {
                         current2Container.innerHTML = '';
                         current2Container.appendChild(img);
-                        // 新增：添加淡入效果
+                        // 添加淡入效果
                         setTimeout(() => {
                             img.classList.remove('loading');
                         }, 50);
@@ -1969,6 +1991,11 @@
             }
             
             function updatePageContent(data) {
+                // 如果正在加载图片，取消此次更新
+                if (isImageLoading) {
+                    return;
+                }
+                
                 if (!data || typeof data !== 'object') {
                     resetToLoadingState();
                     return;
@@ -2015,11 +2042,10 @@
                     img.onload = () => {
                         container.innerHTML = '';
                         container.appendChild(img);
-                        // 新增：添加淡入效果
+                        // 添加淡入效果
                         setTimeout(() => {
                             img.classList.remove('loading');
                         }, 50);
-                        
                         
                         if (id.startsWith('current')) {
                             const cornerImg = createCornerImage(id);
@@ -2170,3 +2196,4 @@
     </script>
 </body>
 </html>
+    
