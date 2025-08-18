@@ -1829,21 +1829,29 @@
             }
         }
 
-        const container = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
-            document.querySelector(`.recommend-image-container:nth-child(${i + 1})`);
+        // 修复：确保找到正确的推荐图片容器
+        const imageContainer = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
+            document.querySelectorAll('.recommend-image-container')[i];
 
-        if (container && RECOMMEND_IMAGE_MAP[rec.name]) {
-            container.innerHTML = '<div class="recommend-placeholder" data-id="' + id + '"><i class="fa fa-spinner fa-spin text-3xl"></i></div>';
+        if (imageContainer && RECOMMEND_IMAGE_MAP[rec.name]) {
+            // 先显示加载状态
+            imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-spinner fa-spin text-3xl"></i></div>`;
+            
+            // 创建并加载图片
             const img = document.createElement('img');
             img.src = `${RECOMMEND_IMAGE_MAP[rec.name]}?t=${getCacheBuster()}`;
             img.className = 'w-full h-full object-cover';
             img.alt = rec.name;
+            
+            // 图片加载成功后显示
             img.onload = () => {
-                container.innerHTML = '';
-                container.appendChild(img);
+                imageContainer.innerHTML = '';
+                imageContainer.appendChild(img);
             };
+            
+            // 图片加载失败时显示错误图标
             img.onerror = () => {
-                container.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
+                imageContainer.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
                 console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
             };
         }
@@ -2012,6 +2020,7 @@
                             img.classList.remove('loading');
                         }, 50);
                         
+                        
                         if (id.startsWith('current')) {
                             const cornerImg = createCornerImage(id);
                             container.closest('.image-container').appendChild(cornerImg);
@@ -2161,4 +2170,3 @@
     </script>
 </body>
 </html>
-    
