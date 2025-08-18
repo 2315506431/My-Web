@@ -151,6 +151,10 @@
             .content-transition {
                 transition: all 0.5s ease-in-out;
             }
+            .content-loading {
+                opacity: 0.6;
+                pointer-events: none;
+            }
             .error-message {
                 color: #dc2626;
                 text-align: center;
@@ -1496,28 +1500,15 @@
                 const data = collectDataFromForm();
                 
                 if (saveLocalData(data)) {
+                    // 显示保存成功提示
                     showUpdateIndicator();
-                    updateIndicator.textContent = '设置已保存';
+                    updateIndicator.textContent = '设置已更新';
+                    
+                    // 关闭设置面板
                     closeSettingsPanel();
                     
-                    if (data.dataSource === 'local') {
-                        if (jsonFetchTimer) {
-                            clearInterval(jsonFetchTimer);
-                        }
-                        // 关键修复：更新数据后立即刷新推荐内容
-                        originalData = data;
-                        updatePageContent(data);
-                    } else {
-                        const jsonData = await fetchJsonData(data.jsonUrl);
-                        if (jsonData) {
-                            originalData = jsonData;
-                            updatePageContent(jsonData);
-                            startJsonFetchTimer(data.jsonUrl);
-                        } else {
-                            // 即使JSON获取失败，也刷新当前内容
-                            updatePageContent(getLocalData());
-                        }
-                    }
+                    // 局部刷新页面内容，而非全页面重载
+                    refreshPageContent(data);
                 } else {
                     alert('保存设置失败，请重试');
                 }
@@ -1541,13 +1532,53 @@
                     
                     clearAllErrors();
                     
+                    // 关闭设置面板
+                    closeSettingsPanel();
+                    
+                    // 局部刷新页面内容
+                    refreshPageContent({
+                        dataSource: 'local',
+                        current1: '',
+                        current2: '',
+                        next1: '',
+                        next2: '',
+                        nextUpdateTime: new Date().toISOString()
+                    });
+                    
                     showUpdateIndicator();
                     updateIndicator.textContent = '数据已重置';
-                    closeSettingsPanel();
-                    // 重置后刷新推荐内容
-                    resetToLoadingState();
-                    fetchAndInit();
                 }
+            }
+            
+            // 新增：局部刷新页面内容的核心函数
+            async function refreshPageContent(newData) {
+                // 标记内容为加载中状态
+                const contentSections = [
+                    document.getElementById('currentTrendSection'),
+                    document.getElementById('nextTrendSection'),
+                    document.getElementById('currentRecommendSection'),
+                    document.getElementById('nextRecommendSection')
+                ];
+                
+                contentSections.forEach(section => {
+                    if (section) section.classList.add('content-loading');
+                });
+                
+                // 短暂延迟让加载状态可见
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // 更新数据并刷新页面内容
+                originalData = newData;
+                updatePageContent(newData);
+                
+                // 重新计算倒计时
+                const seconds = calculateTimeDifference(newData.nextUpdateTime);
+                startCountdown(seconds || 0);
+                
+                // 移除加载状态
+                contentSections.forEach(section => {
+                    if (section) section.classList.remove('content-loading');
+                });
             }
             
             function showLoading() {
@@ -1755,30 +1786,22 @@
                         }
                     }
                     
-                    // 关键修复：确保每次更新推荐时都重新设置图片
                     const container = document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) || 
-                                     document.querySelector(`.recommend-image-container:has(img[alt="${rec.name}"])`) ||
-                                     document.querySelector(`.recommend-image-container:has(img[alt="${document.querySelector(`p[data-id="${id}-text"]`)?.textContent || ''}"])`) ||
-                                     document.querySelector(`.recommend-image-container:has(.recommend-placeholder[data-id="${id}"])`) ||
                                      document.querySelector(`.recommend-image-container:nth-child(${i+1})`);
                     
                     if (container && RECOMMEND_IMAGE_MAP[rec.name]) {
-                        // 先清除现有内容
                         container.innerHTML = '<div class="recommend-placeholder" data-id="' + id + '"><i class="fa fa-spinner fa-spin text-3xl"></i></div>';
                         
-                        // 创建新图片元素
                         const img = document.createElement('img');
                         img.src = RECOMMEND_IMAGE_MAP[rec.name];
                         img.className = 'w-full h-full object-cover';
                         img.alt = rec.name;
                         
-                        // 图片加载完成后替换占位符
                         img.onload = () => {
                             container.innerHTML = '';
                             container.appendChild(img);
                         };
                         
-                        // 图片加载失败处理
                         img.onerror = () => {
                             container.innerHTML = `<div class="recommend-placeholder" data-id="${id}"><i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i></div>`;
                             console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
@@ -1991,7 +2014,7 @@
                     
                     if (seconds <= 0) {
                         clearInterval(countdownTimer);
-                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"><i class="fa fa-clock-o mr-1"></i>正在更新...';
+                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
                         switchTrends();
                         return;
                     }
