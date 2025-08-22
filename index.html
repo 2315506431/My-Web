@@ -35,10 +35,18 @@
         }
     </script>
     <style>
+        /* Custom font loading */
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
         /* Overall page styling for a clean, simple look */
         body {
             background-color: #f8fafc;
-            font-family: 'system-ui', sans-serif;
+            font-family: 'CustomFont', 'system-ui', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -56,7 +64,7 @@
         /* Enhanced hover effect for fields */
         .field-hover {
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            border: 1px solid transparent;
+            border: 2px solid #cbd5e1;
         }
         .field-hover:hover {
             transform: translateY(-4px);
@@ -67,6 +75,7 @@
         /* Image container styling */
         .image-container {
             position: relative;
+            border-radius: 0.5rem;
         }
         .trend-image-wrapper {
             display: flex;
@@ -77,7 +86,7 @@
             border-radius: 50%;
             overflow: hidden;
         }
-        .trend-image-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .trend-image-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .trend-image-wrapper.current { background-color: #d4af37; }
         .trend-image-wrapper.next { background-color: #64748b; }
 
@@ -122,11 +131,11 @@
             justify-content: center;
         }
         
-        /* 在窄屏幕下彻底减少趋势项目中图片和文本的垂直间距 */
+        /* 在窄屏幕下调整趋势项目样式 */
         @media (max-width: 640px) {
             [data-trend-item] {
                 gap: 0 !important; /* 设置为最小间距 */
-                padding-top: 0 !important;
+                padding-top: 12px !important;
                 padding-bottom: 0 !important;
             }
             [data-trend-item] > div:last-child {
@@ -641,11 +650,11 @@
         const Templates = {
             // Updated template to support the new vertical layout
             trendItem: (id, type, trendName) => `
-                <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
                     <div class="trend-image-wrapper ${type}" data-image-wrapper-id="${id}">
                         <i class="fa fa-spinner fa-spin text-2xl text-white/80"></i>
-                        ${type === 'current' ? `<img src="/sbg/hot.png" class="corner-image" alt="Hot">` : ''}
                     </div>
+                    ${type === 'current' ? `<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display='none'">` : ''}
                 </div>
                 <div class="flex-1 min-w-0 mt-2 sm:mt-0">
                     <p class="text-gray-700 truncate font-semibold" data-text-id="${id}">${trendName}</p>
@@ -1399,9 +1408,19 @@
                 // 如果trends为空数组，显示提示信息
                 if (!trends || trends.length === 0) {
                     trendItems.forEach((el, index) => {
+                        // 即使没有趋势数据，也要根据类型显示不同背景色和HOT标记
+                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
+                        const hotIconHtml = type === 'current' ? 
+                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
+                        
                         el.innerHTML = `
-                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-ban text-2xl text-gray-400"></i>
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                                <div class="trend-image-wrapper ${type}">
+                                    <div class="flex items-center justify-center h-full w-full">
+                                        <i class="fa fa-ban text-2xl text-white/80"></i>
+                                    </div>
+                                </div>
+                                ${hotIconHtml}
                             </div>
                             <div class="flex-1 min-w-0 mt-2 sm:mt-0">
                                 <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
@@ -1416,9 +1435,19 @@
                     
                     // 如果trendName为空或不存在，显示提示信息
                     if (!trendName) {
+                        // 即使趋势名称为空，也要根据类型显示不同背景色和HOT标记
+                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
+                        const hotIconHtml = type === 'current' ? 
+                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
+                        
                         el.innerHTML = `
-                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-ban text-2xl text-gray-400"></i>
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                                <div class="trend-image-wrapper ${type}">
+                                    <div class="flex items-center justify-center h-full w-full">
+                                        <i class="fa fa-ban text-2xl text-white/80"></i>
+                                    </div>
+                                </div>
+                                ${hotIconHtml}
                             </div>
                             <div class="flex-1 min-w-0 mt-2 sm:mt-0">
                                 <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
@@ -1438,12 +1467,8 @@
                         img.classList.add('loaded');
                     };
                     img.onerror = () => {
-                        // 保留hot.png叠加层的HTML
-                        let hotIconHtml = '';
-                        if (type === 'current') {
-                            hotIconHtml = `<img src="/sbg/hot.png" class="corner-image" alt="Hot">`;
-                        }
-                        imageWrapper.innerHTML = `${hotIconHtml}<div class="flex items-center justify-center h-full w-full text-gray-400"><i class="fa fa-ban text-xl"></i></div>`;
+                        // 显示加载失败符号
+                        imageWrapper.innerHTML = `<div class="flex items-center justify-center h-full w-full text-gray-400"><i class="fa fa-ban text-xl"></i></div>`;
                     };
                 });
             },
