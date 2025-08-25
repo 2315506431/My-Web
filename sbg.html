@@ -55,63 +55,40 @@
             background-color: #f8fafc;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-size: 16px;
+            /* 增加基础字体大小 */
+            font-size: clamp(14px, 3vw, 21px);
         }
 
-        /* Responsive font sizes for desktop screens */
-        @media (min-width: 1024px) {
-            /* For typical computer screens */
-            body {
-                font-size: 18px;
-            }
-            
-            /* Increase font size for main content elements on desktop */
-            [data-trend-item] {
-                font-size: 1.1rem;
-            }
-            
-            /* Make trend item text larger on desktop */
-            [data-trend-item] p[data-text-id] {
-                font-size: 1.2rem;
-            }
-            
-            /* Increase heading sizes on desktop */
-            h2 {
-                font-size: 2rem !important;
-            }
-            
-            h3 {
-                font-size: 1.5rem !important;
-            }
-            
-            .countdown-timer {
-                font-size: 1rem;
-            }
-            
-            .recommend-value {
-                font-size: 1rem;
-                padding: 4px 14px;
-            }
+        /* 使用相对单位实现跟随缩放效果 */
+        [data-trend-item] {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
         }
         
-        @media (min-width: 1280px) {
-            /* For large desktop displays */
-            body {
-                font-size: 19px;
-            }
-            
-            /* Further increase font sizes on large screens */
-            [data-trend-item] p[data-text-id] {
-                font-size: 1.3rem;
-            }
-            
-            h2 {
-                font-size: 2.2rem !important;
-            }
-            
-            h3 {
-                font-size: 1.7rem !important;
-            }
+        /* 趋势项目文本跟随缩放 */
+        [data-trend-item] p[data-text-id] {
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* 标题跟随缩放 */
+        h2 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+        }
+        
+        h3 {
+            font-size: clamp(1.3rem, 4vw, 1.9rem) !important;
+        }
+        
+        /* 倒计时器跟随缩放 */
+        .countdown-timer {
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+        }
+        
+        /* 推荐值标签跟随缩放 */
+        .recommend-value {
+            font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+            padding: clamp(3px, 1vw, 5px) clamp(8px, 3vw, 16px);
         }
         
         /* Ensure better font scaling across devices */
@@ -128,42 +105,42 @@
         /* Fix settings panel text size inconsistencies */
         .settings-panel {
             /* Reset font scaling for the settings panel */
-            font-size: 17px;
+            font-size: 19px;
         }
         
         .settings-panel h3 {
             /* Settings panel title */
-            font-size: 1.35rem !important;
+            font-size: 1.55rem !important;
         }
         
         .settings-panel h4 {
             /* Settings panel section headers */
-            font-size: 1.15rem !important;
+            font-size: 1.35rem !important;
         }
         
         .settings-panel label {
             /* Form labels */
-            font-size: 1rem;
+            font-size: 1.15rem;
         }
         
         .settings-panel p {
             /* Description text */
-            font-size: 0.95rem;
+            font-size: 1.1rem;
         }
         
         .settings-panel #timezoneInfo {
             /* Timezone info text */
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
         
         /* Adjust settings panel text size for larger screens */
         @media (min-width: 1024px) {
             .settings-panel {
-                font-size: 18px; /* Increase settings panel font size on desktop */
+                font-size: 20px; /* Increase settings panel font size on desktop */
             }
             
             .settings-panel h3 {
-                font-size: 1.45rem !important;
+                font-size: 1.65rem !important;
             }
         }
 
@@ -248,11 +225,11 @@
             white-space: nowrap;
         }
         
-        /* 在窄屏幕下调整趋势项目样式 */
+        /* 保留必要的媒体查询断点，但优化为更平滑的过渡 */
         @media (max-width: 640px) {
             [data-trend-item] {
-                gap: 0 !important; /* 设置为最小间距 */
-                padding-top: 12px !important;
+                gap: 0 !important; /* 在小屏幕上设置为最小间距 */
+                padding-top: clamp(8px, 3vw, 12px) !important;
                 padding-bottom: 0 !important;
             }
             [data-trend-item] > div:last-child {
@@ -260,6 +237,24 @@
                 margin-top: 0 !important;
                 margin-bottom: 0 !important;
             }
+        }
+        
+        /* 确保设置面板文本大小在各种屏幕尺寸上一致 */
+        .settings-panel {
+            font-size-adjust: 0.5;
+        }
+        
+        .settings-panel h3 {
+            font-size: clamp(1.1rem, 4vw, 1.35rem) !important;
+            margin-top: clamp(12px, 3vw, 24px);
+        }
+        
+        .settings-panel h4 {
+            font-size: clamp(1rem, 3vw, 1.15rem) !important;
+        }
+        
+        .settings-panel label {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
         }
 
         /* Recommended value label with bonus indicator */
@@ -626,9 +621,207 @@
         
         /* 确保推荐项目高度统一但不过于限制 */
         [data-recommend-grid] > div {
-            min-height: 200px;
+            min-height: clamp(150px, 40vw, 200px);
             display: flex;
             flex-direction: column;
+        }
+        
+        /* 全局跟随缩放优化 */
+        
+        /* 确保页面不会横向滚动 */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* 全局应用盒模型，确保元素尺寸计算准确 */
+        * {
+            box-sizing: border-box !important;
+        }
+        
+        /* 设置按钮跟随缩放 */
+        #settingsButton {
+            width: clamp(40px, 12vw, 60px);
+            height: clamp(40px, 12vw, 60px);
+            top: clamp(2px, 1vw, 16px);
+            right: clamp(2px, 1vw, 16px);
+        }
+        
+        #settingsButton i {
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+        }
+        
+        /* 推荐项目网格响应式调整 */
+        [data-recommend-grid] {
+            gap: clamp(3px, 2vw, 16px);
+            padding: 0;
+        }
+        
+        /* 趋势项目响应式优化 */
+        [data-trend-item] {
+            gap: clamp(0, 2vw, 12px);
+            padding: clamp(8px, 3vw, 16px);
+        }
+        
+        /* 内容区域内边距跟随缩放 */
+        .content-transition {
+            padding: clamp(8px, 4vw, 24px);
+            margin: 0;
+            border-radius: clamp(0, 3vw, 12px);
+        }
+        
+        /* 设置面板跟随缩放，支持更小的文本尺寸 */
+        .settings-panel {
+            width: 100vw;
+            font-size: clamp(12px, 2.8vw, 17px);
+            padding: clamp(8px, 4vw, 24px);
+        }
+        
+        /* 模态框跟随缩放 */
+        .custom-modal {
+            width: 95%;
+            margin: clamp(10px, 5vw, 20px) auto;
+            padding: clamp(10px, 4vw, 20px);
+        }
+        
+        /* 更新指示器跟随缩放 */
+        .update-indicator {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            padding: clamp(2px, 1vw, 4px) clamp(6px, 2vw, 12px);
+        }
+        
+        /* 确保图片正确缩放 */
+        img {
+            max-width: 100% !important;
+            height: auto !important;
+            object-fit: contain !important;
+        }
+        
+        /* 专门针对150px宽度以下超小屏幕的优化 */
+        @media (max-width: 150px) {
+            /* 基础字体大小，但保持可读性 */
+            body {
+                font-size: clamp(12px, 3vw, 16px) !important;
+            }
+            
+            /* 标题调整 */
+            h2 {
+                font-size: clamp(1.2rem, 5vw, 1.7rem) !important;
+            }
+            
+            h3 {
+                font-size: clamp(1.1rem, 4vw, 1.5rem) !important;
+            }
+            
+            /* 设置按钮在超小屏幕上的优化 */
+            #settingsButton {
+                width: 18vw !important;
+                height: 18vw !important;
+                max-width: 40px !important;
+                max-height: 40px !important;
+                min-width: 32px !important;
+                min-height: 32px !important;
+                top: 2px !important;
+                right: 2px !important;
+                z-index: 9990 !important;
+            }
+            
+            #settingsButton i {
+                font-size: clamp(1rem, 5vw, 1.2rem) !important;
+            }
+            
+            /* 推荐项目网格在超小屏幕上强制单列 */
+            [data-recommend-grid] {
+                grid-template-columns: 1fr !important;
+                gap: clamp(2px, 2vw, 8px) !important;
+                padding: 0 clamp(2px, 2vw, 6px) !important;
+            }
+            
+            /* 推荐项目高度进一步缩小 */
+            [data-recommend-grid] > div {
+                min-height: clamp(120px, 40vw, 180px) !important;
+            }
+            
+            /* 推荐值标签调整 */
+            .recommend-value {
+                font-size: clamp(0.85rem, 2.5vw, 1rem) !important;
+                padding: clamp(2px, 1vw, 4px) clamp(6px, 3vw, 12px) !important;
+            }
+            
+            /* 趋势项目在超小屏幕上的优化 */
+            [data-trend-item] {
+                gap: clamp(0, 2vw, 8px) !important;
+                padding: clamp(6px, 3vw, 12px) !important;
+            }
+            
+            [data-trend-item] p[data-text-id] {
+                font-size: clamp(1rem, 3vw, 1.2rem) !important;
+            }
+            
+            /* 内容区域内边距进一步缩小 */
+            .content-transition {
+                padding: clamp(4px, 4vw, 16px) !important;
+                border-radius: clamp(0, 3vw, 8px) !important;
+            }
+            
+            /* 设置面板在超小屏幕上的优化 */
+            .settings-panel {
+                font-size: clamp(12px, 2.8vw, 16px) !important;
+                padding: clamp(6px, 4vw, 18px) !important;
+            }
+            
+            /* 模态框在超小屏幕上的优化 */
+            .custom-modal {
+                width: 98% !important;
+                margin: clamp(5px, 5vw, 10px) auto !important;
+                padding: clamp(6px, 4vw, 14px) !important;
+            }
+            
+            /* 更新指示器在超小屏幕上的优化 */
+            .update-indicator {
+                font-size: clamp(0.6rem, 2vw, 0.8rem) !important;
+                padding: clamp(1px, 1vw, 3px) clamp(4px, 2vw, 8px) !important;
+                bottom: 2px !important;
+                right: 2px !important;
+            }
+            
+            /* 确保加载状态文本在超小屏幕上不会溢出 */
+            #loadingOverlay p {
+                font-size: clamp(0.8rem, 4vw, 1rem) !important;
+                padding: 0 4px !important;
+            }
+            
+            /* 确保加载图标在超小屏幕上不会太大 */
+            #loadingOverlay i {
+                font-size: 2rem !important;
+                margin-bottom: 8px !important;
+            }
+            
+            /* 优化触摸交互 */
+            .field-hover {
+                touch-action: manipulation !important;
+                min-height: 80px !important;
+            }
+            
+            /* 确保设置面板内文本区域有固定的最小高度 */
+            .settings-panel label,
+            .settings-panel p,
+            .settings-panel input {
+                font-size: clamp(0.9rem, 3vw, 1.15rem) !important;
+            }
+        }
+        
+        /* 优化触摸设备上的交互 */
+        .field-hover {
+            touch-action: manipulation !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        /* 确保文本区域有固定的最小高度，防止内容不同导致高度变化 */
+        .field-hover > div:last-child {
+            min-height: 60px;
         }
         
         /* 确保文本区域有固定的最小高度，防止内容不同导致高度变化 */
