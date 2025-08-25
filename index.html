@@ -17,15 +17,15 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        secondary: '#64748b',
-                        'gold': '#d4af37',
-                        'next-gray': '#64748b',
-                        'border-light': '#e2e8f0',
-                        'highlight': '#d97706',
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB',
+                        gold: '#eab308'
                     },
                     fontFamily: {
-                        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+                        sans: ['CustomFont', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
                     },
                     boxShadow: {
                         'main': '0 4px 14px 0 rgba(0, 0, 0, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.06)',
@@ -39,16 +39,132 @@
         @font-face {
             font-family: 'CustomFont';
             src: url('font.ttf') format('truetype');
-            font-weight: normal;
+            font-weight: 400;
             font-style: normal;
         }
         
-        /* Overall page styling for a clean, simple look */
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('font.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+        }
+        
+        /* Overall page styling */
         body {
             background-color: #f8fafc;
-            font-family: 'CustomFont', 'system-ui', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-size: 16px;
+        }
+
+        /* Responsive font sizes for desktop screens */
+        @media (min-width: 1024px) {
+            /* For typical computer screens */
+            body {
+                font-size: 18px;
+            }
+            
+            /* Increase font size for main content elements on desktop */
+            [data-trend-item] {
+                font-size: 1.1rem;
+            }
+            
+            /* Make trend item text larger on desktop */
+            [data-trend-item] p[data-text-id] {
+                font-size: 1.2rem;
+            }
+            
+            /* Increase heading sizes on desktop */
+            h2 {
+                font-size: 2rem !important;
+            }
+            
+            h3 {
+                font-size: 1.5rem !important;
+            }
+            
+            .countdown-timer {
+                font-size: 1rem;
+            }
+            
+            .recommend-value {
+                font-size: 1rem;
+                padding: 4px 14px;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            /* For large desktop displays */
+            body {
+                font-size: 19px;
+            }
+            
+            /* Further increase font sizes on large screens */
+            [data-trend-item] p[data-text-id] {
+                font-size: 1.3rem;
+            }
+            
+            h2 {
+                font-size: 2.2rem !important;
+            }
+            
+            h3 {
+                font-size: 1.7rem !important;
+            }
+        }
+        
+        /* Ensure better font scaling across devices */
+        h1, h2, h3, h4, h5, h6 {
+            font-size-adjust: 0.5;
+        }
+        
+        /* Ensure consistency in trend item text */
+        [data-trend-item] p[data-text-id] {
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* Fix settings panel text size inconsistencies */
+        .settings-panel {
+            /* Reset font scaling for the settings panel */
+            font-size: 17px;
+        }
+        
+        .settings-panel h3 {
+            /* Settings panel title */
+            font-size: 1.35rem !important;
+        }
+        
+        .settings-panel h4 {
+            /* Settings panel section headers */
+            font-size: 1.15rem !important;
+        }
+        
+        .settings-panel label {
+            /* Form labels */
+            font-size: 1rem;
+        }
+        
+        .settings-panel p {
+            /* Description text */
+            font-size: 0.95rem;
+        }
+        
+        .settings-panel #timezoneInfo {
+            /* Timezone info text */
+            font-size: 0.9rem;
+        }
+        
+        /* Adjust settings panel text size for larger screens */
+        @media (min-width: 1024px) {
+            .settings-panel {
+                font-size: 18px; /* Increase settings panel font size on desktop */
+            }
+            
+            .settings-panel h3 {
+                font-size: 1.45rem !important;
+            }
         }
 
         /* Smooth transition for content updates */
@@ -69,7 +185,7 @@
         .field-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
+            border-color: #d4af37;
         }
 
         /* Image container styling */
@@ -117,7 +233,7 @@
 
         /* Fixed height placeholder for consistent spacing */
         .fixed-height-placeholder {
-            height: 40px;
+            height: 30px;
             width: 100%;
         }
 
@@ -129,6 +245,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            white-space: nowrap;
         }
         
         /* 在窄屏幕下调整趋势项目样式 */
@@ -152,13 +269,13 @@
             background-color: #f1f5f9;
             padding: 2px 12px;
             border-radius: 9999px;
-            border: 1px solid #e2e8f0;
+            border: 2px solid #c4d6ec;
             transition: all 0.2s ease;
         }
         .recommend-value.highlight {
-            color: #c2410c;
-            background-color: #fff7ed;
-            border-color: #fed7aa;
+            color: #eab308;
+            background-color: #fffbeb;
+            border-color: #fcd34d;
             font-weight: 600;
             transform: scale(1.05);
         }
@@ -166,7 +283,7 @@
             color: #ef4444;
             font-size: 0.8rem;
             font-weight: 600;
-            margin-left: 4px;
+            margin-left: 3px;
         }
         .recommend-value .bonus::before {
             animation: pulse 1.5s infinite;
@@ -366,17 +483,91 @@
             background-color: white;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            max-height: 200px;
-            overflow-y: auto;
             z-index: 2100;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: none;
         }
-        .multiselect-options.visible { display: block; }
-        .multiselect-option.selected { background-color: #eff6ff; }
+        .multiselect-options.visible { 
+            display: block;
+        }
+        .multiselect-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .multiselect-selected-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+        }
+        .multiselect-selected-left,
+.multiselect-selected-right {
+    transition: background-color 0.2s ease;
+    display: inline-flex;
+    flex-direction: column;
+    padding: 0.5rem 1rem;
+    min-width: 140px;
+    width: 140px;
+    height: 56px;
+    position: relative;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    justify-content: center;
+    box-sizing: border-box;
+}
+        .multiselect-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .multiselect-selected-left:hover,
+        .multiselect-selected-right:hover {
+            background-color: #f3f4f6;
+        }
+        .multiselect-boxes-container {
+            display: flex;
+            width: 100%;
+            position: relative;
+        }
+        .multiselect-boxes-container::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #60a5fa;
+            transform: translateX(-50%);
+        }
+        .multiselect-single-box {
+            width: 50%;
+            background-color: #93c5fd;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+        }
+        .multiselect-single-box i {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .multiselect-single-box i:hover {
+            color: #ef4444;
+        }
+        .multiselect-option.selected { border: 2px solid #3b82f6; background-color: transparent; color: black; transition: all 0.2s ease; }
+        .multiselect-option { border: 2px solid transparent; border-radius: 4px; padding: 4px 8px; color: black; transition: all 0.2s ease; }
+        .multiselect-option:hover:not(.disabled):not(.selected) { background-color: #dbeafe; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
+        .multiselect-option.selected:hover:not(.disabled) { border: 2px solid #2563eb; background-color: transparent; }
         .multiselect-option.disabled { color: #94a3b8; cursor: not-allowed; background-color: #f8fafc; }
         .multiselect-tag {
-            background-color: #e0e7ff;
+            background-color: transparent;
+            border: 2px solid #4f46e5;
             color: #4338ca;
             padding: 3px 8px;
             border-radius: 6px;
@@ -497,7 +688,7 @@
                 <label class="block font-medium text-sm text-gray-700 mb-2" for="jsonUrl">数据来源网址</label>
                 <input type="url" id="jsonUrl" class="w-full p-2 border border-border-light rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none" placeholder="https://example.com/data.json">
                 <div id="jsonUrlError" class="text-red-500 text-xs mt-1 hidden">请输入有效的URL</div>
-                <p class="text-xs text-gray-500 mt-2">JSON数据应包含: current, next 或 current1, current2, next1, next2</p>
+                <p class="text-xs text-gray-500 mt-2">JSON数据应包含: current1, current2, next1, next2 和 nextUpdate</p>
             </div>
 
             <div id="localSettingsGroup">
@@ -514,6 +705,7 @@
                 <div class="mb-6">
                     <label class="block font-medium text-sm text-gray-700 mb-2">下次更新日期 (UTC+8)</label>
                     <input type="date" id="updateDate" class="w-full p-2 border border-border-light rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none">
+                    <div data-error-id="date" class="text-red-500 text-xs mt-1 hidden">请设置更新日期</div>
                     <p class="text-xs text-gray-500 mt-2">更新时间固定为服务器所在时区的凌晨4点</p>
                 </div>
             </div>
@@ -530,7 +722,8 @@
         <section class="mb-8 flex flex-row gap-4 flex-wrap justify-between sm:gap-6">
             <div id="currentTrendSection" class="flex-1 bg-white rounded-xl p-4 sm:p-6 shadow-main content-transition">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">本期趋势</h2>
-                <div class="fixed-height-placeholder h-[40px] flex items-center justify-center"></div> <!-- 固定高度占位元素 -->
+                <!-- 为保持与下期趋势区域高度一致，添加与倒计时同高度的占位元素 -->
+                <div class="h-[24px] w-full my-2"></div>
                 <div class="space-y-4">
                     <div data-trend-item="current1" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
                     <div data-trend-item="current2" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
@@ -538,9 +731,7 @@
             </div>
             <div id="nextTrendSection" class="flex-1 bg-white rounded-xl p-4 sm:p-6 shadow-main content-transition">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">下期趋势</h2>
-                <div class="fixed-height-placeholder h-[40px] relative">
-                    <p id="countdownTimer" class="countdown-timer text-center absolute inset-0 flex items-center justify-center"><i class="fa fa-clock-o mr-1"></i>计算中...</p> <!-- 叠加显示在占位元素上 -->
-                </div>
+                <p id="countdownTimer" class="countdown-timer text-center flex items-center justify-center my-2"><i class="fa fa-clock-o mr-1"></i>计算中...</p>
                 <div class="space-y-4">
                     <div data-trend-item="next1" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
                     <div data-trend-item="next2" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
@@ -672,12 +863,22 @@
                 </div>
             `,
             multiselect: (id, options) => `
-                <div class="multiselect-selected w-full p-2 border border-border-light rounded-md cursor-pointer relative">
-                    <span class="multiselect-placeholder text-gray-500">请选择...</span>
-                    <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <div class="multiselect-combined-wrapper border border-border-light rounded-md p-2 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary outline-none">
+                    <div class="multiselect-selected-container m-0 p-0">
+                        <div class="multiselect-selection-group flex items-center justify-between w-full gap-0.5">
+                            <div class="multiselect-selected-left cursor-pointer relative text-base w-24 bg-white hover:bg-gray-50 transition-all border border-gray-200 rounded-md py-0 px-2 h-8 flex items-center justify-center">
+                                选择项
+                            </div>
+                            <div class="multiselect-selected-right cursor-pointer relative text-base w-24 bg-white hover:bg-gray-50 transition-all border border-gray-200 rounded-md py-0 px-2 h-8 flex items-center justify-center">
+                                选择项
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="multiselect-options">
-                    ${options.map(opt => `<div class="multiselect-option p-2 hover:bg-gray-100 cursor-pointer" data-value="${opt}">${opt}</div>`).join('')}
+                    <div class="multiselect-grid p-2 gap-2">
+                        ${options.map(opt => `<div class="multiselect-option p-2 hover:bg-gray-100 cursor-pointer text-center text-lg transition-all" data-value="${opt}">${opt}</div>`).join('')}
+                    </div>
                 </div>
             `,
         };
@@ -687,63 +888,126 @@
             async initializeData() {
                 UI.showLoading();
                 try {
-                    const storedData = LocalStorage.get('appData');
-                    if (storedData) {
-                        appState.currentData = storedData;
-                        Renderer.updateUI(appState.currentData);
-                    } else {
-                        await DataService.fetchDefaultData();
+                    // 先检查数据源设置，JSON模式优先级最高
+                    const dataSource = LocalStorage.get('dataSource') || 'local';
+                    const jsonUrl = LocalStorage.get('jsonUrl');
+                    
+                    // 如果设置了JSON数据源且有URL，优先从URL获取数据
+                    if (dataSource === 'json' && jsonUrl) {
+                        try {
+                            await this.fetchJsonData(jsonUrl);
+                            console.log('从JSON URL加载数据成功');
+                            // 设置倒计时
+                            this.scheduleUpdateCheck();
+                            UI.hideLoading();
+                            return; // 成功获取数据后直接返回
+                        } catch (error) {
+                            console.warn('从JSON URL加载失败:', error);
+                            UI.hideLoading(); // 确保失败时也隐藏加载状态
+                            // 继续尝试其他数据来源
+                        }
                     }
                     
-                    // 如果仍然没有数据，创建默认数据
-                    if (!appState.currentData || !appState.currentData.nextUpdate) {
-                        console.log('创建默认数据');
-                        // 创建统一的默认数据，确保本期和下期趋势的一致性
-                        const defaultTomorrow = new Date();
-                        defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
-                        const defaultDateOnly = defaultTomorrow.toISOString().split('T')[0];
-                        const fallbackData = {
-                            "current": { "trends": ["器引百味", "节礼贺幛"], "nextUpdate": `${defaultDateOnly}T04:00:00+08:00` },
-                            "next": { "trends": ["游方巧器", "虚室坐修"] }
+                    // 检查本地是否有存储的数据
+                    // 先检查本地是否有存储的数据，并验证其有效性
+                    const storedData = LocalStorage.get('appData');
+                    const localData = LocalStorage.get('localData');
+                    
+                    // 优先使用有效的存储数据
+                    if (storedData && storedData.current && storedData.current.trends && storedData.current.trends.length > 0) {
+                        appState.currentData = storedData;
+                        Renderer.updateUI(appState.currentData);
+                        console.log('使用有效的本地存储appData');
+                    } else if (localData && localData.current && localData.current.length > 0) {
+                        // 如果存储数据无效但有本地设置数据，使用本地设置数据
+                        const format1Data = {
+                            current1: localData.current[0],
+                            current2: localData.current[1],
+                            nextUpdate: localData.updateDate || this.getDefaultNextUpdate()
                         };
-                        const processedData = this.normalizeData(fallbackData);
                         
-                        // 已经在fallbackData中设置了合理的nextUpdate字段，这里无需重复设置
+                        // 只有当下期趋势不为空时才添加next1和next2字段
+                        if (localData.next && localData.next.length === 2) {
+                            format1Data.next1 = localData.next[0];
+                            format1Data.next2 = localData.next[1];
+                        }
                         
+                        const processedData = this.normalizeData(format1Data);
                         appState.currentData = processedData;
                         LocalStorage.set('appData', processedData);
                         Renderer.updateUI(processedData);
-                    }
+                        console.log('使用本地设置的localData');
+                    } else {
+                            // 如果没有任何有效数据，使用默认数据
+                            try {
+                                await this.fetchDefaultData();
+                                console.log('加载默认数据成功');
+                            } catch (defaultError) {
+                                console.error('加载默认数据失败:', defaultError);
+                                this.loadDefaultPlaceholderData();
+                            }
+                        }
                     
                     // 设置倒计时
                     this.scheduleUpdateCheck();
+                    UI.hideLoading();
                 } catch (error) {
                     console.error('初始化数据失败：', error);
-                    // 创建统一的默认数据，确保本期和下期趋势的一致性
-                    const errorTomorrow = new Date();
-                    errorTomorrow.setDate(errorTomorrow.getDate() + 1);
-                    const errorDateOnly = errorTomorrow.toISOString().split('T')[0];
-                    const fallbackData = {
-                        "current": { "trends": ["器引百味", "节礼贺幛"], "nextUpdate": `${errorDateOnly}T04:00:00+08:00` },
-                        "next": { "trends": ["游方巧器", "虚室坐修"] }
-                    };
-                    const processedData = this.normalizeData(fallbackData);
-                    
-                    // 设置nextUpdate为明天凌晨4点
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    const dateOnly = tomorrow.toISOString().split('T')[0];
-                    processedData.nextUpdate = new Date(`${dateOnly}T04:00:00+08:00`).toISOString();
-                    
-                    appState.currentData = processedData;
-                    LocalStorage.set('appData', processedData);
-                    Renderer.updateUI(processedData);
+                    // 即使出错，也使用空格占位符作为最后的兜底方案
+                    this.loadDefaultPlaceholderData();
                     
                     // 设置倒计时
                     this.scheduleUpdateCheck();
                 }
                 
                 UI.hideLoading();
+            },
+            
+            // 获取默认的nextUpdate时间
+            getDefaultNextUpdate() {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dateOnly = tomorrow.toISOString().split('T')[0];
+                return `${dateOnly}T04:00:00+08:00`;
+            },
+            
+            // 加载默认的占位符数据
+            loadDefaultPlaceholderData() {
+                const defaultTomorrow = new Date();
+                defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+                const defaultDateOnly = defaultTomorrow.toISOString().split('T')[0];
+                const fallbackData = {
+                    current1: " ", // 空格字符作为占位符
+                    current2: " ", // 空格字符作为占位符
+                    nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
+                };
+                
+                try {
+                    const processedData = this.normalizeData(fallbackData);
+                    
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    Renderer.updateUI(processedData);
+                    console.log('使用空格占位符数据作为最后的兜底方案');
+                } catch (error) {
+                    console.error('处理占位符数据失败:', error);
+                    // 直接创建一个有效的processedData对象
+                    const directData = {
+                        current: {
+                            trends: ['', ''],
+                            recommendations: []
+                        },
+                        next: {
+                            trends: [],
+                            recommendations: []
+                        },
+                        nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
+                    };
+                    appState.currentData = directData;
+                    LocalStorage.set('appData', directData);
+                    Renderer.updateUI(directData);
+                    console.log('使用直接创建的数据对象作为最后的兜底方案');
+                }
             },
             async fetchDefaultData() {
                 try {
@@ -774,24 +1038,31 @@
                     Renderer.updateUI(processedData);
                 } catch (error) {
                     console.error('Failed to get default data:', error);
+                    // 设置有效的默认数据，包含空格占位符以通过验证并显示"待设置"
+                    const fallbackTomorrow = new Date();
+                    fallbackTomorrow.setDate(fallbackTomorrow.getDate() + 1);
+                    const fallbackDateOnly = fallbackTomorrow.toISOString().split('T')[0];
+                    const defaultNextUpdate = `${fallbackDateOnly}T04:00:00+08:00`;
+                    
                     const fallbackData = {
-                        "current": { "trends": ["器引百味", "节礼贺幛"], "nextUpdate": "2024-05-18" },
-                        "next": { "trends": ["游方巧器", "虚室坐修"] }
+                        "current1": " ",
+                        "current2": " ",
+                        "nextUpdate": defaultNextUpdate
                     };
                     const processedData = this.normalizeData(fallbackData);
                     
                     // 确保fallbackData中有nextUpdate字段
                     if (!processedData.nextUpdate) {
                         // 如果没有nextUpdate，设置为当前日期加一天的凌晨4点
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        const dateOnly = tomorrow.toISOString().split('T')[0];
-                        processedData.nextUpdate = `${dateOnly}T04:00:00+08:00`;
+                        const backupTomorrow = new Date();
+                        backupTomorrow.setDate(backupTomorrow.getDate() + 1);
+                        const backupDateOnly = backupTomorrow.toISOString().split('T')[0];
+                        processedData.nextUpdate = `${backupDateOnly}T04:00:00+08:00`;
                     }
                     
                     // 将nextUpdate设置为凌晨4点（UTC+8）
-                    const dateOnly = processedData.nextUpdate.split('T')[0];
-                    const nextUpdateDate = new Date(`${dateOnly}T04:00:00+08:00`);
+                    const processDateOnly = processedData.nextUpdate.split('T')[0];
+                    const nextUpdateDate = new Date(`${processDateOnly}T04:00:00+08:00`);
                     processedData.nextUpdate = nextUpdateDate.toISOString();
                     
                     appState.currentData = processedData;
@@ -799,7 +1070,8 @@
                     Renderer.updateUI(processedData);
                     // 确保在使用fallbackData时也重新设置倒计时
                     this.scheduleUpdateCheck();
-                    Modal.show('获取默认数据失败，已加载本地缓存数据。请检查网络或设置。');
+                    // 移除错误提示
+                    // Modal.show('获取默认数据失败，已加载本地缓存数据。请检查网络或设置。');
                 }
             },
             async fetchJsonData(url) {
@@ -925,7 +1197,7 @@
                                         delete window.jsonpCallback; // 清理全局回调
                                         script.remove(); // 移除script标签
                                         reject(new Error('JSONP请求超时'));
-                                    }, 10000); // 10秒超时
+                                    }, 5000); // 减少超时时间到5秒
                                     
                                     // 添加到文档中开始请求
                                     document.head.appendChild(script);
@@ -945,7 +1217,7 @@
                                     const timeout = setTimeout(() => {
                                         document.body.removeChild(iframe);
                                         reject(new Error('iframe请求超时'));
-                                    }, 10000);
+                                    }, 5000); // 减少超时时间到5秒
                                     
                                     // iframe加载完成后尝试获取内容
                                     iframe.onload = function() {
@@ -1037,8 +1309,14 @@
                     if (!processedData || !processedData.nextUpdate) {
                         console.log('创建默认数据，包含nextUpdate字段');
                         processedData = {
-                            current: { trends: ['游方巧器', '本草方剂'] },
-                            next: { trends: ['器引百味', '虚室坐修'] },
+                            current: {
+                                trends: ['游方巧器', '本草方剂'],
+                                recommendations: []
+                            },
+                            next: {
+                                trends: ['器引百味', '虚室坐修'],
+                                recommendations: []
+                            },
                         };
                         
                         // 设置nextUpdate为明天凌晨4点（UTC+8）
@@ -1056,24 +1334,59 @@
                     Modal.show(`从JSON网址加载失败: ${errorMessage}。已使用本地数据，请检查网址或数据格式。`);
                 }
             },
+            // 计算推荐项的函数
+            calculateRecommendations(trendNames) {
+                const items = Object.keys(CONFIG.ITEM_BASE_VALUES).map(name => ({
+                    name: name,
+                    value: CONFIG.ITEM_BASE_VALUES[name],
+                    bonus: 0
+                }));
+
+                trendNames.forEach(trend => {
+                    const trendItems = CONFIG.CATEGORY_ITEMS[trend];
+                    if (trendItems) {
+                        trendItems.forEach(itemName => {
+                            const item = items.find(i => i.name === itemName);
+                            if (item) {
+                                // Calculate bonus as a percentage
+                                const percentageBonus = item.value * CONFIG.BONUS_PERCENTAGE;
+                                item.bonus += percentageBonus;
+                            }
+                        });
+                    }
+                });
+
+                // 返回按计算后的树脂总量(value+bonus)排序后的前4个项目，包括所有项目
+                return items
+                    .sort((a, b) => (b.value + b.bonus) - (a.value + a.bonus))
+                    .slice(0, 4);
+            },
+
             normalizeData(rawData) {
                 let currentTrends, nextTrends, nextUpdate;
+                
+                // 防御性编程，确保rawData是对象
+                if (!rawData || typeof rawData !== 'object') {
+                    console.warn('输入数据不是有效的对象，使用默认数据');
+                    return this.createDefaultNormalizedData();
+                }
 
-                if (rawData.current1 && rawData.current2 && rawData.next1 && rawData.next2) {
-                    // Handles the case with individual trend names
-                    currentTrends = [rawData.current1, rawData.current2];
-                    nextTrends = [rawData.next1, rawData.next2];
+                // 尝试处理格式1：current1, current2, nextUpdate 为关键字段
+                if (rawData.current1 !== undefined && rawData.current2 !== undefined) {
+                    currentTrends = [rawData.current1 || '', rawData.current2 || ''];
+                    // 允许next1和next2为空，简化处理逻辑确保数据正确
+                    nextTrends = [];
+                    if (rawData.next1 !== undefined && rawData.next2 !== undefined) {
+                        nextTrends = [rawData.next1 || '', rawData.next2 || ''];
+                    }
                     nextUpdate = rawData.nextUpdate;
-                } else if (rawData.current?.trends && rawData.next?.trends) {
-                    // Handles the case with arrays of trends
-                    currentTrends = rawData.current.trends;
-                    nextTrends = rawData.next.trends;
-                    nextUpdate = rawData.current.nextUpdate || rawData.nextUpdate;
                 } else {
-                    throw new Error("Invalid JSON data format.");
+                    // 兼容可能的其他格式或提供默认值
+                    console.warn('数据格式不完整，使用默认处理方式');
+                    return this.createDefaultNormalizedData();
                 }
                 
-                // 如果没有nextUpdate，设置为明天凌晨4点（UTC+8）
+                // 确保有nextUpdate
                 if (!nextUpdate) {
                     console.log('数据中没有nextUpdate字段，设置默认值');
                     const tomorrow = new Date();
@@ -1082,73 +1395,44 @@
                     nextUpdate = `${dateOnly}T04:00:00+08:00`;
                 }
 
-                // 本期趋势必须包含2个元素，但下期趋势可以为空数组
-                if (!Array.isArray(currentTrends) || currentTrends.length !== 2 || !Array.isArray(nextTrends)) {
-                    throw new Error("Invalid trends data format.");
-                }
-                
-                // 确保下期趋势要么为空，要么包含2个元素
-                if (nextTrends.length > 0 && nextTrends.length !== 2) {
-                    throw new Error("Next trends array must contain exactly two elements or be empty.");
-                }
+                // 确保趋势数据格式正确
+                if (!Array.isArray(currentTrends)) currentTrends = ['', ''];
+                if (currentTrends.length !== 2) currentTrends = [currentTrends[0] || '', currentTrends[1] || ''];
+                if (!Array.isArray(nextTrends)) nextTrends = [];
+                if (nextTrends.length !== 2 && nextTrends.length > 0) nextTrends = [nextTrends[0] || '', nextTrends[1] || ''];
 
-                const calculateRecommendations = (trendNames) => {
-                    const items = Object.keys(CONFIG.ITEM_BASE_VALUES).map(name => ({
-                        name: name,
-                        value: CONFIG.ITEM_BASE_VALUES[name],
-                        bonus: 0
-                    }));
-
-                    trendNames.forEach(trend => {
-                        const trendItems = CONFIG.CATEGORY_ITEMS[trend];
-                        if (trendItems) {
-                            trendItems.forEach(itemName => {
-                                const item = items.find(i => i.name === itemName);
-                                if (item) {
-                                    // Calculate bonus as a percentage
-                                    const percentageBonus = item.value * CONFIG.BONUS_PERCENTAGE;
-                                    item.bonus += percentageBonus;
-                                }
-                            });
-                        }
-                    });
-
-                    items.forEach(item => {
-                        if (item.bonus > 0) {
-                            item.value = item.value + item.bonus;
-                        }
-                        // Round the final value to the nearest integer
-                        item.value = Math.round(item.value);
-                        // Round bonus to one decimal place for display
-                        item.bonus = Math.round(item.bonus * 10) / 10;
-                    });
-
-                    items.sort((a, b) => {
-                        if (b.bonus !== a.bonus) {
-                            return b.bonus - a.bonus;
-                        }
-                        return b.value - a.value;
-                    });
-                    
-                    return items.slice(0, 4);
-                };
-
-                // 确保返回的数据中包含nextUpdate字段
-                const result = {
+                // 创建并返回规范化的数据结构
+                return {
                     current: {
                         trends: currentTrends,
-                        recommendItems: calculateRecommendations(currentTrends)
+                        recommendations: this.calculateRecommendations(currentTrends)
                     },
                     next: {
                         trends: nextTrends,
-                        // 当下期趋势为空时，下期推荐也为空
-                        recommendItems: nextTrends.length > 0 ? calculateRecommendations(nextTrends) : []
+                        recommendations: nextTrends.length > 0 ? this.calculateRecommendations(nextTrends) : []
                     },
                     nextUpdate: nextUpdate
                 };
+            },
+            
+            // 创建默认的规范化数据
+            createDefaultNormalizedData() {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dateOnly = tomorrow.toISOString().split('T')[0];
+                const nextUpdate = `${dateOnly}T04:00:00+08:00`;
                 
-                console.log('normalizeData返回数据:', result);
-                return result;
+                return {
+                    current: {
+                        trends: ['', ''],
+                        recommendations: []
+                    },
+                    next: {
+                        trends: [],
+                        recommendations: []
+                    },
+                    nextUpdate: nextUpdate
+                };
             },
             scheduleUpdateCheck() {
                 console.log('设置倒计时');
@@ -1204,23 +1488,25 @@
                                 
                                 // 确定新的趋势数据：如果有有效的下期趋势，则使用它们，否则保持当前状态
                                 const newCurrentTrends = hasValidNextTrends ? preservedNextTrends : preservedCurrentTrends;
-                                const newNextTrends = preservedCurrentTrends; // 始终保留原本期趋势作为新的下期趋势
+                                const newNextTrends = []; // 下期趋势留空
                                 
                                 // 临时更新UI显示，确保趋势数据完全一致
                                 const tempData = {
                                     current: {
                                         trends: newCurrentTrends,
-                                        recommendItems: hasValidNextTrends ? (currentData.next.recommendItems || []) : calculateRecommendations(newCurrentTrends)
+                                        recommendations: hasValidNextTrends ? (currentData.next.recommendations || []) : this.calculateRecommendations(newCurrentTrends)
                                     },
                                     next: {
                                         trends: newNextTrends,
-                                        recommendItems: calculateRecommendations(newNextTrends)
+                                        recommendations: [] // 下期推荐也清空，显示为待设置
                                     },
                                     nextUpdate: currentData.nextUpdate
                                 };
                                 
                                 // 更新UI
                                 Renderer.updateUI(tempData);
+                                // 同时更新appState以确保临时数据持久化
+                                appState.currentData = tempData;
                                 
                                 // 根据情况显示不同的提示信息
                                 if (hasValidNextTrends) {
@@ -1230,8 +1516,9 @@
                                 }
                             }
                             
-                            // 仍然尝试获取最新的JSON数据
-                            DataService.fetchJsonData(LocalStorage.get('jsonUrl'));
+                            // 不再自动尝试获取最新的JSON数据，避免无限循环刷新
+                            // 用户可以手动刷新或更新JSON数据源
+                            console.log('已处理临时趋势更新，不再自动刷新JSON数据');
                         } else {
                             const localData = LocalStorage.get('localData');
                             if (localData) {
@@ -1247,7 +1534,7 @@
                                     
                                     // 确定新的趋势数据：如果有有效的下期趋势，则使用它们，否则保持当前状态
                                     const newCurrentTrends = preservedNextTrends.length === 2 ? preservedNextTrends : preservedCurrentTrends;
-                                    const newNextTrends = preservedCurrentTrends; // 始终保留原本期趋势作为新的下期趋势
+                                    const newNextTrends = []; // 下期趋势留空
                                     
                                     // 如果下期为空，显示提示信息
                                     if (newCurrentTrends.length !== 2) {
@@ -1266,11 +1553,20 @@
                                     };
                                     LocalStorage.set('localData', updatedLocalData);
                                     
-                                    // 更新应用状态
-                                    const processedData = this.normalizeData({
-                                        current: { trends: newCurrentTrends, nextUpdate: updatedLocalData.updateDate },
-                                        next: { trends: newNextTrends }
-                                    });
+                                    // 更新应用状态，使用格式1的结构
+                                    const autoUpdateData = {
+                                        current1: newCurrentTrends[0],
+                                        current2: newCurrentTrends[1],
+                                        nextUpdate: updatedLocalData.updateDate
+                                    };
+                                    
+                                    // 只有当下期趋势不为空时才添加next1和next2字段
+                                    if (newNextTrends.length === 2) {
+                                        autoUpdateData.next1 = newNextTrends[0];
+                                        autoUpdateData.next2 = newNextTrends[1];
+                                    }
+                                    
+                                    const processedData = this.normalizeData(autoUpdateData);
                                     appState.currentData = processedData;
                                     LocalStorage.set('appData', processedData);
                                     Renderer.updateUI(processedData);
@@ -1278,10 +1574,20 @@
                                     Modal.show('刷新时间已到，已自动将下期趋势设为本期趋势，并将刷新时间增加3天。');
                                 } else {
                                     // 正常更新逻辑
-                                    const processedData = this.normalizeData({
-                                        current: { trends: localData.next, nextUpdate: localData.updateDate },
-                                        next: { trends: localData.current }
-                                    });
+                                    // 正常更新逻辑，使用格式1的结构
+                                    const normalUpdateData = {
+                                        current1: localData.next && localData.next.length > 0 ? localData.next[0] : '',
+                                        current2: localData.next && localData.next.length > 1 ? localData.next[1] : '',
+                                        nextUpdate: localData.updateDate
+                                    };
+                                    
+                                    // 不再设置next1和next2字段，确保下期趋势留空
+                                    // if (localData.current && localData.current.length === 2) {
+                                    //     normalUpdateData.next1 = localData.current[0];
+                                    //     normalUpdateData.next2 = localData.current[1];
+                                    // }
+                                    
+                                    const processedData = this.normalizeData(normalUpdateData);
                                     appState.currentData = processedData;
                                     LocalStorage.set('appData', processedData);
                                     Renderer.updateUI(processedData);
@@ -1290,11 +1596,8 @@
                                 
                                 // 不再自动重新设置倒计时，避免一直刷新
                                 console.log('本地数据已更新，不再自动设置倒计时');
-                                // 显示更新成功提示
-                                DOMElements.countdownTimer.innerHTML = `
-                                    <i class="fa fa-check mr-1 text-green-500"></i>
-                                    <span class="text-green-500">数据已更新</span>
-                                `;
+                                // 不显示更新成功提示，保持倒计时区域为空
+                                DOMElements.countdownTimer.innerHTML = '';
                             }
                         }
                     }
@@ -1314,7 +1617,10 @@
                     }
                     // 执行更新
                     checkAndUpdate();
-                    // 显示提示信息，不重新设置倒计时
+                    // 重新设置倒计时
+                    console.log('立即检查：数据已更新，重新设置倒计时');
+                    
+                    // 对于JSON模式，提示需要手动更新数据
                     const dataSource = LocalStorage.get('dataSource') || 'local';
                     if (dataSource === 'json') {
                         DOMElements.countdownTimer.innerHTML = `
@@ -1322,12 +1628,55 @@
                             <span class="text-yellow-500">需要手动更新JSON数据</span>
                         `;
                     } else {
-                        DOMElements.countdownTimer.innerHTML = `
-                            <i class="fa fa-check mr-1 text-green-500"></i>
-                            <span class="text-green-500">数据已更新</span>
-                        `;
+                        // 对于本地模式，重新获取更新时间并设置倒计时
+                        const newNow = new Date();
+                        const newNextUpdate = new Date(appState.currentData.nextUpdate);
+                        const newDiffMs = newNextUpdate - newNow;
+                        
+                        if (newDiffMs > 0) {
+                            // 设置新的倒计时间隔
+                            appState.countdownInterval = setInterval(() => {
+                                if (appState.currentData && appState.currentData.nextUpdate) {
+                                    const now = new Date();
+                                    const nextUpdate = new Date(appState.currentData.nextUpdate);
+                                    const diffMs = nextUpdate - now;
+                                    
+                                    if (diffMs <= 0) {
+                                        console.log('倒计时结束，更新数据');
+                                        clearInterval(appState.countdownInterval);
+                                        appState.countdownInterval = null;
+                                        checkAndUpdate();
+                                    }
+                                    
+                                    const positiveDiffMs = Math.max(0, diffMs);
+                                    const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                                    let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                    if (diffDays > 0) {
+                                        diffHours += diffDays * 24;
+                                    }
+                                    const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                    const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+                                    
+                                    DOMElements.countdownTimer.innerHTML = `
+                                        <i class="fa fa-clock-o mr-1"></i>
+                                        刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                                    `;
+                                } else {
+                                    console.error('倒计时间隔中发现数据缺失');
+                                    DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                                    clearInterval(appState.countdownInterval);
+                                    appState.countdownInterval = null;
+                                }
+                            }, 1000);
+                        }
                     }
                     return;
+                }
+
+                // 确保没有已存在的定时器
+                if (appState.countdownInterval) {
+                    clearInterval(appState.countdownInterval);
+                    appState.countdownInterval = null;
                 }
 
                 // 设置倒计时间隔
@@ -1345,21 +1694,49 @@
                             appState.countdownInterval = null;
                             // 执行更新
                             checkAndUpdate();
-                            // 不重新设置倒计时，避免一直刷新
-                            // 显示提示信息
-                            const dataSource = LocalStorage.get('dataSource') || 'local';
-                            if (dataSource === 'json') {
-                                DOMElements.countdownTimer.innerHTML = `
-                                    <i class="fa fa-exclamation-triangle mr-1 text-yellow-500"></i>
-                                    <span class="text-yellow-500">需要手动更新JSON数据</span>
-                                `;
-                            } else {
-                                DOMElements.countdownTimer.innerHTML = `
-                                    <i class="fa fa-check mr-1 text-green-500"></i>
-                                    <span class="text-green-500">数据已更新</span>
-                                `;
+                            // 重新设置倒计时
+                            console.log('数据已更新，重新设置倒计时');
+                            // 重新获取更新时间并设置倒计时
+                            const newNow = new Date();
+                            const newNextUpdate = new Date(appState.currentData.nextUpdate);
+                            const newDiffMs = newNextUpdate - newNow;
+                            
+                            if (newDiffMs > 0) {
+                                // 设置新的倒计时间隔
+                                appState.countdownInterval = setInterval(() => {
+                                    if (appState.currentData && appState.currentData.nextUpdate) {
+                                        const now = new Date();
+                                        const nextUpdate = new Date(appState.currentData.nextUpdate);
+                                        const diffMs = nextUpdate - now;
+                                        
+                                        if (diffMs <= 0) {
+                                            console.log('倒计时结束，更新数据');
+                                            clearInterval(appState.countdownInterval);
+                                            appState.countdownInterval = null;
+                                            checkAndUpdate();
+                                        }
+                                        
+                                        const positiveDiffMs = Math.max(0, diffMs);
+                                        const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                                        let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                        if (diffDays > 0) {
+                                            diffHours += diffDays * 24;
+                                        }
+                                        const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                        const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+                                        
+                                        DOMElements.countdownTimer.innerHTML = `
+                                            <i class="fa fa-clock-o mr-1"></i>
+                                            刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                                        `;
+                                    } else {
+                                        console.error('倒计时间隔中发现数据缺失');
+                                        DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                                        clearInterval(appState.countdownInterval);
+                                        appState.countdownInterval = null;
+                                    }
+                                }, 1000);
                             }
-                            return;
                         }
 
                         // 处理时间差，确保不会出现负值
@@ -1396,8 +1773,8 @@
                 setTimeout(() => {
                     this.renderTrendItems(data.current.trends, 'current');
                     this.renderTrendItems(data.next.trends, 'next');
-                    this.renderRecommendItems(data.current.recommendItems, 'current');
-                    this.renderRecommendItems(data.next.recommendItems, 'next');
+                    this.renderRecommendItems(data.current.recommendations, 'current');
+                    this.renderRecommendItems(data.next.recommendations, 'next');
                     DOMElements.contentSections.forEach(el => el.classList.remove('content-loading'));
                 }, 300);
             },
@@ -1405,8 +1782,8 @@
                 const trendIds = ['1', '2'];
                 const trendItems = document.querySelectorAll(`[data-trend-item^="${type}"]`);
                 
-                // 如果trends为空数组，显示提示信息
-                if (!trends || trends.length === 0) {
+                // 如果trends为空数组或只包含空格，显示提示信息
+                if (!trends || trends.length === 0 || trends.every(t => !t || t.trim() === '')) {
                     trendItems.forEach((el, index) => {
                         // 即使没有趋势数据，也要根据类型显示不同背景色和HOT标记
                         const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
@@ -1433,8 +1810,8 @@
                 trendItems.forEach((el, index) => {
                     const trendName = trends[index];
                     
-                    // 如果trendName为空或不存在，显示提示信息
-                    if (!trendName) {
+                    // 如果trendName为空、不存在或仅包含空格，显示提示信息
+                    if (!trendName || trendName.trim() === '') {
                         // 即使趋势名称为空，也要根据类型显示不同背景色和HOT标记
                         const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
                         const hotIconHtml = type === 'current' ? 
@@ -1478,8 +1855,8 @@
 
                 grid.innerHTML = '';
                 
-                // 如果是下期推荐且items为空数组或没有有效的推荐项，显示4个留空的框
-                if (type === 'next' && (!items || items.length === 0)) {
+                // 如果items为空数组、不存在或只包含无效/空格内容，显示4个留空的框
+                if (!items || items.length === 0 || items.every(item => !item || !item.name || item.name.trim() === '')) {
                     // 创建4个留空框
                     for (let i = 0; i < 4; i++) {
                         const emptyBox = document.createElement('div');
@@ -1509,12 +1886,14 @@
                     const valueEl = itemDiv.querySelector(`[data-rec-value-id="${itemId}"]`);
                     
                     textEl.textContent = item.name;
-                    valueEl.textContent = `${item.value}`;
+                    // 计算加成后的价格并四舍五入
+                    const priceWithBonus = Math.round(item.value + item.bonus);
+                    valueEl.textContent = `${priceWithBonus}`;
                     valueEl.classList.toggle('highlight', item.bonus > 0);
                     
                     if (item.bonus > 0) {
-                        // The user wants to display "+20%" instead of the calculated bonus value
-                        valueEl.innerHTML = `${item.value} <span class="bonus">+20%</span>`;
+                        // 显示加成后的价格和+20%
+                        valueEl.innerHTML = `${priceWithBonus}<span class="bonus">+20%</span>`;
                     }
 
                     const img = new Image();
@@ -1618,8 +1997,11 @@
                     if (multiselectContainer) {
                         const optionsEl = multiselectContainer.querySelector('.multiselect-options');
                         
-                        // 处理点击选择框的情况
-                        if (e.target.closest('.multiselect-selected') && !e.target.matches('.multiselect-tag') && !e.target.matches('.multiselect-tag-remove')) {
+                        // 处理点击左右选择框的情况
+                        const clickedLeft = e.target.closest('.multiselect-selected-left');
+                        const clickedRight = e.target.closest('.multiselect-selected-right');
+                        
+                        if ((clickedLeft || clickedRight) && !e.target.matches('.multiselect-tag') && !e.target.matches('.multiselect-tag-remove')) {
                             document.querySelectorAll('.multiselect-options').forEach(el => {
                                 if (el !== optionsEl) el.classList.remove('visible');
                             });
@@ -1628,7 +2010,41 @@
                         
                         // 处理点击选项的情况
                         if (e.target.matches('.multiselect-option:not(.disabled)')) {
-                            this.toggleOption(e.target.dataset.value, optionsEl);
+                            // 获取当前已选择的值
+                            const values = this.getValues(multiselectContainer);
+                            
+                            // 确定应该更新哪个位置的值
+                            let newValue = e.target.dataset.value;
+                            
+                            // 检查是否点击了已选中的选项（取消选择功能）
+                            const index = values.indexOf(newValue);
+                            if (index > -1) {
+                                // 如果已存在，则移除该值
+                                values.splice(index, 1);
+                            } else {
+                                // 检查要添加的新值是否与另一个位置的值相同（防止选择两个相同的值）
+                                if (values.length === 1 && values[0] === newValue) {
+                                    // 不允许选择相同的值
+                                    return;
+                                }
+                                
+                                if (values.length === 0) {
+                                    // 没有值时，添加到第一个位置
+                                    values.push(newValue);
+                                } else if (values.length === 1) {
+                                    // 只有一个值时，添加到第二个位置
+                                    values.push(newValue);
+                                } else if (clickedLeft) {
+                                    // 点击了左侧，更新左侧
+                                    values[0] = newValue;
+                                } else if (clickedRight) {
+                                    // 点击了右侧，更新右侧
+                                    values[1] = newValue;
+                                }
+                            }
+                            
+                            // 更新UI
+                            this.updateMultiselectUI(multiselectContainer, values);
                         }
                         
                         // 处理点击已选标签或删除图标的情况
@@ -1638,8 +2054,17 @@
                                 e.target.dataset.value : 
                                 e.target.dataset.value;
                                 
-                            // 删除选项但保持选框打开
-                            this.toggleOption(valueToRemove, optionsEl);
+                            // 获取当前已选择的值
+                            const values = this.getValues(multiselectContainer);
+                            
+                            // 删除值
+                            const index = values.indexOf(valueToRemove);
+                            if (index > -1) {
+                                values.splice(index, 1);
+                            }
+                            
+                            // 更新UI
+                            this.updateMultiselectUI(multiselectContainer, values);
                             
                             // 确保选框保持打开状态
                             if (!optionsEl.classList.contains('visible')) {
@@ -1654,39 +2079,76 @@
                     }
                 });
             },
-            toggleOption(value, optionsEl) {
-                const container = optionsEl.closest('.multiselect-container');
-                const values = this.getValues(container);
 
-                const optionEl = optionsEl.querySelector(`[data-value="${value}"]`);
-
-                if (values.includes(value)) {
-                    const index = values.indexOf(value);
-                    values.splice(index, 1);
-                } else {
-                    if (values.length < 2) {
-                        values.push(value);
-                    } else {
-                        return;
-                    }
-                }
-
-                this.updateMultiselectUI(container, values);
-            },
             updateMultiselectUI(container, values) {
-                const selectedEl = container.querySelector('.multiselect-selected');
+                const leftSelectedEl = container.querySelector('.multiselect-selected-left');
+                const rightSelectedEl = container.querySelector('.multiselect-selected-right');
                 const optionsEl = container.querySelector('.multiselect-options');
 
-                selectedEl.innerHTML = values.length > 0 ? values.map(v => `<span class="multiselect-tag" data-value="${v}">${v}<i class="fa fa-times-circle multiselect-tag-remove" data-value="${v}"></i></span>`).join('') : '<span class="multiselect-placeholder text-gray-500">请选择...</span><i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>';
+                // 清除左右两侧的内容
+                leftSelectedEl.innerHTML = '';
+                rightSelectedEl.innerHTML = '';
+
+                if (values.length > 0) {
+                    // 显示第一个值在左侧，直接显示文本
+                    leftSelectedEl.textContent = values[0];
+                    leftSelectedEl.dataset.value = values[0];
+                    // 添加已选择的视觉效果
+                    leftSelectedEl.classList.add('border-2', 'border-blue-500');
+                    leftSelectedEl.classList.remove('border-gray-200', 'border', 'border-dashed', 'border-gray-400');
+                } else {
+                    // 左侧没有选中值时，显示默认文本
+                    leftSelectedEl.textContent = '选择项';
+                    delete leftSelectedEl.dataset.value;
+                    leftSelectedEl.classList.remove('border-2', 'border-blue-500');
+                    leftSelectedEl.classList.add('border', 'border-dashed', 'border-gray-400');
+                }
+
+                if (values.length > 1) {
+                    // 显示第二个值在右侧，直接显示文本
+                    rightSelectedEl.textContent = values[1];
+                    rightSelectedEl.dataset.value = values[1];
+                    // 添加已选择的视觉效果
+                    rightSelectedEl.classList.add('border-2', 'border-blue-500');
+                    rightSelectedEl.classList.remove('border-gray-200', 'border', 'border-dashed', 'border-gray-400');
+                } else {
+                    // 右侧没有选中值时，显示默认文本
+                    rightSelectedEl.textContent = '选择项';
+                    delete rightSelectedEl.dataset.value;
+                    rightSelectedEl.classList.remove('border-2', 'border-blue-500');
+                    rightSelectedEl.classList.add('border', 'border-dashed', 'border-gray-400');
+                }
 
                 optionsEl.querySelectorAll('.multiselect-option').forEach(opt => {
-                    opt.classList.toggle('selected', values.includes(opt.dataset.value));
-                    opt.classList.toggle('disabled', values.length === 2 && !values.includes(opt.dataset.value));
+                    const optValue = opt.dataset.value;
+                    // 标记选中状态
+                    opt.classList.toggle('selected', values.includes(optValue));
+                    
+                    // 处理禁用状态：
+                    // 1. 当已有两个值时，禁用未选中的值
+                    // 2. 移除已有一个值时对相同选项的禁用，允许用户点击取消选择
+                    if (values.length === 2 && !values.includes(optValue)) {
+                        opt.classList.add('disabled');
+                    } else {
+                        // 始终允许点击已选中的选项来取消选择
+                        opt.classList.remove('disabled');
+                    }
                 });
             },
             getValues(container) {
-                const selectedTags = container.querySelectorAll('.multiselect-tag');
-                return Array.from(selectedTags).map(tag => tag.dataset.value);
+                const leftSelected = container.querySelector('.multiselect-selected-left');
+                const rightSelected = container.querySelector('.multiselect-selected-right');
+                const values = [];
+                
+                if (leftSelected.dataset.value) {
+                    values.push(leftSelected.dataset.value);
+                }
+                
+                if (rightSelected.dataset.value) {
+                    values.push(rightSelected.dataset.value);
+                }
+                
+                return values;
             },
             saveSettings() {
                 const dataSource = document.querySelector('input[name="dataSource"]:checked').value;
@@ -1697,6 +2159,7 @@
                     const isValidUrl = url && (url.startsWith('http://') || url.startsWith('https://'));
                     UI.setJsonUrlError(!isValidUrl);
                     if (isValidUrl) {
+                        LocalStorage.set('jsonUrl', url);
                         DataService.fetchJsonData(url);
                         UI.toggleSettingsPanel(false);
                     } else {
@@ -1715,6 +2178,7 @@
 
                     document.querySelector('[data-error-id="current"]').classList.toggle('hidden', isCurrentValid);
                     document.querySelector('[data-error-id="next"]').classList.toggle('hidden', isNextValid);
+                    document.querySelector('[data-error-id="date"]').classList.toggle('hidden', isDateValid);
 
                     if (isCurrentValid && isNextValid && isDateValid) {
                         // 本地模式时使用本地设置里的日期，加上凌晨四点
@@ -1725,10 +2189,20 @@
                             updateDate: new Date(`${updateDate}T04:00:00+08:00`).toISOString()
                         };
                         LocalStorage.set('localData', newLocalData);
-                        const processedData = DataService.normalizeData({
-                            current: { trends: currentTrends, nextUpdate: newLocalData.updateDate },
-                            next: { trends: newLocalData.next } // 使用处理后的next值
-                        });
+                        // 构建格式1的JSON数据结构
+                        const format1Data = {
+                            current1: currentTrends[0],
+                            current2: currentTrends[1],
+                            nextUpdate: newLocalData.updateDate
+                        };
+                        
+                        // 只有当下期趋势不为空时才添加next1和next2字段
+                        if (newLocalData.next.length === 2) {
+                            format1Data.next1 = newLocalData.next[0];
+                            format1Data.next2 = newLocalData.next[1];
+                        }
+                        
+                        const processedData = DataService.normalizeData(format1Data);
                         appState.currentData = processedData;
                         LocalStorage.set('appData', processedData);
                         Renderer.updateUI(processedData);
@@ -1747,21 +2221,22 @@
                 const jsonUrl = LocalStorage.get('jsonUrl');
                 if (jsonUrl) DOMElements.settings.jsonUrlInput.value = jsonUrl;
                 const localData = LocalStorage.get('localData');
-                if (localData) {
-                    const currentMultiselect = document.querySelector('[data-multiselect-id="current"]');
-                    const nextMultiselect = document.querySelector('[data-multiselect-id="next"]');
-                    this.updateMultiselectUI(currentMultiselect, localData.current);
-                    this.updateMultiselectUI(nextMultiselect, localData.next);
-                    if (localData.updateDate) {
-                        // 确保正确处理UTC+8时区的日期
-                        const date = new Date(localData.updateDate);
-                        // 将日期转换为YYYY-MM-DD格式，使用UTC+8时区
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        DOMElements.settings.updateDateInput.value = `${year}-${month}-${day}`;
-                        console.log('设置日期输入框值:', DOMElements.settings.updateDateInput.value);
-                    }
+                
+                // 无论localData是否存在，都初始化选择框的UI
+                const currentMultiselect = document.querySelector('[data-multiselect-id="current"]');
+                const nextMultiselect = document.querySelector('[data-multiselect-id="next"]');
+                this.updateMultiselectUI(currentMultiselect, localData ? localData.current : []);
+                this.updateMultiselectUI(nextMultiselect, localData ? localData.next : []);
+                
+                if (localData && localData.updateDate) {
+                    // 确保正确处理UTC+8时区的日期
+                    const date = new Date(localData.updateDate);
+                    // 将日期转换为YYYY-MM-DD格式，使用UTC+8时区
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    DOMElements.settings.updateDateInput.value = `${year}-${month}-${day}`;
+                    console.log('设置日期输入框值:', DOMElements.settings.updateDateInput.value);
                 }
             },
             resetSettings() {
