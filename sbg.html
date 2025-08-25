@@ -2,1161 +2,2264 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.8, maximum-scale=3.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>绝区零随便观热卖</title>
-    
-    <!-- 引入入自定义字体并设置不同字重 -->
-    <style>
-        @font-face {
-            font-family: 'CustomFont';
-            src: url('/font.ttf') format('truetype');
-            font-weight: 400; /* 正常字重 */
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: 'CustomFont';
-            src: url('/font.ttf') format('truetype');
-            font-weight: 600; /* 中等加粗 */
-            font-style: normal;
-            font-display: swap;
-        }
-    </style>
-    
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for icons -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind CSS configuration -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3b82f6',
-                        secondary: '#64748b',
-                        neutral: '#f1f5f9',
-                        current: '#d4af37', // 金色
-                        next: '#64748b',    // 下期灰色
-                        border: '#e2e8f0',  // 边框颜色
-                        highlight: '#d97706', // 高亮数值颜色
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB',
+                        gold: '#eab308'
                     },
                     fontFamily: {
-                        sans: ['CustomFont', 'system-ui', 'sans-serif'], // 使用自定义字体
+                        sans: ['CustomFont', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
                     },
-                }
-            }
+                    boxShadow: {
+                        'main': '0 4px 14px 0 rgba(0, 0, 0, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.06)',
+                    },
+                },
+            },
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+    <style>
+        /* Custom font loading */
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('font.ttf') format('truetype');
+            font-weight: 400;
+            font-style: normal;
+        }
+        
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('font.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+        }
+        
+        /* Overall page styling */
+        body {
+            background-color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 16px;
+        }
+
+        /* Responsive font sizes for desktop screens */
+        @media (min-width: 1024px) {
+            /* For typical computer screens */
+            body {
+                font-size: 18px;
             }
-            .section-shadow {
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            
+            /* Increase font size for main content elements on desktop */
+            [data-trend-item] {
+                font-size: 1.1rem;
             }
-            .field-hover {
-                transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-                border: 2px solid #e2e8f0;
+            
+            /* Make trend item text larger on desktop */
+            [data-trend-item] p[data-text-id] {
+                font-size: 1.2rem;
             }
-            .field-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-                border-color: #d4af37;
+            
+            /* Increase heading sizes on desktop */
+            h2 {
+                font-size: 2rem !important;
             }
-            .image-container {
-                position: relative;
-                overflow: visible;
-                padding: 4px;
+            
+            h3 {
+                font-size: 1.5rem !important;
             }
-            .current-image-container {
-                position: relative;
-                overflow: hidden;
-                border-radius: 50%;
-                background-color: #d4af37;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-            }
-            .next-image-container {
-                position: relative;
-                overflow: hidden;
-                border-radius: 50%;
-                background-color: #64748b;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-            }
-            .corner-image {
-                position: absolute;
-                top: -6px;
-                left: -6px;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                object-fit: contain;
-                z-index: 10;
-                background: transparent;
-                padding: 0;
-                box-shadow: none;
-            }
-            .corner-placeholder {
-                position: absolute;
-                top: -6px;
-                left: -6px;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                z-index: 10;
-                background-color: #e2e8f0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: none;
-            }
+            
             .countdown-timer {
-                font-size: 0.8rem;
-                color: #dc2626;
-                margin-top: -2px;
-                margin-bottom: 4px;
-                text-align: center;
-                font-weight: 400;
+                font-size: 1rem;
             }
-            .timer-container {
-                text-align: center;
-                margin-bottom: 4px;
-                min-height: 20px;
-            }
-            .update-indicator {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 8px 16px;
-                background-color: #3b82f6;
-                color: white;
-                border-radius: 4px;
-                font-size: 0.9rem;
-                opacity: 0;
-                transform: translateY(20px);
-                transition: opacity 0.3s ease, transform 0.3s ease;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-            .update-indicator.show {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            .content-transition {
-                transition: all 0.5s ease-in-out;
-            }
-            .error-message {
-                color: #dc2626;
-                text-align: center;
-                padding: 10px;
-                font-size: 0.8rem;
-                font-weight: 400;
-            }
-            .content-image {
-                width: 70%;
-                height: 70%;
-                object-fit: contain;
-                border-radius: inherit;
-            }
-            .recommend-placeholder {
-                background-color: #f1f5f9;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #94a3b8;
-                width: 100%;
-                height: 100%;
-            }
-            .recommend-image-container {
-                width: 100%;
-                max-width: 160px;
-                margin: 0 auto;
-            }
-            .recommend-text-container {
-                width: 100%;
-                padding: 0 4px;
-                text-align: center;
-                margin-top: 0.5rem;
-                min-height: 3.5rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
+            
             .recommend-value {
-                font-size: 0.9rem;
-                color: #64748b;
-                font-weight: 400;
-                margin-top: 4px;
-                background-color: #f1f5f9;
-                padding: 2px 10px;
-                border-radius: 12px;
-                min-width: 48px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                border: 1.5px solid #cbd5e1;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                font-size: 1rem;
+                padding: 4px 14px;
             }
-            .recommend-value.highlight {
-                color: #d97706;
-                background-color: #fffbeb;
-                border: 1.5px solid #fde68a;
-                font-weight: 600;
-                box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
-                padding: 2px 12px;
-                transform: scale(1.05);
-                transition: all 0.2s ease;
-            }
-            .recommend-value .bonus {
-                color: #ef4444;
-                font-size: 0.8rem;
-                font-weight: 600;
-                margin-left: 4px;
-                display: inline-flex;
-                align-items: center;
-            }
-            .recommend-value .bonus::before {
-                content: "+";
-                animation: pulse 1.5s infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { opacity: 1; transform: scale(1); }
-                50% { opacity: 0.7; transform: scale(1.1); }
-            }
-            .loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 255, 255, 0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-            }
-            .loading-overlay.active {
-                opacity: 1;
-                pointer-events: all;
-            }
-            .empty-state {
-                min-height: 120px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #94a3b8;
-            }
-            .trend-item {
-                min-height: 60px;
-            }
-            .empty-trend {
-                background-color: #f8fafc;
-                border: 1px dashed #cbd5e1;
-                color: #94a3b8;
+        }
+        
+        @media (min-width: 1280px) {
+            /* For large desktop displays */
+            body {
+                font-size: 19px;
             }
             
-            /* 作者信息样式 */
-            .author-info {
-                text-align: center;
-                margin-top: 2rem;
-                padding: 1rem;
-                color: #64748b;
-                font-size: 0.9rem;
-                border-top: 1px solid #e2e8f0;
-                opacity: 0.8;
-                transition: opacity 0.3s ease;
-                font-weight: 400;
-            }
-            .author-info:hover {
-                opacity: 1;
-            }
-            .author-name {
-                color: #d4af37;
-                font-weight: 600;
-                margin: 0 4px;
-            }
-            
-            /* 趋势和推荐文本样式调整 */
-            [data-id$="-text"] {
-                font-weight: 400;
+            /* Further increase font sizes on large screens */
+            [data-trend-item] p[data-text-id] {
+                font-size: 1.3rem;
             }
             
             h2 {
-                font-weight: 600 !important;
+                font-size: 2.2rem !important;
             }
             
-            /* 基础趋势区域布局 */
-            .trends-container {
-                display: flex !important;
-                flex-wrap: wrap !important;
-                gap: 4px !important;
+            h3 {
+                font-size: 1.7rem !important;
+            }
+        }
+        
+        /* Ensure better font scaling across devices */
+        h1, h2, h3, h4, h5, h6 {
+            font-size-adjust: 0.5;
+        }
+        
+        /* Ensure consistency in trend item text */
+        [data-trend-item] p[data-text-id] {
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* Fix settings panel text size inconsistencies */
+        .settings-panel {
+            /* Reset font scaling for the settings panel */
+            font-size: 17px;
+        }
+        
+        .settings-panel h3 {
+            /* Settings panel title */
+            font-size: 1.35rem !important;
+        }
+        
+        .settings-panel h4 {
+            /* Settings panel section headers */
+            font-size: 1.15rem !important;
+        }
+        
+        .settings-panel label {
+            /* Form labels */
+            font-size: 1rem;
+        }
+        
+        .settings-panel p {
+            /* Description text */
+            font-size: 0.95rem;
+        }
+        
+        .settings-panel #timezoneInfo {
+            /* Timezone info text */
+            font-size: 0.9rem;
+        }
+        
+        /* Adjust settings panel text size for larger screens */
+        @media (min-width: 1024px) {
+            .settings-panel {
+                font-size: 18px; /* Increase settings panel font size on desktop */
             }
             
-            /* 响应式调整 */
-            @media (max-width: 320px) {
-                .trends-container { flex-direction: column !important; }
-                #currentTrendSection, #nextTrendSection {
-                    flex: 1 0 100% !important;
-                    min-width: 100% !important;
-                    padding: 4px !important;
-                }
-                h2 { font-size: 0.9rem !important; margin-bottom: 2px !important; }
-                .image-container { width: 56px !important; height: 56px !important; }
-                [data-id$="-text"] { font-size: 0.75rem !important; }
-                .countdown-timer { font-size: 0.7rem !important; }
-                #currentRecommendSection .grid, #nextRecommendSection .grid { grid-template-columns: 1fr !important; }
-                .recommend-value { font-size: 0.8rem; padding: 1px 8px; }
-                .recommend-value .bonus { font-size: 0.7rem; margin-left: 2px; }
-                .author-info { font-size: 0.8rem; padding: 0.5rem; }
-                
-                /* 调整更新提示位置 */
-                .update-indicator {
-                    bottom: 20px !important;
-                }
+            .settings-panel h3 {
+                font-size: 1.45rem !important;
+            }
+        }
+
+        /* Smooth transition for content updates */
+        .content-transition {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        .content-loading {
+            opacity: 0.5;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        /* Enhanced hover effect for fields */
+        .field-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid #cbd5e1;
+        }
+        .field-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
+            border-color: #d4af37;
+        }
+
+        /* Image container styling */
+        .image-container {
+            position: relative;
+            border-radius: 0.5rem;
+        }
+        .trend-image-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .trend-image-wrapper { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .trend-image-wrapper.current { background-color: #d4af37; }
+        .trend-image-wrapper.next { background-color: #64748b; }
+
+        .trend-image {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .trend-image.loaded {
+            opacity: 1;
+        }
+        .trend-image-placeholder {
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+
+        /* Hot icon in the corner */
+        .corner-image {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            width: 32px;
+            height: 32px;
+            z-index: 10;
+        }
+
+        /* Fixed height placeholder for consistent spacing */
+        .fixed-height-placeholder {
+            height: 30px;
+            width: 100%;
+        }
+
+        /* Countdown timer styling */
+        .countdown-timer {
+            font-size: 0.9rem;
+            color: #dc2626;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        
+        /* 在窄屏幕下调整趋势项目样式 */
+        @media (max-width: 640px) {
+            [data-trend-item] {
+                gap: 0 !important; /* 设置为最小间距 */
+                padding-top: 12px !important;
+                padding-bottom: 0 !important;
+            }
+            [data-trend-item] > div:last-child {
+                min-height: auto !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+        }
+
+        /* Recommended value label with bonus indicator */
+        .recommend-value {
+            font-size: 0.9rem;
+            color: #64748b;
+            background-color: #f1f5f9;
+            padding: 2px 12px;
+            border-radius: 9999px;
+            border: 2px solid #c4d6ec;
+            transition: all 0.2s ease;
+        }
+        .recommend-value.highlight {
+            color: #eab308;
+            background-color: #fffbeb;
+            border-color: #fcd34d;
+            font-weight: 600;
+            transform: scale(1.05);
+        }
+        .recommend-value .bonus {
+            color: #ef4444;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 3px;
+        }
+        .recommend-value .bonus::before {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Settings panel */
+        
+        /* 优化的响应式设置按钮 - 确保不遮挡内容且方便点击 */
+        #settingsButton {
+            /* 基本样式保持不变，但确保有足够的点击区域 */
+            touch-action: manipulation;
+            /* 确保在视觉上与内容区分开 */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            /* 添加轻微的过渡效果 */
+            transition: all 0.2s ease;
+        }
+        
+        /* 鼠标悬停和焦点状态优化 */
+        #settingsButton:hover, #settingsButton:focus {
+            background-color: rgba(59, 130, 246, 0.9);
+            transform: scale(1.1);
+            outline: none;
+        }
+        
+        /* 针对桌面设备的优化 */
+        @media (min-width: 1024px) {
+            #settingsButton {
+                /* 保持原有大小，但调整位置防止遮挡内容 */
+                top: 16px;
+                right: 16px;
+                z-index: 9990;
+            }
+        }
+        
+        /* 针对平板和小屏幕设备的优化 */
+        @media (max-width: 1023px) and (min-width: 640px) {
+            #settingsButton {
+                width: 8vw;
+                height: 8vw;
+                max-width: 48px;
+                max-height: 48px;
+                min-width: 40px;
+                min-height: 40px;
+                top: 8px;
+                right: 8px;
             }
             
-            @media (min-width: 320px) and (max-width: 480px) {
-                #currentTrendSection, #nextTrendSection { flex: 1 0 48% !important; }
-                .trend-item { flex-direction: column !important; align-items: center !important; text-align: center; }
-                #currentRecommendSection .grid, #nextRecommendSection .grid { grid-template-columns: repeat(2, 1fr) !important; }
+            #settingsButton i {
+                font-size: 1.5rem;
             }
+        }
+        
+        /* 针对移动设备的优化 */
+        @media (max-width: 639px) {
+            #settingsButton {
+                /* 确保有足够大的触摸目标 */
+                width: 12vw;
+                height: 12vw;
+                max-width: 56px;
+                max-height: 56px;
+                min-width: 44px;
+                min-height: 44px;
+                /* 更靠近角落，减少对内容的遮挡 */
+                top: 4px;
+                right: 4px;
+                /* 增加阴影，使其在复杂背景下更易识别 */
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+            
+            #settingsButton i {
+                font-size: 1.75rem;
+            }
+        }
+        
+        /* 针对非常小的屏幕优化 */
+        @media (max-width: 360px) {
+            #settingsButton {
+                width: 14vw;
+                height: 14vw;
+                max-width: 48px;
+                max-height: 48px;
+                min-width: 40px;
+                min-height: 40px;
+                top: 2px;
+                right: 2px;
+            }
+            
+            #settingsButton i {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* 针对横屏和小高度屏幕的优化 */
+        @media (max-height: 400px) {
+            #settingsButton {
+                /* 更靠近角落，适应有限的垂直空间 */
+                top: 2px !important;
+                right: 2px !important;
+                /* 在横屏模式下保持合适的大小 */
+                width: 8vh;
+                height: 8vh;
+                max-width: 48px;
+                max-height: 48px;
+                min-width: 36px;
+                min-height: 36px;
+            }
+        }
+        
+        /* 防止遮挡内容的额外优化 */
+        /* 当内容区域宽度不足时，自动调整按钮位置 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            #content-wrapper {
+                padding-right: 60px;
+            }
+        }
+        
+        /* 针对触摸设备的优化，确保有足够的点击目标大小 */
+        @media (hover: none) and (pointer: coarse) {
+            #settingsButton {
+                /* 触摸目标最小尺寸应符合WCAG AA标准 */
+                min-width: 48px !important;
+                min-height: 48px !important;
+            }
+        }
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 380px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 9998;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+        .settings-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9997;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .settings-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Custom multiselect component */
+        .multiselect-container { position: relative; }
+        .multiselect-selected {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            min-height: 42px;
+        }
+        .multiselect-options {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            z-index: 2100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .multiselect-options.visible { 
+            display: block;
+        }
+        .multiselect-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .multiselect-selected-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+        }
+        .multiselect-selected-left,
+.multiselect-selected-right {
+    transition: background-color 0.2s ease;
+    display: inline-flex;
+    flex-direction: column;
+    padding: 0.5rem 1rem;
+    min-width: 140px;
+    width: 140px;
+    height: 56px;
+    position: relative;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    justify-content: center;
+    box-sizing: border-box;
+}
+        .multiselect-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .multiselect-selected-left:hover,
+        .multiselect-selected-right:hover {
+            background-color: #f3f4f6;
+        }
+        .multiselect-boxes-container {
+            display: flex;
+            width: 100%;
+            position: relative;
+        }
+        .multiselect-boxes-container::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #60a5fa;
+            transform: translateX(-50%);
+        }
+        .multiselect-single-box {
+            width: 50%;
+            background-color: #93c5fd;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+        }
+        .multiselect-single-box i {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .multiselect-single-box i:hover {
+            color: #ef4444;
+        }
+        .multiselect-option.selected { border: 2px solid #3b82f6; background-color: transparent; color: black; transition: all 0.2s ease; }
+        .multiselect-option { border: 2px solid transparent; border-radius: 4px; padding: 4px 8px; color: black; transition: all 0.2s ease; }
+        .multiselect-option:hover:not(.disabled):not(.selected) { background-color: #dbeafe; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
+        .multiselect-option.selected:hover:not(.disabled) { border: 2px solid #2563eb; background-color: transparent; }
+        .multiselect-option.disabled { color: #94a3b8; cursor: not-allowed; background-color: #f8fafc; }
+        .multiselect-tag {
+            background-color: transparent;
+            border: 2px solid #4f46e5;
+            color: #4338ca;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .multiselect-tag-remove { cursor: pointer; font-weight: bold; }
+        
+        /* Custom Modal styles */
+        .custom-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .custom-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        /* 确保趋势项目高度统一且内容垂直居中 */
+        [data-trend-item] {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 确保趋势项目内的文本区域垂直居中 */
+        [data-trend-item] > div:last-child {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 80px;
+        }
+        
+        /* 确保推荐项目高度统一但不过于限制 */
+        [data-recommend-grid] > div {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 确保文本区域有固定的最小高度，防止内容不同导致高度变化 */
+        .field-hover > div:last-child {
+            min-height: 60px;
+        }
+        
+        .custom-modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
-    <!-- 加载遮罩 -->
-    <div class="loading-overlay" id="loadingOverlay">
+<body class="min-h-screen">
+
+    <div id="loadingOverlay" class="loading-overlay">
         <div class="text-center">
-            <i class="fa fa-circle-o-notch fa-spin text-4xl text-current mb-4"></i>
-            <p class="text-gray-700">加载中...</p>
+            <i class="fa fa-circle-o-notch fa-spin text-4xl text-primary mb-4"></i>
+            <p class="text-gray-700 font-semibold">正在加载数据...</p>
         </div>
     </div>
     
-    <div class="update-indicator" id="updateIndicator">内容已更新</div>
-    
-    <div class="container mx-auto px-2 sm:px-4 py-6 max-w-7xl">
-        <!-- 顶部趋势区域 -->
-        <div class="trends-container mb-8">
-            <!-- 本期趋势 -->
-            <div class="bg-white rounded-xl p-3 sm:p-6 section-shadow content-transition flex-1 min-w-[140px]" id="currentTrendSection">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">本期趋势</h2>
-                <div class="timer-container invisible">
-                    <p class="countdown-timer text-sm sm:text-base">
-                        <i class="fa fa-clock-o mr-1"></i>占位区域
-                    </p>
-                </div>
-                
-                <div class="space-y-4 sm:space-y-6">
-                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
-                            <div class="corner-placeholder" data-for="current1">
-                                <i class="fa fa-spinner fa-spin text-gray-500"></i>
-                            </div>
-                            <div class="current-image-container" data-id="current1">
-                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-gray-700 truncate" data-id="current1-text">加载中...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
-                            <div class="corner-placeholder" data-for="current2">
-                                <i class="fa fa-spinner fa-spin text-gray-500"></i>
-                            </div>
-                            <div class="current-image-container" data-id="current2">
-                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-gray-700 truncate" data-id="current2-text">加载中...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 下期趋势 -->
-            <div class="bg-white rounded-xl p-3 sm:p-6 section-shadow content-transition flex-1 min-w-[140px]" id="nextTrendSection">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">下期趋势</h2>
-                <div class="timer-container">
-                    <p class="countdown-timer text-sm sm:text-base" id="countdownTimer">
-                        <i class="fa fa-clock-o mr-1"></i>刷新时间：计算中...
-                    </p>
-                </div>
-                <p class="error-message hidden text-sm" id="errorMessage"></p>
-                
-                <div class="space-y-4 sm:space-y-6">
-                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
-                            <div class="next-image-container" data-id="next1">
-                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-gray-700 truncate" data-id="next1-text">加载中...</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg trend-item">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0">
-                            <div class="next-image-container" data-id="next2">
-                                <i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-gray-700 truncate" data-id="next2-text">加载中...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 本期推荐 -->
-        <div class="bg-white rounded-xl p-6 section-shadow mb-8 content-transition" id="currentRecommendSection">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">本期推荐</h2>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="currentRec1">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="currentRec1-text">加载中...</p>
-                        <span class="recommend-value" data-id="currentRec1-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="currentRec2">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="currentRec2-text">加载中...</p>
-                        <span class="recommend-value" data-id="currentRec2-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="currentRec3">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="currentRec3-text">加载中...</p>
-                        <span class="recommend-value" data-id="currentRec3-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="currentRec4">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="currentRec4-text">加载中...</p>
-                        <span class="recommend-value" data-id="currentRec4-value"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 下期推荐 -->
-        <div class="bg-white rounded-xl p-6 section-shadow content-transition" id="nextRecommendSection">
-            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">下期推荐</h2>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="nextRec1">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="nextRec1-text">加载中...</p>
-                        <span class="recommend-value" data-id="nextRec1-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="nextRec2">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="nextRec2-text">加载中...</p>
-                        <span class="recommend-value" data-id="nextRec2-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="nextRec3">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="nextRec3-text">加载中...</p>
-                        <span class="recommend-value" data-id="nextRec3-value"></span>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
-                    <div class="recommend-image-container aspect-square rounded-lg overflow-hidden">
-                        <div class="recommend-placeholder" data-id="nextRec4">
-                            <i class="fa fa-spinner fa-spin text-3xl"></i>
-                        </div>
-                    </div>
-                    <div class="recommend-text-container">
-                        <p class="text-gray-700" data-id="nextRec4-text">加载中...</p>
-                        <span class="recommend-value" data-id="nextRec4-value"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 作者信息 -->
-        <div class="author-info">
-            <p>by <span class="author-name">雨雾杰</span> | 绝区零随便观热卖参考</p>
-        </div>
+    <!-- Custom Modal for Alerts -->
+    <div id="customModal" class="custom-modal">
+        <p id="modalMessage" class="text-gray-800 font-medium text-lg mb-4"></p>
+        <button id="modalCloseButton" class="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-semibold">确定</button>
+    </div>
+    <div id="customModalBackdrop" class="custom-modal-backdrop"></div>
+
+    <div id="updateIndicator" class="fixed bottom-5 right-5 px-4 py-2 bg-primary text-white rounded-lg shadow-lg opacity-0 transform translate-y-4 transition-all duration-300">
+        内容已更新
     </div>
 
+    <button id="settingsButton" class="fixed top-4 right-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg cursor-pointer z-[9990] hover:bg-primary/90 hover:scale-110 transition-transform" aria-label="打开设置">
+        <i class="fa fa-cog text-xl"></i>
+    </button>
+
+    <div id="settingsPanel" class="settings-panel">
+        <div class="p-4 border-b border-border-light flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">数据设置</h3>
+            <button id="closeSettings" class="text-gray-500 hover:text-gray-800 transition-colors" aria-label="关闭设置">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-grow p-4 overflow-y-auto">
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-700 mb-3">数据来源</h4>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="dataSource" value="local" checked> 本地手动设置</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="dataSource" value="json"> 外部JSON网址</label>
+                </div>
+                <div id="timezoneInfo" class="mt-3 p-2 bg-gray-100 text-gray-600 text-xs text-center rounded-md"></div>
+            </div>
+
+            <div id="jsonUrlGroup" class="mb-6 hidden">
+                <label class="block font-medium text-sm text-gray-700 mb-2" for="jsonUrl">数据来源网址</label>
+                <input type="url" id="jsonUrl" class="w-full p-2 border border-border-light rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none" placeholder="https://example.com/data.json">
+                <div id="jsonUrlError" class="text-red-500 text-xs mt-1 hidden">请输入有效的URL</div>
+                <p class="text-xs text-gray-500 mt-2">JSON数据应包含: current1, current2, next1, next2 和 nextUpdate</p>
+            </div>
+
+            <div id="localSettingsGroup">
+                <div class="mb-6">
+                    <label class="block font-medium text-sm text-gray-700 mb-2">本期趋势 (选择2个)</label>
+                    <div class="multiselect-container" data-multiselect-id="current"></div>
+                    <div data-error-id="current" class="text-red-500 text-xs mt-1 hidden">请选择2个不同的趋势</div>
+                </div>
+                <div class="mb-6">
+                    <label class="block font-medium text-sm text-gray-700 mb-2">下期趋势 (选择2个)</label>
+                    <div class="multiselect-container" data-multiselect-id="next"></div>
+                    <div data-error-id="next" class="text-red-500 text-xs mt-1 hidden">请选择2个不同的趋势</div>
+                </div>
+                <div class="mb-6">
+                    <label class="block font-medium text-sm text-gray-700 mb-2">下次更新日期 (UTC+8)</label>
+                    <input type="date" id="updateDate" class="w-full p-2 border border-border-light rounded-md focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none">
+                    <div data-error-id="date" class="text-red-500 text-xs mt-1 hidden">请设置更新日期</div>
+                    <p class="text-xs text-gray-500 mt-2">更新时间固定为服务器所在时区的凌晨4点</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-border-light bg-white">
+            <button id="saveSettings" class="w-full bg-primary text-white py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors font-semibold">保存设置</button>
+            <button id="resetSettings" class="w-full mt-2 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">重置数据</button>
+        </div>
+    </div>
+    <div id="settingsOverlay" class="settings-overlay"></div>
+
+    <main class="container mx-auto px-2 sm:px-6 py-6 max-w-6xl">
+        <section class="mb-8 flex flex-row gap-4 flex-wrap justify-between sm:gap-6">
+            <div id="currentTrendSection" class="flex-1 bg-white rounded-xl p-4 sm:p-6 shadow-main content-transition">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">本期趋势</h2>
+                <!-- 为保持与下期趋势区域高度一致，添加与倒计时同高度的占位元素 -->
+                <div class="h-[24px] w-full my-2"></div>
+                <div class="space-y-4">
+                    <div data-trend-item="current1" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
+                    <div data-trend-item="current2" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
+                </div>
+            </div>
+            <div id="nextTrendSection" class="flex-1 bg-white rounded-xl p-4 sm:p-6 shadow-main content-transition">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">下期趋势</h2>
+                <p id="countdownTimer" class="countdown-timer text-center flex items-center justify-center my-2"><i class="fa fa-clock-o mr-1"></i>计算中...</p>
+                <div class="space-y-4">
+                    <div data-trend-item="next1" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
+                    <div data-trend-item="next2" class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 field-hover p-3 rounded-lg text-center sm:text-left"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="currentRecommendSection" class="bg-white rounded-xl p-4 sm:p-6 shadow-main mb-8 content-transition">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">本期推荐</h2>
+            <div class="grid grid-cols-2 [@media(max-width:380px)]:grid-cols-1 [@media(min-width:870px)]:grid-cols-4 gap-4 sm:gap-6" data-recommend-grid="current"></div>
+        </section>
+
+        <section id="nextRecommendSection" class="bg-white rounded-xl p-4 sm:p-6 shadow-main content-transition">
+            <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">下期推荐</h2>
+            <div class="grid grid-cols-2 [@media(max-width:380px)]:grid-cols-1 [@media(min-width:870px)]:grid-cols-4 gap-4 sm:gap-6" data-recommend-grid="next"></div>
+        </section>
+
+        <footer class="text-center mt-8 py-4 text-gray-500 text-sm border-t border-border-light">
+            <p>by <strong class="font-semibold text-gold">雨雾杰</strong> | 绝区零随便观热卖参考</p>
+        </footer>
+    </main>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 配置与映射关系 - 使用本地字体和图片，数据保持网络获取
-            const API_URL = 'https://img.yuwujie.top/sbg.json'; // 保持原网络地址
-            const FIXED_CORNER_IMAGE = "sbg/hot.png"; // 本地图片
-            const MAX_LOADING_TIME = 15000; // 最大加载时间15秒
-            
-            // 趋势文本与图片URL的映射关系 - 使用本地路径
-            const TREND_IMAGE_MAP = {
-                "器引百味": "sbg/qybw.png",
-                "节礼贺幛": "sbg/jlhz.png",
-                "游方巧器": "sbg/yfqq.png",
-                "虚室坐修": "sbg/xszx.png",
-                "本草方剂": "sbg/bcfj.png",
-                "素裳岳履": "sbg/ssyl.png"
-            };
-            
-            // 推荐物品与图片URL的映射关系 - 使用本地路径
-            const RECOMMEND_IMAGE_MAP = {
-                "异构抗凝膏": "sbg/ygkng.png",
-                "镇厄面": "sbg/zem.png",
-                "守一玄佩": "sbg/syxp.png",
-                "相位桩": "sbg/xwz.png",
-                "醒心促愈素": "sbg/xxcys.png",
-                "松烟釜": "sbg/syf.png",
-                "云魄琴炉": "sbg/ypql.png",
-                "静笃护腕": "sbg/jdhw.png",
-                "云门叠": "sbg/ymd.png"
-            };
-            
-            // 物品默认数值
-            const ITEM_BASE_VALUES = {
-                "异构抗凝膏": 100,
-                "镇厄面": 95,
-                "醒心促愈素": 90,
-                "云门叠": 87,
-                "云魄琴炉": 86,
-                "静笃护腕": 85,
-                "守一玄佩": 82,
-                "松烟釜": 81,
-                "相位桩": 80
-            };
-            
-            // 类别与物品的对应关系
-            const CATEGORY_ITEMS = {
-                "本草方剂": ["异构抗凝膏", "醒心促愈素"],
-                "节礼贺幛": ["镇厄面", "云门叠"],
-                "虚室坐修": ["云魄琴炉", "守一玄佩"],
-                "素裳岳履": ["静笃护腕"],
-                "器引百味": ["松烟釜"],
-                "游方巧器": ["相位桩"]
-            };
-            
-            // 元素引用
-            const updateIndicator = document.getElementById('updateIndicator');
-            const countdownElement = document.getElementById('countdownTimer');
-            const errorMessage = document.getElementById('errorMessage');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            let countdownTimer = null;
-            let isTrendSwitched = false;
-            let originalData = null;
-            let loadingTimeout = null;
-            
-            // 显示/隐藏加载遮罩
-            function showLoading() {
-                loadingOverlay.classList.add('active');
-                
-                // 设置最大加载时间，超时后强制隐藏加载状态
-                clearTimeout(loadingTimeout);
-                loadingTimeout = setTimeout(() => {
-                    hideLoading();
-                    showError('加载超时，请刷新页面重试');
-                }, MAX_LOADING_TIME);
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- Custom Modal (replaces alert()) ---
+        const Modal = {
+            show(message) {
+                document.getElementById('modalMessage').textContent = message;
+                document.getElementById('customModalBackdrop').classList.add('active');
+                document.getElementById('customModal').classList.add('active');
+            },
+            hide() {
+                document.getElementById('customModalBackdrop').classList.remove('active');
+                document.getElementById('customModal').classList.remove('active');
             }
-            
-            function hideLoading() {
-                loadingOverlay.classList.remove('active');
-                clearTimeout(loadingTimeout);
-            }
-            
-            // 显示更新提示
-            function showUpdateIndicator() {
-                updateIndicator.classList.add('show');
-                setTimeout(() => updateIndicator.classList.remove('show'), 5000);
-            }
-            
-            // 显示错误信息
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorMessage.classList.remove('hidden');
-                
-                // 5秒后自动隐藏非关键错误
-                if (!message.includes('超时') && !message.includes('失败')) {
-                    setTimeout(() => {
-                        errorMessage.classList.add('hidden');
-                    }, 5000);
+        };
+        document.getElementById('modalCloseButton').addEventListener('click', Modal.hide);
+
+        // --- Global Configuration ---
+        const CONFIG = {
+            // Resource paths
+            HOT_ICON_URL: "/sbg/hot.png",
+            TREND_IMAGE_MAP: {
+                "器引百味": "/sbg/qybw.png",
+                "节礼贺幛": "/sbg/jlhz.png",
+                "游方巧器": "/sbg/yfqq.png",
+                "虚室坐修": "/sbg/xszx.png",
+                "本草方剂": "/sbg/bcfj.png",
+                "素裳岳履": "/sbg/ssyl.png"
+            },
+            RECOMMEND_IMAGE_MAP: {
+                "异构抗凝膏": "/sbg/ygkng.png",
+                "镇厄面": "/sbg/zem.png",
+                "守一玄佩": "/sbg/syxp.png",
+                "相位桩": "/sbg/xwz.png",
+                "醒心促愈素": "/sbg/xxcys.png",
+                "松烟釜": "/sbg/syf.png",
+                "云魄琴炉": "/sbg/ypql.png",
+                "静笃护腕": "/sbg/jdhw.png",
+                "云门叠": "/sbg/ymd.png"
+            },
+            // Game data
+            ITEM_BASE_VALUES: { "异构抗凝膏": 100, "镇厄面": 95, "醒心促愈素": 90, "云门叠": 87, "云魄琴炉": 86, "静笃护腕": 85, "守一玄佩": 82, "松烟釜": 81, "相位桩": 80 },
+            CATEGORY_ITEMS: { "本草方剂": ["异构抗凝膏", "醒心促愈素"], "节礼贺幛": ["镇厄面", "云门叠"], "虚室坐修": ["云魄琴炉", "守一玄佩"], "素裳岳履": ["静笃护腕"], "器引百味": ["松烟釜"], "游方巧器": ["相位桩"] },
+            // Application settings
+            JSON_FETCH_INTERVAL: 300000, // 5 minutes
+            MAX_LOADING_TIME: 15000, // 15 seconds
+            TREND_OPTIONS: ["游方巧器", "本草方剂", "器引百味", "虚室坐修", "素裳岳履", "节礼贺幛"],
+            BONUS_PERCENTAGE: 0.20, // 20% bonus as requested by the user
+        };
+
+        // --- State Management ---
+        const appState = {
+            isLoading: false,
+            countdownInterval: null,
+            jsonFetchInterval: null,
+            isTrendSwitched: false,
+            currentData: null,
+            systemTimezoneOffset: new Date().getTimezoneOffset(),
+        };
+
+        // --- DOM Element Caching ---
+        const DOMElements = {
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            updateIndicator: document.getElementById('updateIndicator'),
+            countdownTimer: document.getElementById('countdownTimer'),
+            settings: {
+                panel: document.getElementById('settingsPanel'),
+                overlay: document.getElementById('settingsOverlay'),
+                openBtn: document.getElementById('settingsButton'),
+                closeBtn: document.getElementById('closeSettings'),
+                saveBtn: document.getElementById('saveSettings'),
+                resetBtn: document.getElementById('resetSettings'),
+                dataSourceRadios: document.querySelectorAll('input[name="dataSource"]'),
+                jsonUrlGroup: document.getElementById('jsonUrlGroup'),
+                localSettingsGroup: document.getElementById('localSettingsGroup'),
+                jsonUrlInput: document.getElementById('jsonUrl'),
+                jsonUrlError: document.getElementById('jsonUrlError'),
+                updateDateInput: document.getElementById('updateDate'),
+                timezoneInfo: document.getElementById('timezoneInfo'),
+            },
+            contentSections: document.querySelectorAll('.content-transition'),
+        };
+
+        // --- Templates ---
+        const Templates = {
+            // Updated template to support the new vertical layout
+            trendItem: (id, type, trendName) => `
+                <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                    <div class="trend-image-wrapper ${type}" data-image-wrapper-id="${id}">
+                        <i class="fa fa-spinner fa-spin text-2xl text-white/80"></i>
+                    </div>
+                    ${type === 'current' ? `<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display='none'">` : ''}
+                </div>
+                <div class="flex-1 min-w-0 mt-2 sm:mt-0">
+                    <p class="text-gray-700 truncate font-semibold" data-text-id="${id}">${trendName}</p>
+                </div>
+            `,
+            recommendItem: (id) => `
+                <div class="flex flex-col items-center field-hover p-4 rounded-lg">
+                    <div class="w-full max-w-[160px] aspect-square rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center" data-rec-image-wrapper-id="${id}">
+                        <i class="fa fa-sliders text-3xl text-gray-400"></i>
+                    </div>
+                    <div class="text-center mt-2 min-h-[3.5rem] flex flex-col items-center justify-center">
+                        <p class="text-gray-700" data-rec-text-id="${id}">请设置数据</p>
+                        <span class="recommend-value mt-1" data-rec-value-id="${id}"></span>
+                    </div>
+                </div>
+            `,
+            multiselect: (id, options) => `
+                <div class="multiselect-combined-wrapper border border-border-light rounded-md p-2 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary outline-none">
+                    <div class="multiselect-selected-container m-0 p-0">
+                        <div class="multiselect-selection-group flex items-center justify-between w-full gap-0.5">
+                            <div class="multiselect-selected-left cursor-pointer relative text-base w-24 bg-white hover:bg-gray-50 transition-all border border-gray-200 rounded-md py-0 px-2 h-8 flex items-center justify-center">
+                                选择项
+                            </div>
+                            <div class="multiselect-selected-right cursor-pointer relative text-base w-24 bg-white hover:bg-gray-50 transition-all border border-gray-200 rounded-md py-0 px-2 h-8 flex items-center justify-center">
+                                选择项
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="multiselect-options">
+                    <div class="multiselect-grid p-2 gap-2">
+                        ${options.map(opt => `<div class="multiselect-option p-2 hover:bg-gray-100 cursor-pointer text-center text-lg transition-all" data-value="${opt}">${opt}</div>`).join('')}
+                    </div>
+                </div>
+            `,
+        };
+
+        // --- Data Service Module ---
+        const DataService = {
+            async initializeData() {
+                UI.showLoading();
+                try {
+                    // 先检查数据源设置，JSON模式优先级最高
+                    const dataSource = LocalStorage.get('dataSource') || 'local';
+                    const jsonUrl = LocalStorage.get('jsonUrl');
+                    
+                    // 如果设置了JSON数据源且有URL，优先从URL获取数据
+                    if (dataSource === 'json' && jsonUrl) {
+                        try {
+                            await this.fetchJsonData(jsonUrl);
+                            console.log('从JSON URL加载数据成功');
+                            // 设置倒计时
+                            this.scheduleUpdateCheck();
+                            UI.hideLoading();
+                            return; // 成功获取数据后直接返回
+                        } catch (error) {
+                            console.warn('从JSON URL加载失败:', error);
+                            UI.hideLoading(); // 确保失败时也隐藏加载状态
+                            // 继续尝试其他数据来源
+                        }
+                    }
+                    
+                    // 检查本地是否有存储的数据
+                    // 先检查本地是否有存储的数据，并验证其有效性
+                    const storedData = LocalStorage.get('appData');
+                    const localData = LocalStorage.get('localData');
+                    
+                    // 优先使用有效的存储数据
+                    if (storedData && storedData.current && storedData.current.trends && storedData.current.trends.length > 0) {
+                        appState.currentData = storedData;
+                        Renderer.updateUI(appState.currentData);
+                        console.log('使用有效的本地存储appData');
+                    } else if (localData && localData.current && localData.current.length > 0) {
+                        // 如果存储数据无效但有本地设置数据，使用本地设置数据
+                        const format1Data = {
+                            current1: localData.current[0],
+                            current2: localData.current[1],
+                            nextUpdate: localData.updateDate || this.getDefaultNextUpdate()
+                        };
+                        
+                        // 只有当下期趋势不为空时才添加next1和next2字段
+                        if (localData.next && localData.next.length === 2) {
+                            format1Data.next1 = localData.next[0];
+                            format1Data.next2 = localData.next[1];
+                        }
+                        
+                        const processedData = this.normalizeData(format1Data);
+                        appState.currentData = processedData;
+                        LocalStorage.set('appData', processedData);
+                        Renderer.updateUI(processedData);
+                        console.log('使用本地设置的localData');
+                    } else {
+                            // 如果没有任何有效数据，使用默认数据
+                            try {
+                                await this.fetchDefaultData();
+                                console.log('加载默认数据成功');
+                            } catch (defaultError) {
+                                console.error('加载默认数据失败:', defaultError);
+                                this.loadDefaultPlaceholderData();
+                            }
+                        }
+                    
+                    // 设置倒计时
+                    this.scheduleUpdateCheck();
+                    UI.hideLoading();
+                } catch (error) {
+                    console.error('初始化数据失败：', error);
+                    // 即使出错，也使用空格占位符作为最后的兜底方案
+                    this.loadDefaultPlaceholderData();
+                    
+                    // 设置倒计时
+                    this.scheduleUpdateCheck();
                 }
-            }
+                
+                UI.hideLoading();
+            },
             
-            // 重置为加载中状态
-            function resetToLoadingState() {
-                isTrendSwitched = false;
-                originalData = null;
-                
-                // 重置所有趋势项
-                ['current1', 'current2', 'next1', 'next2'].forEach(id => {
-                    const container = document.querySelector(`[data-id="${id}"]`);
-                    if (container) {
-                        container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    }
-                    
-                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                    if (textEl) {
-                        textEl.textContent = '加载中...';
-                    }
-                    
-                    // 重置角落图标
-                    if (id.startsWith('current')) {
-                        const placeholder = document.querySelector(`.corner-placeholder[data-for="${id}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-gray-500"></i>';
-                        }
-                    }
-                });
-                
-                // 重置推荐项
-                ['currentRec', 'nextRec'].forEach(prefix => {
-                    for (let i = 1; i <= 4; i++) {
-                        const id = `${prefix}${i}`;
-                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-3xl"></i>';
-                        }
-                        
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) {
-                            textEl.textContent = '加载中...';
-                        }
-                        
-                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                        if (valueEl) {
-                            valueEl.textContent = '';
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                });
-                
-                countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>刷新时间：计算中...';
-                errorMessage.classList.add('hidden');
-            }
+            // 获取默认的nextUpdate时间
+            getDefaultNextUpdate() {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dateOnly = tomorrow.toISOString().split('T')[0];
+                return `${dateOnly}T04:00:00+08:00`;
+            },
             
-            // 创建角落图片
-            function createCornerImage(targetId) {
-                const img = document.createElement('img');
-                img.src = FIXED_CORNER_IMAGE;
-                img.className = 'corner-image';
-                img.alt = `${targetId}热门标识`;
-                
-                const placeholder = document.querySelector(`.corner-placeholder[data-for="${targetId}"]`);
-                if (placeholder) placeholder.remove();
-                
-                img.onerror = () => {
-                    const errorIcon = document.createElement('div');
-                    errorIcon.className = 'corner-image flex items-center justify-center';
-                    errorIcon.innerHTML = '<i class="fa fa-exclamation text-red-500"></i>';
-                    img.parentNode.replaceChild(errorIcon, img);
+            // 加载默认的占位符数据
+            loadDefaultPlaceholderData() {
+                const defaultTomorrow = new Date();
+                defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
+                const defaultDateOnly = defaultTomorrow.toISOString().split('T')[0];
+                const fallbackData = {
+                    current1: " ", // 空格字符作为占位符
+                    current2: " ", // 空格字符作为占位符
+                    nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
                 };
                 
-                return img;
-            }
-            
-            // 根据趋势文本获取对应的图片URL
-            function getImageUrlByTrendText(text) {
-                // 检查文本是否包含任何趋势关键词
-                for (const [key, url] of Object.entries(TREND_IMAGE_MAP)) {
-                    if (text.includes(key)) {
-                        return url;
-                    }
-                }
-                
-                // 如果没有匹配到，使用本地默认图片
-                return "sbg/default.png";
-            }
-            
-            // 分析趋势文本，提取相关类别
-            function extractCategoriesFromTrends(trendTexts) {
-                const categories = new Set();
-                const trendText = trendTexts.join(' ');
-                
-                // 检查每个类别是否出现在趋势文本中
-                Object.keys(CATEGORY_ITEMS).forEach(category => {
-                    if (trendText.includes(category)) {
-                        categories.add(category);
-                    }
-                });
-                
-                return Array.from(categories);
-            }
-            
-            // 根据趋势文本生成推荐列表
-            function generateRecommendations(trendTexts) {
-                // 1. 提取相关类别
-                const categories = extractCategoriesFromTrends(trendTexts);
-                
-                // 2. 计算每个物品的最终数值
-                const itemValues = {};
-                
-                // 初始化所有物品的基础数值
-                Object.keys(ITEM_BASE_VALUES).forEach(item => {
-                    itemValues[item] = {
-                        baseValue: ITEM_BASE_VALUES[item],
-                        finalValue: ITEM_BASE_VALUES[item],
-                        hasBonus: false
-                    };
-                });
-                
-                // 对相关类别的物品增加20%数值
-                categories.forEach(category => {
-                    const items = CATEGORY_ITEMS[category] || [];
-                    items.forEach(item => {
-                        if (itemValues[item]) {
-                            itemValues[item].finalValue = Math.round(itemValues[item].baseValue * 1.2);
-                            itemValues[item].hasBonus = true;
-                        }
-                    });
-                });
-                
-                // 3. 转换为数组并按最终数值降序排序
-                const sortedItems = Object.keys(itemValues)
-                    .map(item => ({
-                        name: item,
-                        ...itemValues[item]
-                    }))
-                    .sort((a, b) => b.finalValue - a.finalValue);
-                
-                // 4. 取前四名
-                return sortedItems.slice(0, 4);
-            }
-            
-            // 更新推荐区域
-            function updateRecommendations(trendTexts, isCurrent, shouldEmpty = false) {
-                const prefix = isCurrent ? "currentRec" : "nextRec";
-                
-                if (shouldEmpty) {
-                    // 清空推荐区域
-                    for (let i = 1; i <= 4; i++) {
-                        const id = `${prefix}${i}`;
-                        const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = '<i class="fa fa-ban text-3xl text-gray-400"></i>';
-                        }
-                        
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) {
-                            textEl.textContent = '';
-                        }
-                        
-                        const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                        if (valueEl) {
-                            valueEl.textContent = '';
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                    return;
-                }
-                
-                const recommendations = generateRecommendations(trendTexts);
-                
-                for (let i = 0; i < 4; i++) {
-                    const rec = recommendations[i];
-                    if (!rec) break;
-                    
-                    const id = `${prefix}${i + 1}`;
-                    
-                    // 更新文本
-                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                    if (textEl) {
-                        textEl.textContent = rec.name;
-                    }
-                    
-                    // 更新数值和+20%标记
-                    const valueEl = document.querySelector(`span[data-id="${id}-value"]`);
-                    if (valueEl) {
-                        if (rec.hasBonus) {
-                            // 对于有加成的，使用更醒目的格式
-                            valueEl.innerHTML = `${rec.finalValue}<span class="bonus">20%</span>`;
-                            valueEl.classList.add('highlight');
-                        } else {
-                            // 对于无加成的，使用更低调的格式
-                            valueEl.textContent = rec.finalValue;
-                            valueEl.classList.remove('highlight');
-                        }
-                    }
-                    
-                    // 更新图片
-                    const placeholder = document.querySelector(`.recommend-placeholder[data-id="${id}"]`);
-                    if (placeholder && RECOMMEND_IMAGE_MAP[rec.name]) {
-                        placeholder.innerHTML = '<i class="fa fa-spinner fa-spin text-3xl"></i>';
-                        
-                        const img = document.createElement('img');
-                        img.src = RECOMMEND_IMAGE_MAP[rec.name];
-                        img.className = 'w-full h-full object-cover';
-                        img.alt = rec.name;
-                        
-                        img.onload = () => {
-                            placeholder.parentNode.replaceChild(img, placeholder);
-                        };
-                        
-                        img.onerror = () => {
-                            placeholder.innerHTML = `<i class="fa fa-exclamation-triangle text-3xl text-gray-500"></i>`;
-                            console.error(`图片加载失败: ${RECOMMEND_IMAGE_MAP[rec.name]}`);
-                        };
-                    }
-                }
-            }
-            
-            // 切换趋势：将下期趋势移动到本期，下期留空
-            function switchTrends() {
-                // 防止重复切换
-                if (isTrendSwitched || !originalData) return;
-                
-                // 从原始数据中获取下期趋势
-                const next1Data = originalData.trends?.next1;
-                const next2Data = originalData.trends?.next2;
-                
-                // 验证下期趋势数据是否存在
-                if (!next1Data || !next2Data || !next1Data.text || !next2Data.text) {
-                    console.error("下期趋势数据不完整，无法切换");
-                    return;
-                }
-                
-                // 更新本期趋势文本
-                document.querySelector('p[data-id="current1-text"]').textContent = next1Data.text;
-                document.querySelector('p[data-id="current2-text"]').textContent = next2Data.text;
-                
-                // 更新本期趋势图片
-                const current1Container = document.querySelector('[data-id="current1"]');
-                const current2Container = document.querySelector('[data-id="current2"]');
-                
-                // 为current1设置图片
-                if (current1Container) {
-                    current1Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    const imageUrl = getImageUrlByTrendText(next1Data.text);
-                    
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.className = 'content-image';
-                    img.alt = next1Data.text;
-                    
-                    img.onload = () => {
-                        current1Container.innerHTML = '';
-                        current1Container.appendChild(img);
-                        // 添加热门标识
-                        const cornerImg = createCornerImage('current1');
-                        current1Container.closest('.image-container').appendChild(cornerImg);
-                    };
-                    
-                    img.onerror = () => {
-                        current1Container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
-                    };
-                }
-                
-                // 为current2设置图片
-                if (current2Container) {
-                    current2Container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    const imageUrl = getImageUrlByTrendText(next2Data.text);
-                    
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.className = 'content-image';
-                    img.alt = next2Data.text;
-                    
-                    img.onload = () => {
-                        current2Container.innerHTML = '';
-                        current2Container.appendChild(img);
-                        // 添加热门标识
-                        const cornerImg = createCornerImage('current2');
-                        current2Container.closest('.image-container').appendChild(cornerImg);
-                    };
-                    
-                    img.onerror = () => {
-                        current2Container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
-                    };
-                }
-                
-                // 清空下期趋势
-                const next1Container = document.querySelector('[data-id="next1"]');
-                const next2Container = document.querySelector('[data-id="next2"]');
-                if (next1Container) next1Container.innerHTML = '';
-                if (next2Container) next2Container.innerHTML = '';
-                
-                document.querySelector('p[data-id="next1-text"]').textContent = '';
-                document.querySelector('p[data-id="next2-text"]').textContent = '';
-                
-                // 更新推荐内容
-                updateRecommendations([next1Data.text, next2Data.text], true);  // 本期推荐
-                updateRecommendations([], false, true);  // 清空下期推荐
-                
-                // 更新倒计时显示
-                countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>已更新';
-                
-                // 标记为已切换
-                isTrendSwitched = true;
-                
-                // 显示更新提示
-                showUpdateIndicator();
-            }
-            
-            // 更新页面内容
-            function updatePageContent(data) {
-                if (!data || typeof data !== 'object' || !data.trends) {
-                    showError('数据格式错误');
-                    return;
-                }
-                
-                // 存储原始数据，用于后续可能的切换
-                originalData = data;
-                
-                // 提取趋势文本
-                const currentTrendTexts = [];
-                const nextTrendTexts = [];
-                
-                // 处理趋势内容
-                Object.keys(data.trends).forEach(id => {
-                    const item = data.trends[id];
-                    if (!item || typeof item !== 'object' || !item.text) {
-                        const container = document.querySelector(`[data-id="${id}"]`);
-                        if (container) {
-                            container.innerHTML = '<i class="fa fa-exclamation-triangle text-2xl sm:text-3xl text-white/80"></i>';
-                        }
-                        const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                        if (textEl) textEl.textContent = '数据错误';
-                        return;
-                    }
-                    
-                    const container = document.querySelector(`[data-id="${id}"]`);
-                    if (!container) return;
-                    
-                    // 根据文本获取图片URL
-                    const imageUrl = getImageUrlByTrendText(item.text);
-                    
-                    container.innerHTML = '<i class="fa fa-spinner fa-spin text-2xl sm:text-3xl text-white/80"></i>';
-                    
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.className = 'content-image';
-                    img.alt = item.text || '图片';
-                    
-                    img.onload = () => {
-                        container.innerHTML = '';
-                        container.appendChild(img);
-                        
-                        if (id.startsWith('current')) {
-                            // 添加固定的左上角热门图片
-                            const cornerImg = createCornerImage(id);
-                            container.closest('.image-container').appendChild(cornerImg);
-                        }
-                    };
-                    
-                    img.onerror = () => {
-                        container.innerHTML = '<i class="fa fa-picture-o text-2xl sm:text-3xl text-white/80"></i>';
-                    };
-                    
-                    const textEl = document.querySelector(`p[data-id="${id}-text"]`);
-                    if (textEl) {
-                        textEl.textContent = item.text;
-                        
-                        if (id.startsWith('current')) {
-                            currentTrendTexts.push(item.text);
-                        } else if (id.startsWith('next')) {
-                            nextTrendTexts.push(item.text);
-                        }
-                    }
-                });
-                
-                // 检查是否需要立即切换（如果倒计时为0）
-                const seconds = calculateTimeDifference(data?.nextUpdateTime);
-                if (seconds <= 0) {
-                    // 使用setTimeout确保DOM已更新
-                    setTimeout(switchTrends, 300);
-                } else {
-                    // 正常更新推荐
-                    updateRecommendations(currentTrendTexts, true);  // 本期推荐
-                    updateRecommendations(nextTrendTexts, false);    // 下期推荐
-                }
-            }
-            
-            // 计算倒计时
-            function calculateTimeDifference(targetTimeString) {
-                if (!targetTimeString) return 3600; // 默认1小时
-                
-                const targetTime = new Date(targetTimeString);
-                const currentTime = new Date();
-                const differenceMs = targetTime - currentTime;
-                
-                // 当倒计时不为正数时返回0
-                return differenceMs > 0 ? Math.floor(differenceMs / 1000) : 0;
-            }
-            
-            // 启动倒计时
-            function startCountdown(durationSeconds) {
-                if (countdownTimer) clearInterval(countdownTimer);
-                
-                // 确保开始时就是正确的值（不为负数）
-                let seconds = Math.max(0, durationSeconds);
-                
-                // 如果初始就是0，立即切换
-                if (seconds === 0) {
-                    countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
-                    return;
-                }
-                
-                function updateCountdown() {
-                    if (seconds <= 0) {
-                        clearInterval(countdownTimer);
-                        countdownElement.innerHTML = '<i class="fa fa-clock-o mr-1"></i>正在更新...';
-                        switchTrends();
-                        return;
-                    }
-                    
-                    const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
-                    const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-                    const secs = (seconds % 60).toString().padStart(2, '0');
-                    
-                    // 超窄屏幕优化显示
-                    let displayText = `${hours}:${minutes}:${secs}`;
-                    if (window.innerWidth < 320) {
-                        displayText = `${minutes}:${secs}`;
-                    }
-                    
-                    countdownElement.innerHTML = `<i class="fa fa-clock-o mr-1"></i>刷新：${displayText}`;
-                    seconds--;
-                }
-                
-                updateCountdown();
-                countdownTimer = setInterval(updateCountdown, 1000);
-            }
-            
-            // 获取数据 - 带重试机制
-            async function fetchDataWithRetry(url, retries = 2, delay = 1000) {
                 try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 单次请求超时8秒
+                    const processedData = this.normalizeData(fallbackData);
                     
-                    const response = await fetch(`${url}?t=${new Date().getTime()}`, {
-                        signal: controller.signal,
-                        headers: { 'Accept': 'application/json' }
-                    });
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    Renderer.updateUI(processedData);
+                    console.log('使用空格占位符数据作为最后的兜底方案');
+                } catch (error) {
+                    console.error('处理占位符数据失败:', error);
+                    // 直接创建一个有效的processedData对象
+                    const directData = {
+                        current: {
+                            trends: ['', ''],
+                            recommendations: []
+                        },
+                        next: {
+                            trends: [],
+                            recommendations: []
+                        },
+                        nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
+                    };
+                    appState.currentData = directData;
+                    LocalStorage.set('appData', directData);
+                    Renderer.updateUI(directData);
+                    console.log('使用直接创建的数据对象作为最后的兜底方案');
+                }
+            },
+            async fetchDefaultData() {
+                try {
+                    const response = await fetch('https://raw.githubusercontent.com/yewj/zzz-hot/main/data.json');
+                    if (!response.ok) throw new Error('Network request failed');
+                    const data = await response.json();
                     
-                    clearTimeout(timeoutId);
+                    // Normalize the data. If a nextUpdate field exists, use it.
+                    // The logic here is robust, but the next step will force the time.
+                    const processedData = this.normalizeData(data);
                     
-                    if (!response.ok) {
-                        if (retries > 0) {
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            return fetchDataWithRetry(url, retries - 1, delay * 2);
-                        }
-                        throw new Error(`服务器错误: ${response.status}`);
+                    // 确保有nextUpdate字段
+                    if (!processedData.nextUpdate) {
+                        // 如果没有nextUpdate，设置为当前日期加一天的凌晨4点
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateOnly = tomorrow.toISOString().split('T')[0];
+                        processedData.nextUpdate = `${dateOnly}T04:00:00+08:00`;
                     }
                     
-                    const text = await response.text();
+                    // 将nextUpdate设置为凌晨4点（UTC+8）
+                    const dateOnly = processedData.nextUpdate.split('T')[0];
+                    const nextUpdateDate = new Date(`${dateOnly}T04:00:00+08:00`);
+                    processedData.nextUpdate = nextUpdateDate.toISOString();
+                    
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    Renderer.updateUI(processedData);
+                } catch (error) {
+                    console.error('Failed to get default data:', error);
+                    // 设置有效的默认数据，包含空格占位符以通过验证并显示"待设置"
+                    const fallbackTomorrow = new Date();
+                    fallbackTomorrow.setDate(fallbackTomorrow.getDate() + 1);
+                    const fallbackDateOnly = fallbackTomorrow.toISOString().split('T')[0];
+                    const defaultNextUpdate = `${fallbackDateOnly}T04:00:00+08:00`;
+                    
+                    const fallbackData = {
+                        "current1": " ",
+                        "current2": " ",
+                        "nextUpdate": defaultNextUpdate
+                    };
+                    const processedData = this.normalizeData(fallbackData);
+                    
+                    // 确保fallbackData中有nextUpdate字段
+                    if (!processedData.nextUpdate) {
+                        // 如果没有nextUpdate，设置为当前日期加一天的凌晨4点
+                        const backupTomorrow = new Date();
+                        backupTomorrow.setDate(backupTomorrow.getDate() + 1);
+                        const backupDateOnly = backupTomorrow.toISOString().split('T')[0];
+                        processedData.nextUpdate = `${backupDateOnly}T04:00:00+08:00`;
+                    }
+                    
+                    // 将nextUpdate设置为凌晨4点（UTC+8）
+                    const processDateOnly = processedData.nextUpdate.split('T')[0];
+                    const nextUpdateDate = new Date(`${processDateOnly}T04:00:00+08:00`);
+                    processedData.nextUpdate = nextUpdateDate.toISOString();
+                    
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    Renderer.updateUI(processedData);
+                    // 确保在使用fallbackData时也重新设置倒计时
+                    this.scheduleUpdateCheck();
+                    // 移除错误提示
+                    // Modal.show('获取默认数据失败，已加载本地缓存数据。请检查网络或设置。');
+                }
+            },
+            async fetchJsonData(url) {
+                try {
+                    UI.showLoading('正在从JSON网址加载...');
+                    console.log('开始获取JSON数据，URL:', url);
+                    // 添加时间戳参数，避免浏览器缓存
+                    const cacheBuster = `${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+                    const fullUrl = `${url}${cacheBuster}`;
+                    console.log('添加缓存破坏参数后的URL:', fullUrl);
+                    
+                    // 尝试使用多种方法获取数据
+                    let data;
+                    
+                    // 检查是否有jQuery可用，如果有，优先使用jQuery的AJAX
+                    if (typeof jQuery !== 'undefined') {
+                        try {
+                            console.log('检测到jQuery，尝试使用jQuery.ajax获取数据...');
+                            data = await new Promise((resolve, reject) => {
+                                jQuery.ajax({
+                                    url: fullUrl,
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    cache: false,
+                                    crossDomain: true,
+                                    success: function(jsonData) {
+                                        console.log('使用jQuery.ajax获取数据成功');
+                                        resolve(jsonData);
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        console.error('jQuery.ajax错误:', textStatus, errorThrown);
+                                        reject(new Error(`jQuery.ajax错误: ${textStatus}`));
+                                    }
+                                });
+                            });
+                            // 如果jQuery成功获取数据，跳过其他方法
+                            console.log('jQuery.ajax成功获取数据，跳过其他方法');
+                        } catch (jqueryError) {
+                            console.error('使用jQuery.ajax获取数据失败，尝试其他方法:', jqueryError);
+                            // 继续尝试其他方法
+                            try {
+                                console.log('尝试使用fetch API获取数据...');
+                            } catch (e) {
+                                console.error('无法继续尝试fetch API:', e);
+                                throw e; // 重新抛出错误
+                            }
+                        }
+                    } else {
+                        console.log('未检测到jQuery，尝试使用fetch API获取数据...');
+                    }
+                    
+                    // 如果没有jQuery或jQuery失败，尝试使用fetch API
                     try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        throw new Error('数据格式错误');
+                        console.log('尝试使用fetch API获取数据...');
+                        const response = await fetch(fullUrl, {
+                            mode: 'cors', // 明确指定CORS模式
+                            cache: 'no-cache' // 使用no-cache而不是no-store
+                        });
+                        if (!response.ok) {
+                            throw new Error(`Network request failed, status code: ${response.status}`);
+                        }
+                        data = await response.json();
+                        console.log('使用fetch API获取数据成功');
+                    } catch (fetchError) {
+                        console.error('使用fetch API获取数据失败:', fetchError);
+                        console.log('尝试使用XMLHttpRequest作为备选方法...');
+                        
+                        try {
+                            // 如果fetch失败，尝试使用XMLHttpRequest作为备选方法
+                            data = await new Promise((resolve, reject) => {
+                                const xhr = new XMLHttpRequest();
+                                xhr.open('GET', fullUrl, true);
+                                xhr.onload = function() {
+                                    if (xhr.status >= 200 && xhr.status < 300) {
+                                        try {
+                                            const jsonData = JSON.parse(xhr.responseText);
+                                            console.log('使用XMLHttpRequest获取数据成功');
+                                            resolve(jsonData);
+                                        } catch (parseError) {
+                                            reject(new SyntaxError('JSON解析错误: ' + parseError.message));
+                                        }
+                                    } else {
+                                        reject(new Error(`XMLHttpRequest failed with status ${xhr.status}`));
+                                    }
+                                };
+                                xhr.onerror = function() {
+                                    reject(new Error('XMLHttpRequest网络错误'));
+                                };
+                                xhr.send();
+                            });
+                        } catch (xhrError) {
+                            console.error('使用XMLHttpRequest获取数据失败:', xhrError);
+                            console.log('尝试使用JSONP方式获取数据...');
+                            
+                            try {
+                                // 如果XMLHttpRequest也失败，尝试使用JSONP方式
+                                // 注意：这要求服务器支持JSONP回调
+                                const jsonpUrl = `${url}${url.includes('?') ? '&' : '?'}callback=jsonpCallback&_t=${Date.now()}`;
+                                console.log('JSONP URL:', jsonpUrl);
+                                
+                                data = await new Promise((resolve, reject) => {
+                                    // 创建全局回调函数
+                                    window.jsonpCallback = function(jsonData) {
+                                        console.log('JSONP回调成功');
+                                        delete window.jsonpCallback; // 清理全局回调
+                                        script.remove(); // 移除script标签
+                                        clearTimeout(timeout); // 清除超时
+                                        resolve(jsonData);
+                                    };
+                                    
+                                    // 创建script标签
+                                    const script = document.createElement('script');
+                                    script.src = jsonpUrl;
+                                    script.onerror = function() {
+                                        delete window.jsonpCallback; // 清理全局回调
+                                        script.remove(); // 移除script标签
+                                        clearTimeout(timeout); // 清除超时
+                                        reject(new Error('JSONP请求失败'));
+                                    };
+                                    
+                                    // 添加超时处理
+                                    const timeout = setTimeout(() => {
+                                        delete window.jsonpCallback; // 清理全局回调
+                                        script.remove(); // 移除script标签
+                                        reject(new Error('JSONP请求超时'));
+                                    }, 5000); // 减少超时时间到5秒
+                                    
+                                    // 添加到文档中开始请求
+                                    document.head.appendChild(script);
+                                });
+                            } catch (jsonpError) {
+                                console.error('使用JSONP获取数据失败:', jsonpError);
+                                console.log('尝试使用iframe代理方式获取数据...');
+                                
+                                // 最后尝试使用iframe代理方式
+                                data = await new Promise((resolve, reject) => {
+                                    // 创建一个隐藏的iframe
+                                    const iframe = document.createElement('iframe');
+                                    iframe.style.display = 'none';
+                                    document.body.appendChild(iframe);
+                                    
+                                    // 设置超时
+                                    const timeout = setTimeout(() => {
+                                        document.body.removeChild(iframe);
+                                        reject(new Error('iframe请求超时'));
+                                    }, 5000); // 减少超时时间到5秒
+                                    
+                                    // iframe加载完成后尝试获取内容
+                                    iframe.onload = function() {
+                                        try {
+                                            clearTimeout(timeout);
+                                            let iframeContent;
+                                            try {
+                                                // 尝试直接访问iframe内容
+                                                iframeContent = iframe.contentDocument.body.innerText;
+                                            } catch (accessError) {
+                                                // 如果直接访问失败，可能是因为跨域限制
+                                                reject(new Error('无法访问iframe内容，可能是跨域限制'));
+                                                document.body.removeChild(iframe);
+                                                return;
+                                            }
+                                            
+                                            // 尝试解析JSON
+                                            const jsonData = JSON.parse(iframeContent);
+                                            console.log('使用iframe代理获取数据成功');
+                                            document.body.removeChild(iframe);
+                                            resolve(jsonData);
+                                        } catch (parseError) {
+                                            document.body.removeChild(iframe);
+                                            reject(new SyntaxError('iframe内容解析错误: ' + parseError.message));
+                                        }
+                                    };
+                                    
+                                    // 设置错误处理
+                                    iframe.onerror = function() {
+                                        clearTimeout(timeout);
+                                        document.body.removeChild(iframe);
+                                        reject(new Error('iframe加载失败'));
+                                    };
+                                    
+                                    // 设置iframe的src
+                                    iframe.src = fullUrl;
+                                });
+                            }
+                        }
                     }
+                    
+                    const processedData = this.normalizeData(data);
+                    
+                    // JSON模式下根据nextUpdate（YYYY-MM-DD）加上凌晨四点
+                    // 将JSON中获取到的时间看作本身就是UTC+8，不需要额外计算
+                    if (processedData.nextUpdate) {
+                        // 确保只取日期部分，然后添加UTC+8时区的凌晨4点
+                        const dateOnly = processedData.nextUpdate.split('T')[0];
+                        const nextUpdateDate = new Date(`${dateOnly}T04:00:00+08:00`);
+                        processedData.nextUpdate = nextUpdateDate.toISOString();
+                    }
+                    
+                    // 检查是否有新数据（避免一直显示更新提示）
+                    const hasNewData = !appState.currentData || JSON.stringify(processedData.current) !== JSON.stringify(appState.currentData.current);
+                    
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    LocalStorage.set('jsonUrl', url);
+                    Renderer.updateUI(processedData);
+                    
+                    // 在JSON模式下，只在有新数据时才重新设置倒计时
+                    if (hasNewData) {
+                        this.scheduleUpdateCheck();
+                        UI.showUpdateIndicator();
+                        Modal.show('数据已成功从JSON网址更新！');
+                    }
+                    
+                    UI.hideLoading();
                 } catch (error) {
-                    if (retries > 0 && error.name !== 'AbortError') {
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        return fetchDataWithRetry(url, retries - 1, delay * 2);
+                    UI.hideLoading();
+                    console.error('从JSON URL加载失败:', error);
+                    
+                    // 保留关键错误信息，便于排查问题
+                    let errorMessage = '';
+                    if (error instanceof TypeError) {
+                        errorMessage = `网络请求错误: ${error.message}`;
+                        console.error('网络请求错误详情:', error.message);
+                    } else if (error instanceof SyntaxError) {
+                        errorMessage = `JSON解析错误: ${error.message}`;
+                        console.error('JSON解析错误详情:', error.message);
+                    } else {
+                        errorMessage = `${error.name}: ${error.message}`;
                     }
                     
-                    // 更详细的错误信息
-                    let errorMsg = '加载失败，请刷新页面重试';
-                    if (error.name === 'AbortError') {
-                        errorMsg = '请求超时，请刷新页面重试';
-                    } else if (error.message.includes('Failed to fetch')) {
-                        errorMsg = '网络连接失败，请检查网络';
+                    // 获取失败时，尝试使用本地缓存数据或创建默认数据
+                    let processedData = LocalStorage.get('appData');
+                    
+                    // 如果没有本地缓存或缓存数据没有nextUpdate字段，创建默认数据
+                    if (!processedData || !processedData.nextUpdate) {
+                        console.log('创建默认数据，包含nextUpdate字段');
+                        processedData = {
+                            current: {
+                                trends: ['游方巧器', '本草方剂'],
+                                recommendations: []
+                            },
+                            next: {
+                                trends: ['器引百味', '虚室坐修'],
+                                recommendations: []
+                            },
+                        };
+                        
+                        // 设置nextUpdate为明天凌晨4点（UTC+8）
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateOnly = tomorrow.toISOString().split('T')[0];
+                        processedData.nextUpdate = new Date(`${dateOnly}T04:00:00+08:00`).toISOString();
                     }
                     
-                    throw new Error(errorMsg);
+                    appState.currentData = processedData;
+                    LocalStorage.set('appData', processedData);
+                    Renderer.updateUI(processedData);
+                    this.scheduleUpdateCheck();
+                    
+                    Modal.show(`从JSON网址加载失败: ${errorMessage}。已使用本地数据，请检查网址或数据格式。`);
                 }
-            }
+            },
+            // 计算推荐项的函数
+            calculateRecommendations(trendNames) {
+                const items = Object.keys(CONFIG.ITEM_BASE_VALUES).map(name => ({
+                    name: name,
+                    value: CONFIG.ITEM_BASE_VALUES[name],
+                    bonus: 0
+                }));
+
+                trendNames.forEach(trend => {
+                    const trendItems = CONFIG.CATEGORY_ITEMS[trend];
+                    if (trendItems) {
+                        trendItems.forEach(itemName => {
+                            const item = items.find(i => i.name === itemName);
+                            if (item) {
+                                // Calculate bonus as a percentage
+                                const percentageBonus = item.value * CONFIG.BONUS_PERCENTAGE;
+                                item.bonus += percentageBonus;
+                            }
+                        });
+                    }
+                });
+
+                // 返回按计算后的树脂总量(value+bonus)排序后的前4个项目，包括所有项目
+                return items
+                    .sort((a, b) => (b.value + b.bonus) - (a.value + a.bonus))
+                    .slice(0, 4);
+            },
+
+            normalizeData(rawData) {
+                let currentTrends, nextTrends, nextUpdate;
+                
+                // 防御性编程，确保rawData是对象
+                if (!rawData || typeof rawData !== 'object') {
+                    console.warn('输入数据不是有效的对象，使用默认数据');
+                    return this.createDefaultNormalizedData();
+                }
+
+                // 尝试处理格式1：current1, current2, nextUpdate 为关键字段
+                if (rawData.current1 !== undefined && rawData.current2 !== undefined) {
+                    currentTrends = [rawData.current1 || '', rawData.current2 || ''];
+                    // 允许next1和next2为空，简化处理逻辑确保数据正确
+                    nextTrends = [];
+                    if (rawData.next1 !== undefined && rawData.next2 !== undefined) {
+                        nextTrends = [rawData.next1 || '', rawData.next2 || ''];
+                    }
+                    nextUpdate = rawData.nextUpdate;
+                } else {
+                    // 兼容可能的其他格式或提供默认值
+                    console.warn('数据格式不完整，使用默认处理方式');
+                    return this.createDefaultNormalizedData();
+                }
+                
+                // 确保有nextUpdate
+                if (!nextUpdate) {
+                    console.log('数据中没有nextUpdate字段，设置默认值');
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const dateOnly = tomorrow.toISOString().split('T')[0];
+                    nextUpdate = `${dateOnly}T04:00:00+08:00`;
+                }
+
+                // 确保趋势数据格式正确
+                if (!Array.isArray(currentTrends)) currentTrends = ['', ''];
+                if (currentTrends.length !== 2) currentTrends = [currentTrends[0] || '', currentTrends[1] || ''];
+                if (!Array.isArray(nextTrends)) nextTrends = [];
+                if (nextTrends.length !== 2 && nextTrends.length > 0) nextTrends = [nextTrends[0] || '', nextTrends[1] || ''];
+
+                // 创建并返回规范化的数据结构
+                return {
+                    current: {
+                        trends: currentTrends,
+                        recommendations: this.calculateRecommendations(currentTrends)
+                    },
+                    next: {
+                        trends: nextTrends,
+                        recommendations: nextTrends.length > 0 ? this.calculateRecommendations(nextTrends) : []
+                    },
+                    nextUpdate: nextUpdate
+                };
+            },
             
-            // 初始化流程
-            async function fetchAndInit() {
+            // 创建默认的规范化数据
+            createDefaultNormalizedData() {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const dateOnly = tomorrow.toISOString().split('T')[0];
+                const nextUpdate = `${dateOnly}T04:00:00+08:00`;
+                
+                return {
+                    current: {
+                        trends: ['', ''],
+                        recommendations: []
+                    },
+                    next: {
+                        trends: [],
+                        recommendations: []
+                    },
+                    nextUpdate: nextUpdate
+                };
+            },
+            scheduleUpdateCheck() {
+                console.log('设置倒计时');
+                // 清除现有的倒计时和数据获取间隔
+                if (appState.countdownInterval) {
+                    console.log('清除现有倒计时');
+                    clearInterval(appState.countdownInterval);
+                    appState.countdownInterval = null;
+                }
+                if (appState.jsonFetchInterval) {
+                    clearInterval(appState.jsonFetchInterval);
+                    appState.jsonFetchInterval = null;
+                }
+
+                // 确保有当前数据和nextUpdate
+                if (!appState.currentData || !appState.currentData.nextUpdate) {
+                    console.error('无法设置倒计时：缺少数据或nextUpdate');
+                    DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                    return;
+                }
+
+                const checkAndUpdate = () => {
+                    console.log('检查是否需要更新数据');
+                    const now = new Date();
+                    let nextUpdate = new Date(appState.currentData.nextUpdate);
+
+                    // 确保nextUpdate是有效的日期对象
+                    if (isNaN(nextUpdate.getTime())) {
+                        console.error('无效的nextUpdate日期，设置为明天凌晨4点');
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        const dateOnly = tomorrow.toISOString().split('T')[0];
+                        nextUpdate = new Date(`${dateOnly}T04:00:00+08:00`);
+                    }
+
+                    if (now >= nextUpdate) {
+                        console.log('时间已到，更新数据');
+                        if (LocalStorage.get('dataSource') === 'json') {
+                            // JSON模式下，刷新时间为0时的处理
+                            // 将下期趋势显示为本期趋势，下期趋势留空，并提示用户更新JSON
+                            console.log('JSON模式刷新时间为0，自动处理');
+                            
+                            // 获取当前数据
+                            const currentData = appState.currentData;
+                            if (currentData && currentData.next) {
+                                // 检查下期趋势是否有效
+                                const hasValidNextTrends = currentData.next.trends && currentData.next.trends.length === 2;
+                                
+                                // 确保趋势连贯性：保持本期和下期趋势的严格统一
+                                // 保留原本期趋势和下期趋势的关系，避免错位
+                                const preservedCurrentTrends = currentData.current.trends;
+                                const preservedNextTrends = currentData.next.trends;
+                                
+                                // 确定新的趋势数据：如果有有效的下期趋势，则使用它们，否则保持当前状态
+                                const newCurrentTrends = hasValidNextTrends ? preservedNextTrends : preservedCurrentTrends;
+                                const newNextTrends = []; // 下期趋势留空
+                                
+                                // 临时更新UI显示，确保趋势数据完全一致
+                                const tempData = {
+                                    current: {
+                                        trends: newCurrentTrends,
+                                        recommendations: hasValidNextTrends ? (currentData.next.recommendations || []) : this.calculateRecommendations(newCurrentTrends)
+                                    },
+                                    next: {
+                                        trends: newNextTrends,
+                                        recommendations: [] // 下期推荐也清空，显示为待设置
+                                    },
+                                    nextUpdate: currentData.nextUpdate
+                                };
+                                
+                                // 更新UI
+                                Renderer.updateUI(tempData);
+                                // 同时更新appState以确保临时数据持久化
+                                appState.currentData = tempData;
+                                
+                                // 根据情况显示不同的提示信息
+                                if (hasValidNextTrends) {
+                                    Modal.show('刷新时间已到，已临时将下期趋势显示为本期趋势。请更新JSON数据源以获取最新数据。');
+                                } else {
+                                    Modal.show('刷新时间已到，但没有有效的下期趋势。请更新JSON数据源以获取最新数据。');
+                                }
+                            }
+                            
+                            // 不再自动尝试获取最新的JSON数据，避免无限循环刷新
+                            // 用户可以手动刷新或更新JSON数据源
+                            console.log('已处理临时趋势更新，不再自动刷新JSON数据');
+                        } else {
+                            const localData = LocalStorage.get('localData');
+                            if (localData) {
+                                // 本地模式下，刷新时间为0时的处理
+                                // 将下期趋势变为本期趋势，下期趋势留空，刷新时间加3天
+                                if (now >= nextUpdate) {
+                                    console.log('本地模式刷新时间为0，自动处理');
+                                    
+                                    // 确保趋势连贯性：保持本期和下期趋势的严格统一
+                                    // 无论何种情况，都保持趋势数据的一致性
+                                    const preservedCurrentTrends = localData.current && localData.current.length === 2 ? localData.current : [];
+                                    const preservedNextTrends = localData.next && localData.next.length === 2 ? localData.next : [];
+                                    
+                                    // 确定新的趋势数据：如果有有效的下期趋势，则使用它们，否则保持当前状态
+                                    const newCurrentTrends = preservedNextTrends.length === 2 ? preservedNextTrends : preservedCurrentTrends;
+                                    const newNextTrends = []; // 下期趋势留空
+                                    
+                                    // 如果下期为空，显示提示信息
+                                    if (newCurrentTrends.length !== 2) {
+                                        Modal.show('刷新时间已到，但没有有效的下期趋势。请设置新的趋势。');
+                                    }
+                                    
+                                    // 刷新时间加3天
+                                    const newUpdateDate = new Date(nextUpdate);
+                                    newUpdateDate.setDate(newUpdateDate.getDate() + 3);
+                                    
+                                    // 更新本地数据
+                                    const updatedLocalData = {
+                                        current: newCurrentTrends,
+                                        next: newNextTrends,
+                                        updateDate: newUpdateDate.toISOString()
+                                    };
+                                    LocalStorage.set('localData', updatedLocalData);
+                                    
+                                    // 更新应用状态，使用格式1的结构
+                                    const autoUpdateData = {
+                                        current1: newCurrentTrends[0],
+                                        current2: newCurrentTrends[1],
+                                        nextUpdate: updatedLocalData.updateDate
+                                    };
+                                    
+                                    // 只有当下期趋势不为空时才添加next1和next2字段
+                                    if (newNextTrends.length === 2) {
+                                        autoUpdateData.next1 = newNextTrends[0];
+                                        autoUpdateData.next2 = newNextTrends[1];
+                                    }
+                                    
+                                    const processedData = this.normalizeData(autoUpdateData);
+                                    appState.currentData = processedData;
+                                    LocalStorage.set('appData', processedData);
+                                    Renderer.updateUI(processedData);
+                                    UI.showUpdateIndicator();
+                                    Modal.show('刷新时间已到，已自动将下期趋势设为本期趋势，并将刷新时间增加3天。');
+                                } else {
+                                    // 正常更新逻辑
+                                    // 正常更新逻辑，使用格式1的结构
+                                    const normalUpdateData = {
+                                        current1: localData.next && localData.next.length > 0 ? localData.next[0] : '',
+                                        current2: localData.next && localData.next.length > 1 ? localData.next[1] : '',
+                                        nextUpdate: localData.updateDate
+                                    };
+                                    
+                                    // 不再设置next1和next2字段，确保下期趋势留空
+                                    // if (localData.current && localData.current.length === 2) {
+                                    //     normalUpdateData.next1 = localData.current[0];
+                                    //     normalUpdateData.next2 = localData.current[1];
+                                    // }
+                                    
+                                    const processedData = this.normalizeData(normalUpdateData);
+                                    appState.currentData = processedData;
+                                    LocalStorage.set('appData', processedData);
+                                    Renderer.updateUI(processedData);
+                                    UI.showUpdateIndicator();
+                                }
+                                
+                                // 不再自动重新设置倒计时，避免一直刷新
+                                console.log('本地数据已更新，不再自动设置倒计时');
+                                // 不显示更新成功提示，保持倒计时区域为空
+                                DOMElements.countdownTimer.innerHTML = '';
+                            }
+                        }
+                    }
+                };
+
+                // 立即检查一次
+                const now = new Date();
+                const nextUpdate = new Date(appState.currentData.nextUpdate);
+                const diffMs = nextUpdate - now;
+
+                if (diffMs <= 0) {
+                    console.log('立即检查：时间已到');
+                    // 清除当前倒计时(如果存在)
+                    if (appState.countdownInterval) {
+                        clearInterval(appState.countdownInterval);
+                        appState.countdownInterval = null;
+                    }
+                    // 执行更新
+                    checkAndUpdate();
+                    // 重新设置倒计时
+                    console.log('立即检查：数据已更新，重新设置倒计时');
+                    
+                    // 对于JSON模式，提示需要手动更新数据
+                    const dataSource = LocalStorage.get('dataSource') || 'local';
+                    if (dataSource === 'json') {
+                        DOMElements.countdownTimer.innerHTML = `
+                            <i class="fa fa-exclamation-triangle mr-1 text-yellow-500"></i>
+                            <span class="text-yellow-500">需要手动更新JSON数据</span>
+                        `;
+                    } else {
+                        // 对于本地模式，重新获取更新时间并设置倒计时
+                        const newNow = new Date();
+                        const newNextUpdate = new Date(appState.currentData.nextUpdate);
+                        const newDiffMs = newNextUpdate - newNow;
+                        
+                        if (newDiffMs > 0) {
+                            // 设置新的倒计时间隔
+                            appState.countdownInterval = setInterval(() => {
+                                if (appState.currentData && appState.currentData.nextUpdate) {
+                                    const now = new Date();
+                                    const nextUpdate = new Date(appState.currentData.nextUpdate);
+                                    const diffMs = nextUpdate - now;
+                                    
+                                    if (diffMs <= 0) {
+                                        console.log('倒计时结束，更新数据');
+                                        clearInterval(appState.countdownInterval);
+                                        appState.countdownInterval = null;
+                                        checkAndUpdate();
+                                    }
+                                    
+                                    const positiveDiffMs = Math.max(0, diffMs);
+                                    const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                                    let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                    if (diffDays > 0) {
+                                        diffHours += diffDays * 24;
+                                    }
+                                    const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                    const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+                                    
+                                    DOMElements.countdownTimer.innerHTML = `
+                                        <i class="fa fa-clock-o mr-1"></i>
+                                        刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                                    `;
+                                } else {
+                                    console.error('倒计时间隔中发现数据缺失');
+                                    DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                                    clearInterval(appState.countdownInterval);
+                                    appState.countdownInterval = null;
+                                }
+                            }, 1000);
+                        }
+                    }
+                    return;
+                }
+
+                // 确保没有已存在的定时器
+                if (appState.countdownInterval) {
+                    clearInterval(appState.countdownInterval);
+                    appState.countdownInterval = null;
+                }
+
+                // 设置倒计时间隔
+                console.log('设置倒计时间隔');
+                appState.countdownInterval = setInterval(() => {
+                    if (appState.currentData && appState.currentData.nextUpdate) {
+                        const now = new Date();
+                        const nextUpdate = new Date(appState.currentData.nextUpdate);
+                        const diffMs = nextUpdate - now;
+
+                        if (diffMs <= 0) {
+                            console.log('倒计时结束，更新数据');
+                            // 清除当前倒计时
+                            clearInterval(appState.countdownInterval);
+                            appState.countdownInterval = null;
+                            // 执行更新
+                            checkAndUpdate();
+                            // 重新设置倒计时
+                            console.log('数据已更新，重新设置倒计时');
+                            // 重新获取更新时间并设置倒计时
+                            const newNow = new Date();
+                            const newNextUpdate = new Date(appState.currentData.nextUpdate);
+                            const newDiffMs = newNextUpdate - newNow;
+                            
+                            if (newDiffMs > 0) {
+                                // 设置新的倒计时间隔
+                                appState.countdownInterval = setInterval(() => {
+                                    if (appState.currentData && appState.currentData.nextUpdate) {
+                                        const now = new Date();
+                                        const nextUpdate = new Date(appState.currentData.nextUpdate);
+                                        const diffMs = nextUpdate - now;
+                                        
+                                        if (diffMs <= 0) {
+                                            console.log('倒计时结束，更新数据');
+                                            clearInterval(appState.countdownInterval);
+                                            appState.countdownInterval = null;
+                                            checkAndUpdate();
+                                        }
+                                        
+                                        const positiveDiffMs = Math.max(0, diffMs);
+                                        const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                                        let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                        if (diffDays > 0) {
+                                            diffHours += diffDays * 24;
+                                        }
+                                        const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                        const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+                                        
+                                        DOMElements.countdownTimer.innerHTML = `
+                                            <i class="fa fa-clock-o mr-1"></i>
+                                            刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                                        `;
+                                    } else {
+                                        console.error('倒计时间隔中发现数据缺失');
+                                        DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                                        clearInterval(appState.countdownInterval);
+                                        appState.countdownInterval = null;
+                                    }
+                                }, 1000);
+                            }
+                        }
+
+                        // 处理时间差，确保不会出现负值
+                        const positiveDiffMs = Math.max(0, diffMs);
+                        
+                        // 计算天数差异
+                        const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                        // 计算小时差异，如果超过1天，则在小时位上添加相应数量的24小时
+                        let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        if (diffDays > 0) {
+                            diffHours += diffDays * 24;
+                        }
+                        const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+
+                        DOMElements.countdownTimer.innerHTML = `
+                            <i class="fa fa-clock-o mr-1"></i>
+                            刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                        `;
+                    } else {
+                        console.error('倒计时间隔中发现数据缺失');
+                        DOMElements.countdownTimer.textContent = '刷新时间未设置';
+                        clearInterval(appState.countdownInterval);
+                        appState.countdownInterval = null;
+                    }
+                }, 1000);
+            },
+        };
+
+        // --- Renderer Module ---
+        const Renderer = {
+            updateUI(data) {
+                DOMElements.contentSections.forEach(el => el.classList.add('content-loading'));
+                setTimeout(() => {
+                    this.renderTrendItems(data.current.trends, 'current');
+                    this.renderTrendItems(data.next.trends, 'next');
+                    this.renderRecommendItems(data.current.recommendations, 'current');
+                    this.renderRecommendItems(data.next.recommendations, 'next');
+                    DOMElements.contentSections.forEach(el => el.classList.remove('content-loading'));
+                }, 300);
+            },
+            renderTrendItems(trends, type) {
+                const trendIds = ['1', '2'];
+                const trendItems = document.querySelectorAll(`[data-trend-item^="${type}"]`);
+                
+                // 如果trends为空数组或只包含空格，显示提示信息
+                if (!trends || trends.length === 0 || trends.every(t => !t || t.trim() === '')) {
+                    trendItems.forEach((el, index) => {
+                        // 即使没有趋势数据，也要根据类型显示不同背景色和HOT标记
+                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
+                        const hotIconHtml = type === 'current' ? 
+                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
+                        
+                        el.innerHTML = `
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                                <div class="trend-image-wrapper ${type}">
+                                    <div class="flex items-center justify-center h-full w-full">
+                                        <i class="fa fa-ban text-2xl text-white/80"></i>
+                                    </div>
+                                </div>
+                                ${hotIconHtml}
+                            </div>
+                            <div class="flex-1 min-w-0 mt-2 sm:mt-0">
+                                <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
+                            </div>
+                        `;
+                    });
+                    return;
+                }
+                
+                trendItems.forEach((el, index) => {
+                    const trendName = trends[index];
+                    
+                    // 如果trendName为空、不存在或仅包含空格，显示提示信息
+                    if (!trendName || trendName.trim() === '') {
+                        // 即使趋势名称为空，也要根据类型显示不同背景色和HOT标记
+                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
+                        const hotIconHtml = type === 'current' ? 
+                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
+                        
+                        el.innerHTML = `
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                                <div class="trend-image-wrapper ${type}">
+                                    <div class="flex items-center justify-center h-full w-full">
+                                        <i class="fa fa-ban text-2xl text-white/80"></i>
+                                    </div>
+                                </div>
+                                ${hotIconHtml}
+                            </div>
+                            <div class="flex-1 min-w-0 mt-2 sm:mt-0">
+                                <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    el.innerHTML = Templates.trendItem(`${type}${trendIds[index]}`, type, trendName);
+                    const imageWrapper = el.querySelector(`[data-image-wrapper-id="${type}${trendIds[index]}"]`);
+                    const img = new Image();
+                    img.src = CONFIG.TREND_IMAGE_MAP[trendName];
+                    img.className = 'trend-image';
+                    img.onload = () => {
+                        imageWrapper.innerHTML = '';
+                        imageWrapper.appendChild(img);
+                        img.classList.add('loaded');
+                    };
+                    img.onerror = () => {
+                        // 显示加载失败符号
+                        imageWrapper.innerHTML = `<div class="flex items-center justify-center h-full w-full text-gray-400"><i class="fa fa-ban text-xl"></i></div>`;
+                    };
+                });
+            },
+            renderRecommendItems(items, type) {
+                const grid = document.querySelector(`[data-recommend-grid="${type}"]`);
+                if (!grid) return;
+
+                grid.innerHTML = '';
+                
+                // 如果items为空数组、不存在或只包含无效/空格内容，显示4个留空的框
+                if (!items || items.length === 0 || items.every(item => !item || !item.name || item.name.trim() === '')) {
+                    // 创建4个留空框
+                    for (let i = 0; i < 4; i++) {
+                        const emptyBox = document.createElement('div');
+                        emptyBox.className = 'col-span-1 flex flex-col items-center field-hover p-4 rounded-lg';
+                        emptyBox.innerHTML = `
+                            <div class="w-full max-w-[160px] aspect-square rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                                <i class="fa fa-ban text-3xl text-gray-400"></i>
+                            </div>
+                            <div class="text-center mt-2 min-h-[3.5rem] flex flex-col items-center justify-center">
+                                <p class="text-gray-400 italic">待设置</p>
+                            </div>
+                        `;
+                        grid.appendChild(emptyBox);
+                    }
+                    return;
+                }
+                
+                // 对于其他情况（非下期推荐或有数据），使用原有逻辑
+                items.forEach((item, index) => {
+                    const itemId = `${type}-rec-${index}`;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.innerHTML = Templates.recommendItem(itemId);
+                    grid.appendChild(itemDiv);
+
+                    const imgWrapper = itemDiv.querySelector(`[data-rec-image-wrapper-id="${itemId}"]`);
+                    const textEl = itemDiv.querySelector(`[data-rec-text-id="${itemId}"]`);
+                    const valueEl = itemDiv.querySelector(`[data-rec-value-id="${itemId}"]`);
+                    
+                    textEl.textContent = item.name;
+                    // 计算加成后的价格并四舍五入
+                    const priceWithBonus = Math.round(item.value + item.bonus);
+                    valueEl.textContent = `${priceWithBonus}`;
+                    valueEl.classList.toggle('highlight', item.bonus > 0);
+                    
+                    if (item.bonus > 0) {
+                        // 显示加成后的价格和+20%
+                        valueEl.innerHTML = `${priceWithBonus}<span class="bonus">+20%</span>`;
+                    }
+
+                    const img = new Image();
+                    img.src = CONFIG.RECOMMEND_IMAGE_MAP[item.name];
+                    img.className = 'w-full h-full object-contain trend-image';
+                    img.onload = () => {
+                        imgWrapper.innerHTML = '';
+                        imgWrapper.appendChild(img);
+                        img.classList.add('loaded');
+                    };
+                    img.onerror = () => {
+                        imgWrapper.innerHTML = `<div class="flex items-center justify-center h-full w-full text-gray-400"><i class="fa fa-ban text-xl"></i></div>`;
+                    };
+                });
+            }
+        };
+
+        // --- Local Storage Module ---
+        const LocalStorage = {
+            set(key, value) {
                 try {
-                    showLoading();
-                    resetToLoadingState();
-                    
-                    const data = await fetchDataWithRetry(API_URL);
-                    updatePageContent(data);
-                    
-                    const seconds = calculateTimeDifference(data?.nextUpdateTime);
-                    startCountdown(seconds || 0);
-                } catch (error) {
-                    console.error('初始化失败:', error);
-                    showError(error.message || '加载失败，请刷新页面重试');
-                } finally {
-                    hideLoading();
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch (e) {
+                    console.error('Failed to store data', e);
                 }
+            },
+            get(key) {
+                try {
+                    const value = localStorage.getItem(key);
+                    return value ? JSON.parse(value) : null;
+                } catch (e) {
+                    console.error('Failed to read data', e);
+                    return null;
+                }
+            },
+            remove(key) {
+                localStorage.removeItem(key);
             }
-            
-            // 启动应用
-            fetchAndInit();
-            
-            // 离线检测
-            window.addEventListener('offline', () => {
-                showError('网络已断开，请检查连接');
-            });
-            
-            // 在线恢复检测
-            window.addEventListener('online', () => {
-                showUpdateIndicator();
-                updateIndicator.textContent = '网络已恢复，正在重新加载...';
-                fetchAndInit();
-            });
-        });
+        };
+
+        // --- UI Module ---
+        const UI = {
+            showLoading(message = '正在加载数据...') {
+                const textEl = DOMElements.loadingOverlay.querySelector('p');
+                if (textEl) textEl.textContent = message;
+                DOMElements.loadingOverlay.classList.add('active');
+            },
+            hideLoading() {
+                DOMElements.loadingOverlay.classList.remove('active');
+            },
+            toggleSettingsPanel(isOpen) {
+                DOMElements.settings.panel.classList.toggle('open', isOpen);
+                DOMElements.settings.overlay.classList.toggle('open', isOpen);
+            },
+            toggleJsonUrlInput(isJson) {
+                DOMElements.settings.jsonUrlGroup.classList.toggle('hidden', !isJson);
+                DOMElements.settings.localSettingsGroup.classList.toggle('hidden', isJson);
+            },
+            showUpdateIndicator() {
+                DOMElements.updateIndicator.classList.remove('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    DOMElements.updateIndicator.classList.add('opacity-0', 'translate-y-4');
+                }, 3000);
+            },
+            setJsonUrlError(isError) {
+                DOMElements.settings.jsonUrlInput.classList.toggle('border-red-500', isError);
+                DOMElements.settings.jsonUrlError.classList.toggle('hidden', !isError);
+            },
+        };
+
+        // --- Settings Module ---
+        const Settings = {
+            init() {
+                this.renderMultiselects();
+                this.setupEventListeners();
+                this.loadSettings();
+                this.updateTimezoneInfo();
+            },
+            renderMultiselects() {
+                ['current', 'next'].forEach(id => {
+                    const container = document.querySelector(`[data-multiselect-id="${id}"]`);
+                    container.innerHTML = Templates.multiselect(id, CONFIG.TREND_OPTIONS);
+                });
+            },
+            setupEventListeners() {
+                DOMElements.settings.openBtn.addEventListener('click', () => {
+                    this.loadSettings();
+                    UI.toggleSettingsPanel(true);
+                });
+                DOMElements.settings.closeBtn.addEventListener('click', () => UI.toggleSettingsPanel(false));
+                DOMElements.settings.overlay.addEventListener('click', () => UI.toggleSettingsPanel(false));
+                DOMElements.settings.saveBtn.addEventListener('click', this.saveSettings);
+                DOMElements.settings.resetBtn.addEventListener('click', this.resetSettings);
+                DOMElements.settings.dataSourceRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                    UI.toggleJsonUrlInput(e.target.value === 'json');
+                }));
+
+                const container = document.querySelector('body');
+                container.addEventListener('click', (e) => {
+                    const multiselectContainer = e.target.closest('.multiselect-container');
+                    if (multiselectContainer) {
+                        const optionsEl = multiselectContainer.querySelector('.multiselect-options');
+                        
+                        // 处理点击左右选择框的情况
+                        const clickedLeft = e.target.closest('.multiselect-selected-left');
+                        const clickedRight = e.target.closest('.multiselect-selected-right');
+                        
+                        if ((clickedLeft || clickedRight) && !e.target.matches('.multiselect-tag') && !e.target.matches('.multiselect-tag-remove')) {
+                            document.querySelectorAll('.multiselect-options').forEach(el => {
+                                if (el !== optionsEl) el.classList.remove('visible');
+                            });
+                            optionsEl.classList.toggle('visible');
+                        }
+                        
+                        // 处理点击选项的情况
+                        if (e.target.matches('.multiselect-option:not(.disabled)')) {
+                            // 获取当前已选择的值
+                            const values = this.getValues(multiselectContainer);
+                            
+                            // 确定应该更新哪个位置的值
+                            let newValue = e.target.dataset.value;
+                            
+                            // 检查是否点击了已选中的选项（取消选择功能）
+                            const index = values.indexOf(newValue);
+                            if (index > -1) {
+                                // 如果已存在，则移除该值
+                                values.splice(index, 1);
+                            } else {
+                                // 检查要添加的新值是否与另一个位置的值相同（防止选择两个相同的值）
+                                if (values.length === 1 && values[0] === newValue) {
+                                    // 不允许选择相同的值
+                                    return;
+                                }
+                                
+                                if (values.length === 0) {
+                                    // 没有值时，添加到第一个位置
+                                    values.push(newValue);
+                                } else if (values.length === 1) {
+                                    // 只有一个值时，添加到第二个位置
+                                    values.push(newValue);
+                                } else if (clickedLeft) {
+                                    // 点击了左侧，更新左侧
+                                    values[0] = newValue;
+                                } else if (clickedRight) {
+                                    // 点击了右侧，更新右侧
+                                    values[1] = newValue;
+                                }
+                            }
+                            
+                            // 更新UI
+                            this.updateMultiselectUI(multiselectContainer, values);
+                        }
+                        
+                        // 处理点击已选标签或删除图标的情况
+                        if (e.target.matches('.multiselect-tag') || e.target.matches('.multiselect-tag-remove')) {
+                            // 获取要删除的值
+                            const valueToRemove = e.target.matches('.multiselect-tag') ? 
+                                e.target.dataset.value : 
+                                e.target.dataset.value;
+                                
+                            // 获取当前已选择的值
+                            const values = this.getValues(multiselectContainer);
+                            
+                            // 删除值
+                            const index = values.indexOf(valueToRemove);
+                            if (index > -1) {
+                                values.splice(index, 1);
+                            }
+                            
+                            // 更新UI
+                            this.updateMultiselectUI(multiselectContainer, values);
+                            
+                            // 确保选框保持打开状态
+                            if (!optionsEl.classList.contains('visible')) {
+                                optionsEl.classList.add('visible');
+                            }
+                            
+                            // 阻止事件冒泡，防止触发外部点击事件导致选框关闭
+                            e.stopPropagation();
+                        }
+                    } else {
+                        document.querySelectorAll('.multiselect-options').forEach(el => el.classList.remove('visible'));
+                    }
+                });
+            },
+
+            updateMultiselectUI(container, values) {
+                const leftSelectedEl = container.querySelector('.multiselect-selected-left');
+                const rightSelectedEl = container.querySelector('.multiselect-selected-right');
+                const optionsEl = container.querySelector('.multiselect-options');
+
+                // 清除左右两侧的内容
+                leftSelectedEl.innerHTML = '';
+                rightSelectedEl.innerHTML = '';
+
+                if (values.length > 0) {
+                    // 显示第一个值在左侧，直接显示文本
+                    leftSelectedEl.textContent = values[0];
+                    leftSelectedEl.dataset.value = values[0];
+                    // 添加已选择的视觉效果
+                    leftSelectedEl.classList.add('border-2', 'border-blue-500');
+                    leftSelectedEl.classList.remove('border-gray-200', 'border', 'border-dashed', 'border-gray-400');
+                } else {
+                    // 左侧没有选中值时，显示默认文本
+                    leftSelectedEl.textContent = '选择项';
+                    delete leftSelectedEl.dataset.value;
+                    leftSelectedEl.classList.remove('border-2', 'border-blue-500');
+                    leftSelectedEl.classList.add('border', 'border-dashed', 'border-gray-400');
+                }
+
+                if (values.length > 1) {
+                    // 显示第二个值在右侧，直接显示文本
+                    rightSelectedEl.textContent = values[1];
+                    rightSelectedEl.dataset.value = values[1];
+                    // 添加已选择的视觉效果
+                    rightSelectedEl.classList.add('border-2', 'border-blue-500');
+                    rightSelectedEl.classList.remove('border-gray-200', 'border', 'border-dashed', 'border-gray-400');
+                } else {
+                    // 右侧没有选中值时，显示默认文本
+                    rightSelectedEl.textContent = '选择项';
+                    delete rightSelectedEl.dataset.value;
+                    rightSelectedEl.classList.remove('border-2', 'border-blue-500');
+                    rightSelectedEl.classList.add('border', 'border-dashed', 'border-gray-400');
+                }
+
+                optionsEl.querySelectorAll('.multiselect-option').forEach(opt => {
+                    const optValue = opt.dataset.value;
+                    // 标记选中状态
+                    opt.classList.toggle('selected', values.includes(optValue));
+                    
+                    // 处理禁用状态：
+                    // 1. 当已有两个值时，禁用未选中的值
+                    // 2. 移除已有一个值时对相同选项的禁用，允许用户点击取消选择
+                    if (values.length === 2 && !values.includes(optValue)) {
+                        opt.classList.add('disabled');
+                    } else {
+                        // 始终允许点击已选中的选项来取消选择
+                        opt.classList.remove('disabled');
+                    }
+                });
+            },
+            getValues(container) {
+                const leftSelected = container.querySelector('.multiselect-selected-left');
+                const rightSelected = container.querySelector('.multiselect-selected-right');
+                const values = [];
+                
+                if (leftSelected.dataset.value) {
+                    values.push(leftSelected.dataset.value);
+                }
+                
+                if (rightSelected.dataset.value) {
+                    values.push(rightSelected.dataset.value);
+                }
+                
+                return values;
+            },
+            saveSettings() {
+                const dataSource = document.querySelector('input[name="dataSource"]:checked').value;
+                LocalStorage.set('dataSource', dataSource);
+
+                if (dataSource === 'json') {
+                    const url = DOMElements.settings.jsonUrlInput.value;
+                    const isValidUrl = url && (url.startsWith('http://') || url.startsWith('https://'));
+                    UI.setJsonUrlError(!isValidUrl);
+                    if (isValidUrl) {
+                        LocalStorage.set('jsonUrl', url);
+                        DataService.fetchJsonData(url);
+                        UI.toggleSettingsPanel(false);
+                    } else {
+                        Modal.show('请输入有效的URL。');
+                    }
+                } else {
+                    const currentTrends = Settings.getValues(document.querySelector('[data-multiselect-id="current"]'));
+                    const nextTrends = Settings.getValues(document.querySelector('[data-multiselect-id="next"]'));
+                    const updateDate = DOMElements.settings.updateDateInput.value;
+
+                    // 本期趋势必须选择2个
+                    const isCurrentValid = currentTrends.length === 2;
+                    // 下期趋势可以不选，但如果选了必须是2个
+                    const isNextValid = nextTrends.length === 0 || nextTrends.length === 2;
+                    const isDateValid = !!updateDate;
+
+                    document.querySelector('[data-error-id="current"]').classList.toggle('hidden', isCurrentValid);
+                    document.querySelector('[data-error-id="next"]').classList.toggle('hidden', isNextValid);
+                    document.querySelector('[data-error-id="date"]').classList.toggle('hidden', isDateValid);
+
+                    if (isCurrentValid && isNextValid && isDateValid) {
+                        // 本地模式时使用本地设置里的日期，加上凌晨四点
+                        // 所有时间设置、显示都以UTC+8时间为准
+                        const newLocalData = {
+                            current: currentTrends,
+                            next: nextTrends.length === 2 ? nextTrends : [], // 如果下期趋势不是2个，则设为空数组
+                            updateDate: new Date(`${updateDate}T04:00:00+08:00`).toISOString()
+                        };
+                        LocalStorage.set('localData', newLocalData);
+                        // 构建格式1的JSON数据结构
+                        const format1Data = {
+                            current1: currentTrends[0],
+                            current2: currentTrends[1],
+                            nextUpdate: newLocalData.updateDate
+                        };
+                        
+                        // 只有当下期趋势不为空时才添加next1和next2字段
+                        if (newLocalData.next.length === 2) {
+                            format1Data.next1 = newLocalData.next[0];
+                            format1Data.next2 = newLocalData.next[1];
+                        }
+                        
+                        const processedData = DataService.normalizeData(format1Data);
+                        appState.currentData = processedData;
+                        LocalStorage.set('appData', processedData);
+                        Renderer.updateUI(processedData);
+                        DataService.scheduleUpdateCheck();
+                        UI.toggleSettingsPanel(false);
+                        UI.showUpdateIndicator();
+                    } else {
+                        Modal.show('请填写所有必填项并确保选择正确数量的趋势。');
+                    }
+                }
+            },
+            loadSettings() {
+                const dataSource = LocalStorage.get('dataSource') || 'local';
+                document.querySelector(`input[name="dataSource"][value="${dataSource}"]`).checked = true;
+                UI.toggleJsonUrlInput(dataSource === 'json');
+                const jsonUrl = LocalStorage.get('jsonUrl');
+                if (jsonUrl) DOMElements.settings.jsonUrlInput.value = jsonUrl;
+                const localData = LocalStorage.get('localData');
+                
+                // 无论localData是否存在，都初始化选择框的UI
+                const currentMultiselect = document.querySelector('[data-multiselect-id="current"]');
+                const nextMultiselect = document.querySelector('[data-multiselect-id="next"]');
+                this.updateMultiselectUI(currentMultiselect, localData ? localData.current : []);
+                this.updateMultiselectUI(nextMultiselect, localData ? localData.next : []);
+                
+                if (localData && localData.updateDate) {
+                    // 确保正确处理UTC+8时区的日期
+                    const date = new Date(localData.updateDate);
+                    // 将日期转换为YYYY-MM-DD格式，使用UTC+8时区
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    DOMElements.settings.updateDateInput.value = `${year}-${month}-${day}`;
+                    console.log('设置日期输入框值:', DOMElements.settings.updateDateInput.value);
+                }
+            },
+            resetSettings() {
+                LocalStorage.remove('appData');
+                LocalStorage.remove('dataSource');
+                LocalStorage.remove('jsonUrl');
+                LocalStorage.remove('localData');
+                window.location.reload();
+            },
+            updateTimezoneInfo() {
+                const timezoneOffset = -appState.systemTimezoneOffset / 60;
+                DOMElements.settings.timezoneInfo.textContent = `当前时区: UTC${timezoneOffset >= 0 ? '+' : ''}${timezoneOffset}`;
+            }
+        };
+
+        // --- Initialization ---
+        function init() {
+            Settings.init();
+            DataService.initializeData();
+        }
+
+        init();
+    });
     </script>
 </body>
 </html>
-    
