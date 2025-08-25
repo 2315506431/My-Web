@@ -1086,177 +1086,117 @@
                     // 尝试使用多种方法获取数据
                     let data;
                     
-                    // 检查是否有jQuery可用，如果有，优先使用jQuery的AJAX
-                    if (typeof jQuery !== 'undefined') {
-                        try {
-                            console.log('检测到jQuery，尝试使用jQuery.ajax获取数据...');
-                            data = await new Promise((resolve, reject) => {
-                                jQuery.ajax({
-                                    url: fullUrl,
-                                    type: 'GET',
-                                    dataType: 'json',
-                                    cache: false,
-                                    crossDomain: true,
-                                    success: function(jsonData) {
-                                        console.log('使用jQuery.ajax获取数据成功');
-                                        resolve(jsonData);
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        console.error('jQuery.ajax错误:', textStatus, errorThrown);
-                                        reject(new Error(`jQuery.ajax错误: ${textStatus}`));
-                                    }
-                                });
-                            });
-                            // 如果jQuery成功获取数据，跳过其他方法
-                            console.log('jQuery.ajax成功获取数据，跳过其他方法');
-                        } catch (jqueryError) {
-                            console.error('使用jQuery.ajax获取数据失败，尝试其他方法:', jqueryError);
-                            // 继续尝试其他方法
-                            try {
-                                console.log('尝试使用fetch API获取数据...');
-                            } catch (e) {
-                                console.error('无法继续尝试fetch API:', e);
-                                throw e; // 重新抛出错误
-                            }
-                        }
-                    } else {
-                        console.log('未检测到jQuery，尝试使用fetch API获取数据...');
+                    // 检查URL协议是否支持CORS
+                    if (url.startsWith('http://') && window.location.protocol === 'https:') {
+                        console.warn('警告: 从HTTPS页面加载HTTP资源可能会被浏览器阻止');
+                        throw new Error('安全警告: 不允许从HTTPS页面加载HTTP资源，请使用HTTPS协议的URL');
                     }
                     
-                    // 如果没有jQuery或jQuery失败，尝试使用fetch API
+                    // 尝试使用fetch API获取数据（主要方法）
                     try {
                         console.log('尝试使用fetch API获取数据...');
                         const response = await fetch(fullUrl, {
                             mode: 'cors', // 明确指定CORS模式
-                            cache: 'no-cache' // 使用no-cache而不是no-store
+                            cache: 'no-cache', // 不使用缓存
+                            credentials: 'omit' // 不发送凭据，提高跨域兼容性
                         });
+                        
                         if (!response.ok) {
-                            throw new Error(`Network request failed, status code: ${response.status}`);
+                            console.error('HTTP错误状态码:', response.status, response.statusText);
+                            throw new Error(`HTTP请求失败: ${response.status} ${response.statusText}`);
                         }
+                        
+                        // 检查响应是否为空
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            throw new Error(`响应内容不是有效的JSON格式: ${contentType || '未知类型'}`);
+                        }
+                        
                         data = await response.json();
                         console.log('使用fetch API获取数据成功');
                     } catch (fetchError) {
                         console.error('使用fetch API获取数据失败:', fetchError);
-                        console.log('尝试使用XMLHttpRequest作为备选方法...');
                         
+                        // 检查是否是CORS错误
+                        if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
+                            console.warn('可能是跨域限制导致的错误。请确认远程服务器已正确配置CORS。');
+                            throw new Error('跨域请求失败: 请确认远程服务器已正确配置CORS头信息');
+                        }
+                        
+                        // 尝试使用JSONP作为备选方案（如果fetch失败）
                         try {
-                            // 如果fetch失败，尝试使用XMLHttpRequest作为备选方法
-                            data = await new Promise((resolve, reject) => {
-                                const xhr = new XMLHttpRequest();
-                                xhr.open('GET', fullUrl, true);
-                                xhr.onload = function() {
-                                    if (xhr.status >= 200 && xhr.status < 300) {
-                                        try {
-                                            const jsonData = JSON.parse(xhr.responseText);
-                                            console.log('使用XMLHttpRequest获取数据成功');
-                                            resolve(jsonData);
-                                        } catch (parseError) {
-                                            reject(new SyntaxError('JSON解析错误: ' + parseError.message));
-                                        }
-                                    } else {
-                                        reject(new Error(`XMLHttpRequest failed with status ${xhr.status}`));
-                                    }
-                                };
-                                xhr.onerror = function() {
-                                    reject(new Error('XMLHttpRequest网络错误'));
-                                };
-                                xhr.send();
-                            });
-                        } catch (xhrError) {
-                            console.error('使用XMLHttpRequest获取数据失败:', xhrError);
                             console.log('尝试使用JSONP方式获取数据...');
+                            // 注意：这要求服务器支持JSONP回调
+                            const jsonpUrl = `${url}${url.includes('?') ? '&' : '?'}callback=jsonpCallback&_t=${Date.now()}`;
+                            console.log('JSONP URL:', jsonpUrl);
                             
-                            try {
-                                // 如果XMLHttpRequest也失败，尝试使用JSONP方式
-                                // 注意：这要求服务器支持JSONP回调
-                                const jsonpUrl = `${url}${url.includes('?') ? '&' : '?'}callback=jsonpCallback&_t=${Date.now()}`;
-                                console.log('JSONP URL:', jsonpUrl);
+                            data = await new Promise((resolve, reject) => {
+                                // 创建全局回调函数
+                                window.jsonpCallback = function(jsonData) {
+                                    console.log('JSONP回调成功');
+                                    delete window.jsonpCallback; // 清理全局回调
+                                    script.remove(); // 移除script标签
+                                    clearTimeout(timeout); // 清除超时
+                                    resolve(jsonData);
+                                };
                                 
-                                data = await new Promise((resolve, reject) => {
-                                    // 创建全局回调函数
-                                    window.jsonpCallback = function(jsonData) {
-                                        console.log('JSONP回调成功');
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        clearTimeout(timeout); // 清除超时
-                                        resolve(jsonData);
-                                    };
-                                    
-                                    // 创建script标签
-                                    const script = document.createElement('script');
-                                    script.src = jsonpUrl;
-                                    script.onerror = function() {
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        clearTimeout(timeout); // 清除超时
-                                        reject(new Error('JSONP请求失败'));
-                                    };
-                                    
-                                    // 添加超时处理
-                                    const timeout = setTimeout(() => {
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        reject(new Error('JSONP请求超时'));
-                                    }, 5000); // 减少超时时间到5秒
-                                    
-                                    // 添加到文档中开始请求
-                                    document.head.appendChild(script);
-                                });
-                            } catch (jsonpError) {
-                                console.error('使用JSONP获取数据失败:', jsonpError);
-                                console.log('尝试使用iframe代理方式获取数据...');
+                                // 创建script标签
+                                const script = document.createElement('script');
+                                script.src = jsonpUrl;
+                                script.onerror = function() {
+                                    delete window.jsonpCallback; // 清理全局回调
+                                    script.remove(); // 移除script标签
+                                    clearTimeout(timeout); // 清除超时
+                                    reject(new Error('JSONP请求失败: 服务器可能不支持JSONP格式'));
+                                };
                                 
-                                // 最后尝试使用iframe代理方式
-                                data = await new Promise((resolve, reject) => {
-                                    // 创建一个隐藏的iframe
-                                    const iframe = document.createElement('iframe');
-                                    iframe.style.display = 'none';
-                                    document.body.appendChild(iframe);
-                                    
-                                    // 设置超时
-                                    const timeout = setTimeout(() => {
-                                        document.body.removeChild(iframe);
-                                        reject(new Error('iframe请求超时'));
-                                    }, 5000); // 减少超时时间到5秒
-                                    
-                                    // iframe加载完成后尝试获取内容
-                                    iframe.onload = function() {
-                                        try {
-                                            clearTimeout(timeout);
-                                            let iframeContent;
-                                            try {
-                                                // 尝试直接访问iframe内容
-                                                iframeContent = iframe.contentDocument.body.innerText;
-                                            } catch (accessError) {
-                                                // 如果直接访问失败，可能是因为跨域限制
-                                                reject(new Error('无法访问iframe内容，可能是跨域限制'));
-                                                document.body.removeChild(iframe);
-                                                return;
+                                // 添加超时处理
+                                const timeout = setTimeout(() => {
+                                    delete window.jsonpCallback; // 清理全局回调
+                                    script.remove(); // 移除script标签
+                                    reject(new Error('JSONP请求超时: 服务器响应时间过长'));
+                                }, 8000); // 增加超时时间到8秒
+                                
+                                // 添加到文档中开始请求
+                                document.head.appendChild(script);
+                            });
+                        } catch (jsonpError) {
+                            console.error('使用JSONP获取数据失败:', jsonpError);
+                            
+                            // 检查是否有jQuery可用，如果有，尝试使用jQuery的AJAX作为最后的备选方案
+                            if (typeof jQuery !== 'undefined') {
+                                try {
+                                    console.log('检测到jQuery，尝试使用jQuery.ajax获取数据...');
+                                    data = await new Promise((resolve, reject) => {
+                                        jQuery.ajax({
+                                            url: fullUrl,
+                                            type: 'GET',
+                                            dataType: 'json',
+                                            cache: false,
+                                            crossDomain: true,
+                                            success: function(jsonData) {
+                                                console.log('使用jQuery.ajax获取数据成功');
+                                                resolve(jsonData);
+                                            },
+                                            error: function(jqXHR, textStatus, errorThrown) {
+                                                console.error('jQuery.ajax错误:', textStatus, errorThrown);
+                                                reject(new Error(`jQuery.ajax错误: ${textStatus} - ${errorThrown}`));
                                             }
-                                            
-                                            // 尝试解析JSON
-                                            const jsonData = JSON.parse(iframeContent);
-                                            console.log('使用iframe代理获取数据成功');
-                                            document.body.removeChild(iframe);
-                                            resolve(jsonData);
-                                        } catch (parseError) {
-                                            document.body.removeChild(iframe);
-                                            reject(new SyntaxError('iframe内容解析错误: ' + parseError.message));
-                                        }
-                                    };
-                                    
-                                    // 设置错误处理
-                                    iframe.onerror = function() {
-                                        clearTimeout(timeout);
-                                        document.body.removeChild(iframe);
-                                        reject(new Error('iframe加载失败'));
-                                    };
-                                    
-                                    // 设置iframe的src
-                                    iframe.src = fullUrl;
-                                });
+                                        });
+                                    });
+                                } catch (jqueryError) {
+                                    console.error('使用jQuery.ajax获取数据失败:', jqueryError);
+                                    throw new Error(`所有获取数据的方法均失败: ${jqueryError.message}`);
+                                }
+                            } else {
+                                throw new Error(`获取数据失败: 可能是跨域限制或服务器配置问题`);
                             }
                         }
+                    }
+                    
+                    // 确保data不为空且是有效的对象
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('获取到的数据为空或格式无效');
                     }
                     
                     const processedData = this.normalizeData(data);
@@ -1292,14 +1232,23 @@
                     
                     // 保留关键错误信息，便于排查问题
                     let errorMessage = '';
-                    if (error instanceof TypeError) {
-                        errorMessage = `网络请求错误: ${error.message}`;
-                        console.error('网络请求错误详情:', error.message);
-                    } else if (error instanceof SyntaxError) {
-                        errorMessage = `JSON解析错误: ${error.message}`;
-                        console.error('JSON解析错误详情:', error.message);
+                    let detailedMessage = '';
+                    
+                    if (error.message.includes('跨域')) {
+                        errorMessage = '跨域请求失败';
+                        detailedMessage = '远程服务器可能未正确配置CORS头信息。请确认服务器端已设置Access-Control-Allow-Origin响应头。';
+                    } else if (error.message.includes('HTTP请求失败')) {
+                        errorMessage = '服务器响应错误';
+                        detailedMessage = '远程服务器返回了错误状态码。请检查URL是否正确，以及服务器是否正常运行。';
+                    } else if (error.message.includes('JSON')) {
+                        errorMessage = 'JSON解析错误';
+                        detailedMessage = '服务器返回的内容不是有效的JSON格式。请检查数据格式是否正确。';
+                    } else if (error.message.includes('安全警告')) {
+                        errorMessage = '安全协议错误';
+                        detailedMessage = '从HTTPS页面加载HTTP资源被浏览器阻止。请使用HTTPS协议的URL。';
                     } else {
-                        errorMessage = `${error.name}: ${error.message}`;
+                        errorMessage = error.name;
+                        detailedMessage = error.message;
                     }
                     
                     // 获取失败时，尝试使用本地缓存数据或创建默认数据
@@ -1331,7 +1280,8 @@
                     Renderer.updateUI(processedData);
                     this.scheduleUpdateCheck();
                     
-                    Modal.show(`从JSON网址加载失败: ${errorMessage}。已使用本地数据，请检查网址或数据格式。`);
+                    // 显示更详细的错误信息帮助用户排查问题
+                    Modal.show(`${errorMessage}: ${detailedMessage}\n\n在部署环境中，建议：\n1. 确保远程服务器已正确配置CORS头信息\n2. 使用HTTPS协议的URL\n3. 验证JSON数据格式是否符合要求\n4. 确认服务器可以从外部访问\n\n已使用本地数据继续运行。`);
                 }
             },
             // 计算推荐项的函数
