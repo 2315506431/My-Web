@@ -128,255 +128,164 @@
         }
     </script>
     <style>
-        /* Custom font loading */
-        @font-face {
-            font-family: 'CustomFont';
-            src: url('font.ttf') format('truetype');
-            font-weight: 400;
-            font-style: normal;
+@font-face{font-family:'CustomFont';src:url('font.ttf') format('truetype');font-weight:400;font-style:normal}
+@font-face{font-family:'CustomFont';src:url('font.ttf') format('truetype');font-weight:600;font-style:normal}
+body{background-color:#f8fafc;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-size:clamp(14px,3vw,21px)}
+[data-trend-item]{font-size:clamp(1rem,2.5vw,1.3rem)}
+[data-trend-item] p[data-text-id]{font-size:clamp(1.1rem,3vw,1.5rem);font-weight:600;line-height:1.4}
+h2{font-size:clamp(1.5rem,5vw,2.5rem)!important}
+h3{font-size:clamp(1.3rem,4vw,1.9rem)!important}
+.countdown-timer{font-size:clamp(0.9rem,2.5vw,1.2rem)}
+.recommend-value{font-size:clamp(0.9rem,2.5vw,1.15rem);padding:clamp(3px,1vw,5px) clamp(8px,3vw,16px)}
+h1,h2,h3,h4,h5,h6{font-size-adjust:0.5}
+.content-transition{transition:opacity 0.5s ease-in-out,transform 0.5s ease-in-out}
+.content-loading{opacity:0.5;transform:scale(0.98);pointer-events:none}
+.field-hover{transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;border:2px solid #cbd5e1;touch-action:manipulation!important}
+.field-hover:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(59,130,246,0.1);border-color:#d4af37}
+.field-hover>div:last-child{min-height:60px}
+.image-container{position:relative;border-radius:0.5rem}
+.trend-image-wrapper{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;overflow:hidden}
+.trend-image-wrapper.current{background-color:#d4af37}
+.trend-image-wrapper.next{background-color:#64748b}
+.trend-image{width:70%;height:70%;object-fit:contain;opacity:0;transition:opacity 0.4s ease}
+.trend-image.loaded{opacity:1}
+.trend-image-placeholder{font-size:1rem;color:#94a3b8}
+.corner-image{position:absolute;top:0;left:0;width:32px;height:32px;z-index:10;transform:translate(-30%,-30%)}
+.fixed-height-placeholder{height:30px;width:100%}
+.countdown-timer{font-size:0.9rem;color:#dc2626;height:24px;min-height:24px;display:flex;align-items:center;justify-content:center;white-space:nowrap;margin:0;padding:0}
+@media (max-width:640px){[data-trend-item]{gap:0!important;padding-top:clamp(8px,3vw,12px)!important;padding-bottom:0!important}[data-trend-item]>div:last-child{min-height:auto!important;margin-top:0!important;margin-bottom:0!important}}
+.settings-panel{position:fixed;top:0;right:0;width:100%;max-width:380px;height:100%;background-color:white;box-shadow:-2px 0 15px rgba(0,0,0,0.1);z-index:9998;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:clamp(8px,4vw,24px)}
+.settings-panel.open{transform:translateX(0)}
+.settings-panel h3{font-size:clamp(1.1rem,4vw,1.35rem)!important;font-weight:600!important;margin-top:clamp(12px,3vw,24px)}
+.settings-panel h4{font-size:clamp(1rem,3vw,1.15rem)!important}
+.settings-panel #timezoneInfo{font-size:1rem}
+.copy-template-btn{font-size:1.0rem!important;display:flex;align-items:center;justify-content:center;line-height:1;transition:all 0.2s ease}
+.copy-template-btn:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.copy-template-btn.copied{background-color:#d1fae5!important;color:#065f46!important}
+@media (min-width:1024px){.copy-template-btn{font-size:1.1rem!important}}
+.settings-panel label,.settings-panel p{font-size:clamp(0.9rem,3vw,1.15rem)!important;line-height:1.6!important}
+.settings-panel input{margin-bottom:0.75rem!important;font-size:clamp(14px,2.5vw,18px)!important}
+label.flex.items-center.gap-2.cursor-pointer{display:flex!important;align-items:center!important;gap:0.5rem!important;margin:0.25rem 0!important}
+label.flex.items-center.gap-2.cursor-pointer input[type="radio"]{vertical-align:middle!important;margin:0!important;width:auto!important;height:auto!important;flex-shrink:0!important}
+@media (max-width:150px){.settings-panel{font-size:clamp(12px,2.8vw,16px)!important;padding:clamp(6px,4vw,18px)!important}}
+.settings-panel-content{font-size:clamp(0.8rem,2.5vw,1rem)!important}
+.settings-panel-content h4,.settings-panel-content h5,.settings-panel-content label,.settings-panel-content p,.settings-panel-content button,.settings-panel-content div,.settings-panel-content span{font-size:inherit!important}
+.mb-4{font-size:inherit!important}
+#timezoneInfo{font-size:clamp(0.75rem,2vw,0.9rem)!important;padding:clamp(4px,2vw,8px)!important}
+#jsonUrlGroup{font-size:inherit!important}
+@media (max-height:768px){.settings-panel-content{font-size:clamp(0.78rem,2.4vw,0.98rem)!important}}
+@media (max-height:700px){.settings-panel-content{font-size:clamp(0.76rem,2.3vw,0.96rem)!important}}
+@media (max-height:640px){.settings-panel-content{font-size:clamp(0.74rem,2.2vw,0.94rem)!important}}
+@media (max-height:600px){.settings-panel-content{font-size:clamp(0.72rem,2.1vw,0.92rem)!important}.settings-panel-content label,.settings-panel-content p,.settings-panel-content input,.settings-panel-content button{margin-top:0.2rem!important;margin-bottom:0.2rem!important}}
+@media (max-height:560px){.settings-panel-content{font-size:clamp(0.7rem,2.0vw,0.9rem)!important}}
+@media (max-height:520px){.settings-panel-content{font-size:clamp(0.68rem,1.9vw,0.88rem)!important}}
+@media (max-height:500px){.settings-panel-content{font-size:clamp(0.66rem,1.8vw,0.86rem)!important}.settings-panel-content label,.settings-panel-content p,.settings-panel-content input,.settings-panel-content button{margin-top:0.15rem!important;margin-bottom:0.15rem!important}}
+@media (max-height:480px){.settings-panel-content{font-size:clamp(0.64rem,1.7vw,0.84rem)!important}}
+        
+        @media (max-height: 460px) {
+            .settings-panel-content {
+                font-size: clamp(0.62rem, 1.6vw, 0.82rem) !important;
+            }
         }
         
-        @font-face {
-            font-family: 'CustomFont';
-            src: url('font.ttf') format('truetype');
-            font-weight: 600;
-            font-style: normal;
+        /* 当屏幕又矮又窄时，进一步减小所有文本元素大小 */
+        @media (max-height: 600px) and (max-width: 340px) {
+            .settings-panel-content {
+                font-size: clamp(0.6rem, 1.5vw, 0.8rem) !important;
+            }
         }
         
-        /* Overall page styling */
-        body {
-            background-color: #f8fafc;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            /* 增加基础字体大小 */
-            font-size: clamp(14px, 3vw, 21px);
-        }
-
-        /* 使用相对单位实现跟随缩放效果 */
-        [data-trend-item] {
-            font-size: clamp(1rem, 2.5vw, 1.3rem);
-        }
-        
-        /* 趋势项目文本跟随缩放 */
-        [data-trend-item] p[data-text-id] {
-            font-size: clamp(1.1rem, 3vw, 1.5rem);
-            font-weight: 600;
-            line-height: 1.4;
-        }
-        
-        /* 标题跟随缩放 */
-        h2 {
-            font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
-        }
-        
-        h3 {
-            font-size: clamp(1.3rem, 4vw, 1.9rem) !important;
-        }
-        
-        /* 倒计时器跟随缩放 */
-        .countdown-timer {
-            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-        }
-        
-        /* 推荐值标签跟随缩放 */
-        .recommend-value {
-            font-size: clamp(0.9rem, 2.5vw, 1.15rem);
-            padding: clamp(3px, 1vw, 5px) clamp(8px, 3vw, 16px);
-        }
-        
-        /* Ensure better font scaling across devices */
-        h1, h2, h3, h4, h5, h6 {
-            font-size-adjust: 0.5;
-        }
-        
-        /* Fix settings panel text size inconsistencies */
-        .settings-panel {
-            /* Reset font scaling for the settings panel */
-            font-size: 20px;
-        }
-        
-        .settings-panel h3 {
-            /* Settings panel title */
-            font-size: 1.7rem !important;
-        }
-        
-        .settings-panel h4 {
-            /* Settings panel section headers */
-            font-size: 1.5rem !important;
-        }
-        
-        .settings-panel label {
-            /* Form labels */
-            font-size: 1.25rem;
-        }
-        
+        /* 段落特定样式 */
         .settings-panel p {
-            /* Description text */
-            font-size: 1.15rem;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.75rem !important;
+            font-size: clamp(0.9rem, 3vw, 1.15rem) !important;
         }
         
-        .settings-panel #timezoneInfo {
-            /* Timezone info text */
-            font-size: 1rem;
+        /* JSON模板说明部分特定样式 */
+        .json-template-description {
+            font-size: clamp(0.8rem, 2.5vw, 0.95rem) !important;
         }
         
-        /* 统一设置面板中的所有文本大小 */
-        .settings-panel * {
-            font-size: 19px !important;
+        .json-template-description p {
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
+            font-size: inherit !important;
         }
         
-        /* 输入框字体稍小一些 */
-        .settings-panel input {
-            font-size: 17px !important;
-        }
-        
-        /* 仅对需要强调的元素使用更大的字体大小 */
-        .settings-panel h3 {
-            font-size: 20px !important;
-            font-weight: 600 !important;
-        }
-        
-        /* Adjust settings panel text size for larger screens */
-        @media (min-width: 1024px) {
-            .settings-panel * {
-                font-size: 21px !important;
+        /* JSON模板说明部分响应式调整：根据屏幕高度平滑缩小字体 */
+        @media (max-height: 768px) {
+            .json-template-description {
+                font-size: clamp(0.78rem, 2.4vw, 0.92rem) !important;
             }
+        }
+        
+        @media (max-height: 700px) {
+            .json-template-description {
+                font-size: clamp(0.76rem, 2.3vw, 0.9rem) !important;
+            }
+        }
+        
+        @media (max-height: 640px) {
+            .json-template-description {
+                font-size: clamp(0.74rem, 2.2vw, 0.88rem) !important;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .json-template-description {
+                font-size: clamp(0.72rem, 2.1vw, 0.86rem) !important;
+            }
+            .json-template-description p {
+                margin-top: 0.2rem !important;
+                margin-bottom: 0.2rem !important;
+            }
+        }
             
-            /* 大屏幕上输入框字体也相应调整 */
-            .settings-panel input {
-                font-size: 18px !important;
-            }
-            
-            .settings-panel h3 {
-                font-size: 22px !important;
-            }
-        }
-
-        /* Smooth transition for content updates */
-        .content-transition {
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-        }
-        .content-loading {
-            opacity: 0.5;
-            transform: scale(0.98);
-            pointer-events: none;
-        }
-
-        /* Enhanced hover effect for fields */
-        .field-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            border: 2px solid #cbd5e1;
-            touch-action: manipulation !important;
-        }
-        .field-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
-            border-color: #d4af37;
-        }
-        
-        /* 确保文本区域有固定的最小高度，防止内容不同导致高度变化 */
-        .field-hover > div:last-child {
-            min-height: 60px;
-        }
-
-        /* Image container styling */
-        .image-container {
-            position: relative;
-            border-radius: 0.5rem;
-        }
-        .trend-image-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            overflow: hidden;
-        }
-        .trend-image-wrapper.current {
-            background-color: #d4af37;
-        }
-        .trend-image-wrapper.next {
-            background-color: #64748b;
-        }
-
-        .trend-image {
-            width: 70%;
-            height: 70%;
-            object-fit: contain;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        .trend-image.loaded {
-            opacity: 1;
-        }
-        .trend-image-placeholder {
-            font-size: 1rem;
-            color: #94a3b8;
-        }
-
-        /* Hot icon in the corner */
-        .corner-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 32px;
-            height: 32px;
-            z-index: 10;
-            transform: translate(-30%, -30%);
-        }
-
-        /* Fixed height placeholder for consistent spacing */
-        .fixed-height-placeholder {
-            height: 30px;
-            width: 100%;
-        }
-
-        /* Countdown timer styling */
-        .countdown-timer {
-            font-size: 0.9rem;
-            color: #dc2626;
-            height: 24px;
-            min-height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* 保留必要的媒体查询断点，但优化为更平滑的过渡 */
-        @media (max-width: 640px) {
-            [data-trend-item] {
-                gap: 0 !important; /* 在小屏幕上设置为最小间距 */
-                padding-top: clamp(8px, 3vw, 12px) !important;
-                padding-bottom: 0 !important;
-            }
-            [data-trend-item] > div:last-child {
-                min-height: auto !important;
-                margin-top: 0 !important;
-                margin-bottom: 0 !important;
+        @media (max-height: 560px) {
+            .json-template-description {
+                font-size: clamp(0.7rem, 2.0vw, 0.84rem) !important;
             }
         }
         
-        /* 确保设置面板文本大小在各种屏幕尺寸上一致 */
-        .settings-panel {
-            font-size-adjust: 0.5;
+        @media (max-height: 520px) {
+            .json-template-description {
+                font-size: clamp(0.68rem, 1.9vw, 0.82rem) !important;
+            }
         }
         
-        .settings-panel h3 {
-            font-size: clamp(1.1rem, 4vw, 1.35rem) !important;
-            margin-top: clamp(12px, 3vw, 24px);
+        @media (max-height: 500px) {
+            .json-template-description {
+                font-size: clamp(0.66rem, 1.8vw, 0.8rem) !important;
+            }
+            .json-template-description p {
+                margin-top: 0.15rem !important;
+                margin-bottom: 0.15rem !important;
+            }
         }
         
-        .settings-panel h4 {
-            font-size: clamp(1rem, 3vw, 1.15rem) !important;
+        @media (max-height: 480px) {
+            .json-template-description {
+                font-size: clamp(0.64rem, 1.7vw, 0.78rem) !important;
+            }
         }
         
-        .settings-panel label {
-            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        @media (max-height: 460px) {
+            .json-template-description {
+                font-size: clamp(0.62rem, 1.6vw, 0.76rem) !important;
+            }
+        }
+        
+        /* 当屏幕又矮又窄时，进一步平滑减小说明文字大小 */
+        @media (max-height: 600px) and (max-width: 340px) {
+            .json-template-description {
+                font-size: clamp(0.6rem, 1.5vw, 0.74rem) !important;
+            }
+        }
+        
+        /* 优化复制模板按钮样式，使其响应式缩放 */
+        .copy-template-btn {
+            font-size: clamp(0.85rem, 3vw, 1.0rem) !important;
         }
 
         /* Recommended value label with bonus indicator */
@@ -526,12 +435,8 @@
                 top: 2px !important;
                 right: 2px !important;
                 /* 在横屏模式下保持合适的大小 */
-                width: 8vh;
-                height: 8vh;
-                max-width: 48px;
-                max-height: 48px;
-                min-width: 36px;
-                min-height: 36px;
+                width: clamp(36px, 8vh, 48px);
+                height: clamp(36px, 8vh, 48px);
             }
         }
         
@@ -549,6 +454,11 @@
                 /* 触摸目标最小尺寸应符合WCAG AA标准 */
                 min-width: 48px !important;
                 min-height: 48px !important;
+            }
+            
+            /* 增加触摸目标间距 */
+            #settingsButton i {
+                transform: scale(1.1);
             }
         }
         .settings-panel {
@@ -677,11 +587,55 @@
         .multiselect-single-box i:hover {
             color: #ef4444;
         }
-        .multiselect-option.selected { border: 2px solid #3b82f6; background-color: transparent; color: black; transition: all 0.2s ease; }
-        .multiselect-option { border: 2px solid transparent; border-radius: 4px; padding: 4px 8px; color: black; transition: all 0.2s ease; }
-        .multiselect-option:hover:not(.disabled):not(.selected) { background-color: #dbeafe; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4); }
+        /* 多选框选项基础样式 */
+        .multiselect-option {
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: black;
+            transition: all 0.2s ease;
+        }
+        
+        /* 选中状态样式 */
+        .multiselect-option.selected {
+            border: 2px solid #3b82f6;
+            background-color: transparent;
+            color: black;
+        }
+        
+        /* 悬停状态样式 */
+        .multiselect-option:hover:not(.disabled):not(.selected) {
+            background-color: #dbeafe;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* 禁用状态样式 */
+        .multiselect-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            color: #94a3b8;
+            background-color: #f8fafc;
+        }
+        
+        /* 小屏幕上的多选框优化 */
+        @media (max-width: 480px) {
+            .multiselect-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .multiselect-option {
+                padding: 6px 4px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 超小屏幕上的多选框进一步优化 */
+        @media (max-width: 360px) {
+            .multiselect-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .multiselect-option.selected:hover:not(.disabled) { border: 2px solid #2563eb; background-color: transparent; }
-        .multiselect-option.disabled { color: #94a3b8; cursor: not-allowed; background-color: #f8fafc; }
         .multiselect-tag {
             background-color: transparent;
             border: 2px solid #4f46e5;
@@ -728,10 +682,12 @@
         }
         /* 确保趋势项目高度统一且内容垂直居中 */
         [data-trend-item] {
-            height: 120px;
+            height: clamp(100px, 30vw, 120px);
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: clamp(0, 2vw, 12px);
+            padding: clamp(8px, 3vw, 16px);
         }
         /* 确保趋势项目内的文本区域垂直居中 */
         [data-trend-item] > div:last-child {
@@ -781,11 +737,7 @@
             padding: 0;
         }
         
-        /* 趋势项目响应式优化 */
-        [data-trend-item] {
-            gap: clamp(0, 2vw, 12px);
-            padding: clamp(8px, 3vw, 16px);
-        }
+
         
         /* 内容区域内边距跟随缩放 */
         .content-transition {
@@ -797,7 +749,6 @@
         /* 设置面板跟随缩放，支持更小的文本尺寸 */
         .settings-panel {
             width: 100%;
-            font-size: clamp(18px, 3vw, 20px);
             padding: clamp(8px, 4vw, 24px);
         }
         
@@ -839,12 +790,8 @@
             
             /* 设置按钮在超小屏幕上的优化 */
             #settingsButton {
-                width: 18vw !important;
-                height: 18vw !important;
-                max-width: 40px !important;
-                max-height: 40px !important;
-                min-width: 32px !important;
-                min-height: 32px !important;
+                width: clamp(32px, 18vw, 40px) !important;
+                height: clamp(32px, 18vw, 40px) !important;
                 top: 2px !important;
                 right: 2px !important;
                 z-index: 9990 !important;
@@ -973,7 +920,7 @@
             </button>
         </div>
 
-        <div class="flex-grow p-2 overflow-y-auto">
+        <div class="settings-panel-content flex-grow p-2 overflow-y-auto">
             <div class="mb-4">
                 <h4 class="font-semibold text-gray-700 mb-2">数据来源</h4>
                 <div class="space-y-2">
@@ -990,7 +937,7 @@
                 <div class="mt-2">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-medium text-gray-700">JSON模板</h5>
-                        <button id="copyJsonTemplate" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded-md text-xs transition-colors" style="font-size: 1.0rem !important; display: flex; align-items: center; justify-content: center; line-height: 1;">
+                        <button id="copyJsonTemplate" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-3 rounded-md text-xs transition-colors copy-template-btn">
                             <i class="fa fa-copy mr-1"></i>复制模板
                         </button>
                     </div>
@@ -1003,7 +950,7 @@
   "nextUpdate": ""
 }</pre>
                     </div>
-                    <div class="text-xs text-gray-500 mt-2 space-y-1">
+                    <div class="json-template-description text-gray-500 mt-2 space-y-1">
                         <p><span class="font-medium">说明：</span></p>
                         <p>current1 - 本期趋势1</p>
                         <p>current2 - 本期趋势2</p>
@@ -1337,14 +1284,11 @@
                     if (dataSource === 'json' && jsonUrl) {
                         try {
                             await this.fetchJsonData(jsonUrl);
-                            console.log('从JSON URL加载数据成功');
                             // 设置倒计时
                             this.scheduleUpdateCheck();
-                            UI.hideLoading();
                             return; // 成功获取数据后直接返回
                         } catch (error) {
-                            console.warn('从JSON URL加载失败:', error);
-                            UI.hideLoading(); // 确保失败时也隐藏加载状态
+                            // fetchJsonData函数内部已经处理了加载状态
                             // 继续尝试其他数据来源
                         }
                     }
@@ -1358,7 +1302,6 @@
                     if (storedData && storedData.current && storedData.current.trends && storedData.current.trends.length > 0) {
                         appState.currentData = storedData;
                         Renderer.updateUI(appState.currentData);
-                        console.log('使用有效的本地存储appData');
                     } else if (localData && localData.current && localData.current.length > 0) {
                         // 如果存储数据无效但有本地设置数据，使用本地设置数据
                         const format1Data = {
@@ -1377,31 +1320,26 @@
                         appState.currentData = processedData;
                         LocalStorage.set('appData', processedData);
                         Renderer.updateUI(processedData);
-                        console.log('使用本地设置的localData');
                     } else {
-                            // 如果没有任何有效数据，使用默认数据
-                            try {
-                                await this.fetchDefaultData();
-                                console.log('加载默认数据成功');
-                            } catch (defaultError) {
-                                console.error('加载默认数据失败:', defaultError);
-                                this.loadDefaultPlaceholderData();
-                            }
+                        // 如果没有任何有效数据，使用默认数据
+                        try {
+                            await this.fetchDefaultData();
+                        } catch (defaultError) {
+                            this.loadDefaultPlaceholderData();
                         }
+                    }
                     
                     // 设置倒计时
                     this.scheduleUpdateCheck();
-                    UI.hideLoading();
                 } catch (error) {
-                    console.error('初始化数据失败：', error);
                     // 即使出错，也使用空格占位符作为最后的兜底方案
                     this.loadDefaultPlaceholderData();
                     
                     // 设置倒计时
                     this.scheduleUpdateCheck();
+                } finally {
+                    UI.hideLoading();
                 }
-                
-                UI.hideLoading();
             },
             
             // 获取默认的nextUpdate时间
@@ -1417,38 +1355,23 @@
                 const defaultTomorrow = new Date();
                 defaultTomorrow.setDate(defaultTomorrow.getDate() + 1);
                 const defaultDateOnly = defaultTomorrow.toISOString().split('T')[0];
-                const fallbackData = {
-                    current1: " ", // 空格字符作为占位符
-                    current2: " ", // 空格字符作为占位符
+                
+                // 直接创建一个有效的processedData对象
+                const directData = {
+                    current: {
+                        trends: ['', ''],
+                        recommendations: []
+                    },
+                    next: {
+                        trends: [],
+                        recommendations: []
+                    },
                     nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
                 };
                 
-                try {
-                    const processedData = this.normalizeData(fallbackData);
-                    
-                    appState.currentData = processedData;
-                    LocalStorage.set('appData', processedData);
-                    Renderer.updateUI(processedData);
-                    console.log('使用空格占位符数据作为最后的兜底方案');
-                } catch (error) {
-                    console.error('处理占位符数据失败:', error);
-                    // 直接创建一个有效的processedData对象
-                    const directData = {
-                        current: {
-                            trends: ['', ''],
-                            recommendations: []
-                        },
-                        next: {
-                            trends: [],
-                            recommendations: []
-                        },
-                        nextUpdate: `${defaultDateOnly}T04:00:00+08:00`
-                    };
-                    appState.currentData = directData;
-                    LocalStorage.set('appData', directData);
-                    Renderer.updateUI(directData);
-                    console.log('使用直接创建的数据对象作为最后的兜底方案');
-                }
+                appState.currentData = directData;
+                LocalStorage.set('appData', directData);
+                Renderer.updateUI(directData);
             },
             async fetchDefaultData() {
                 try {
@@ -1461,254 +1384,40 @@
                     
                     const processedData = this.normalizeData(emptyData);
                     
-                    // 确保有nextUpdate字段
-                    if (!processedData.nextUpdate) {
-                        // 如果没有nextUpdate，设置为当前日期加一天的凌晨4点
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        const dateOnly = tomorrow.toISOString().split('T')[0];
-                        processedData.nextUpdate = `${dateOnly}T04:00:00+08:00`;
-                    }
-                    
-                    // 将nextUpdate设置为凌晨4点（UTC+8）
-                    const dateOnly = processedData.nextUpdate.split('T')[0];
-                    const nextUpdateDate = new Date(`${dateOnly}T04:00:00+08:00`);
+                    // 确保有nextUpdate字段并设置为凌晨4点（UTC+8）
+                    const dateOnly = processedData.nextUpdate ? processedData.nextUpdate.split('T')[0] : null;
+                    const nextUpdateDate = new Date(dateOnly ? `${dateOnly}T04:00:00+08:00` : `${new Date().toISOString().split('T')[0]}T04:00:00+08:00`);
                     processedData.nextUpdate = nextUpdateDate.toISOString();
                     
                     appState.currentData = processedData;
                     LocalStorage.set('appData', processedData);
                     Renderer.updateUI(processedData);
-                    console.log('使用默认空数据');
                     
                     // 确保设置倒计时
                     this.scheduleUpdateCheck();
                 } catch (error) {
-                    console.error('处理默认空数据时出错:', error);
                     // 即使出错，也使用空格占位符作为最后的兜底方案
                     this.loadDefaultPlaceholderData();
                 }
             },
             async fetchJsonData(url) {
                 try {
-                    UI.showLoading('正在从JSON网址加载...');
-                    console.log('开始获取JSON数据，URL:', url);
                     // 添加时间戳参数，避免浏览器缓存
                     const cacheBuster = `${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
                     const fullUrl = `${url}${cacheBuster}`;
-                    console.log('添加缓存破坏参数后的URL:', fullUrl);
                     
-                    // 尝试使用多种方法获取数据
-                    let data;
-                    
-                    // 检查是否有jQuery可用，如果有，优先使用jQuery的AJAX
-                    if (typeof jQuery !== 'undefined') {
-                        try {
-                            console.log('检测到jQuery，尝试使用jQuery.ajax获取数据...');
-                            data = await new Promise((resolve, reject) => {
-                                jQuery.ajax({
-                                    url: fullUrl,
-                                    type: 'GET',
-                                    dataType: 'json',
-                                    cache: false,
-                                    crossDomain: true,
-                                    success: function(jsonData) {
-                                        console.log('使用jQuery.ajax获取数据成功');
-                                        resolve(jsonData);
-                                    },
-                                    error: function(jqXHR, textStatus, errorThrown) {
-                                        console.error('jQuery.ajax错误:', textStatus, errorThrown);
-                                        reject(new Error(`jQuery.ajax错误: ${textStatus}`));
-                                    }
-                                });
-                            });
-                            // 如果jQuery成功获取数据，跳过其他方法
-                            console.log('jQuery.ajax成功获取数据，跳过其他方法');
-                        } catch (jqueryError) {
-                            console.error('使用jQuery.ajax获取数据失败，尝试其他方法:', jqueryError);
-                            // 继续尝试其他方法
-                            try {
-                                console.log('尝试使用fetch API获取数据...');
-                            } catch (e) {
-                                console.error('无法继续尝试fetch API:', e);
-                                throw e; // 重新抛出错误
-                            }
-                        }
-                    } else {
-                        console.log('未检测到jQuery，尝试使用fetch API获取数据...');
-                    }
-                    
-                    // 如果没有jQuery或jQuery失败，尝试使用fetch API
-                    try {
-                        console.log('尝试使用fetch API获取数据...');
-                        const response = await fetch(fullUrl, {
-                            mode: 'cors', // 明确指定CORS模式
-                            cache: 'no-cache' // 使用no-cache而不是no-store
-                        });
-                        if (!response.ok) {
-                            throw new Error(`Network request failed, status code: ${response.status}`);
-                        }
-                        // 先获取文本内容，去除注释后再解析JSON
-                        const responseText = await response.text();
-                        const textWithoutComments = stripJsonComments(responseText);
-                        data = JSON.parse(textWithoutComments);
-                        // 验证JSON数据字段
-                        validateJsonData(data);
-                        console.log('使用fetch API获取数据成功，数据验证通过');
-                    } catch (fetchError) {
-                        console.error('使用fetch API获取数据失败:', fetchError);
-                        // 显示验证错误信息给用户
-                        if (fetchError.message.includes('JSON数据验证失败')) {
-                            Modal.show(fetchError.message);
-                            // 验证失败时直接进入错误处理流程
-                            throw fetchError;
-                        } else {
-                            console.log('尝试使用XMLHttpRequest作为备选方法...');
-                        }
-                        
-                        try {
-                            // 如果fetch失败，尝试使用XMLHttpRequest作为备选方法
-                            data = await new Promise((resolve, reject) => {
-                                const xhr = new XMLHttpRequest();
-                                xhr.open('GET', fullUrl, true);
-                                xhr.onload = function() {
-                                    if (xhr.status >= 200 && xhr.status < 300) {
-                                        try {
-                                            // 先去除注释再解析JSON
-                                            const textWithoutComments = stripJsonComments(xhr.responseText);
-                                            const jsonData = JSON.parse(textWithoutComments);
-                                            // 验证JSON数据字段
-                                            try {
-                                                validateJsonData(jsonData);
-                                                console.log('使用XMLHttpRequest获取数据成功，数据验证通过');
-                                                resolve(jsonData);
-                                            } catch (validationError) {
-                                                // 显示验证错误信息给用户
-                                                Modal.show(validationError.message);
-                                                console.error('JSON数据验证失败:', validationError);
-                                                // 验证失败时直接抛出错误，不再继续尝试其他方法
-                                                throw validationError;
-                                            }
-                                        } catch (parseError) {
-                                            reject(new SyntaxError('JSON解析错误: ' + parseError.message));
-                                        }
-                                    } else {
-                                        reject(new Error(`XMLHttpRequest failed with status ${xhr.status}`));
-                                    }
-                                };
-                                xhr.onerror = function() {
-                                    reject(new Error('XMLHttpRequest网络错误'));
-                                };
-                                xhr.send();
-                            });
-                        } catch (xhrError) {
-                            console.error('使用XMLHttpRequest获取数据失败:', xhrError);
-                            console.log('尝试使用JSONP方式获取数据...');
-                            
-                            try {
-                                // 如果XMLHttpRequest也失败，尝试使用JSONP方式
-                                // 注意：这要求服务器支持JSONP回调
-                                const jsonpUrl = `${url}${url.includes('?') ? '&' : '?'}callback=jsonpCallback&_t=${Date.now()}`;
-                                console.log('JSONP URL:', jsonpUrl);
-                                
-                                data = await new Promise((resolve, reject) => {
-                                    // 创建全局回调函数
-                                    window.jsonpCallback = function(jsonData) {
-                                        console.log('JSONP回调成功');
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        clearTimeout(timeout); // 清除超时
-                                        resolve(jsonData);
-                                    };
-                                    
-                                    // 创建script标签
-                                    const script = document.createElement('script');
-                                    script.src = jsonpUrl;
-                                    script.onerror = function() {
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        clearTimeout(timeout); // 清除超时
-                                        reject(new Error('JSONP请求失败'));
-                                    };
-                                    
-                                    // 添加超时处理
-                                    const timeout = setTimeout(() => {
-                                        delete window.jsonpCallback; // 清理全局回调
-                                        script.remove(); // 移除script标签
-                                        reject(new Error('JSONP请求超时'));
-                                    }, 5000); // 减少超时时间到5秒
-                                    
-                                    // 添加到文档中开始请求
-                                    document.head.appendChild(script);
-                                });
-                            } catch (jsonpError) {
-                                console.error('使用JSONP获取数据失败:', jsonpError);
-                                console.log('尝试使用iframe代理方式获取数据...');
-                                
-                                // 最后尝试使用iframe代理方式
-                                data = await new Promise((resolve, reject) => {
-                                    // 创建一个隐藏的iframe
-                                    const iframe = document.createElement('iframe');
-                                    iframe.style.display = 'none';
-                                    document.body.appendChild(iframe);
-                                    
-                                    // 设置超时
-                                    const timeout = setTimeout(() => {
-                                        document.body.removeChild(iframe);
-                                        reject(new Error('iframe请求超时'));
-                                    }, 5000); // 减少超时时间到5秒
-                                    
-                                    // iframe加载完成后尝试获取内容
-                                    iframe.onload = function() {
-                                        try {
-                                            clearTimeout(timeout);
-                                            let iframeContent;
-                                            try {
-                                                // 尝试直接访问iframe内容
-                                                iframeContent = iframe.contentDocument.body.innerText;
-                                            } catch (accessError) {
-                                                // 如果直接访问失败，可能是因为跨域限制
-                                                reject(new Error('无法访问iframe内容，可能是跨域限制'));
-                                                document.body.removeChild(iframe);
-                                                return;
-                                            }
-                                            
-                                            // 尝试解析JSON
-                                            const jsonData = JSON.parse(iframeContent);
-                                            console.log('使用iframe代理获取数据成功');
-                                            document.body.removeChild(iframe);
-                                            resolve(jsonData);
-                                        } catch (parseError) {
-                                            document.body.removeChild(iframe);
-                                            reject(new SyntaxError('iframe内容解析错误: ' + parseError.message));
-                                        }
-                                    };
-                                    
-                                    // 设置错误处理
-                                    iframe.onerror = function() {
-                                        clearTimeout(timeout);
-                                        document.body.removeChild(iframe);
-                                        reject(new Error('iframe加载失败'));
-                                    };
-                                    
-                                    // 设置iframe的src
-                                    iframe.src = fullUrl;
-                                });
-                            }
-                        }
-                    }
+                    let data = await this.fetchDataWithFetchAPI(fullUrl);
                     
                     const processedData = this.normalizeData(data);
                     
                     // JSON模式下根据nextUpdate（YYYY-MM-DD）加上凌晨四点
-                    // 将JSON中获取到的时间看作本身就是UTC+8，不需要额外计算
                     if (processedData.nextUpdate) {
-                        // 确保只取日期部分，然后添加UTC+8时区的凌晨4点
                         const dateOnly = processedData.nextUpdate.split('T')[0];
                         const nextUpdateDate = new Date(`${dateOnly}T04:00:00+08:00`);
                         processedData.nextUpdate = nextUpdateDate.toISOString();
                     }
                     
-                    // 检查是否有新数据（避免一直显示更新提示）
+                    // 检查是否有新数据
                     const hasNewData = !appState.currentData || JSON.stringify(processedData.current) !== JSON.stringify(appState.currentData.current);
                     
                     appState.currentData = processedData;
@@ -1722,28 +1431,10 @@
                         UI.showUpdateIndicator();
                         Modal.show('数据已成功从JSON网址更新！');
                     }
-                    
-                    UI.hideLoading();
                 } catch (error) {
-                    UI.hideLoading();
-                    console.error('从JSON URL加载失败:', error);
-                    
-                    // 保留关键错误信息，便于排查问题
-                    let errorMessage = '';
-                    
-                    // 特殊处理JSON验证错误，避免显示通用错误信息
+                    // 特殊处理JSON验证错误
                     if (error.message.includes('JSON数据验证失败')) {
-                        // 已经在验证失败时显示过错误信息，这里不再重复显示
-                        console.warn('JSON数据验证失败，已显示错误提示');
-                        return;
-                    } else if (error instanceof TypeError) {
-                        errorMessage = `网络请求错误: ${error.message}`;
-                        console.error('网络请求错误详情:', error.message);
-                    } else if (error instanceof SyntaxError) {
-                        errorMessage = `JSON解析错误: ${error.message}`;
-                        console.error('JSON解析错误详情:', error.message);
-                    } else {
-                        errorMessage = `${error.name}: ${error.message}`;
+                        throw error;
                     }
                     
                     // 获取失败时，尝试使用本地缓存数据或创建默认数据
@@ -1751,7 +1442,6 @@
                     
                     // 如果没有本地缓存或缓存数据没有nextUpdate字段，创建默认数据
                     if (!processedData || !processedData.nextUpdate) {
-                        console.log('创建默认数据，包含nextUpdate字段');
                         processedData = {
                             current: {
                                 trends: ['游方巧器', '本草方剂'],
@@ -1775,8 +1465,68 @@
                     Renderer.updateUI(processedData);
                     this.scheduleUpdateCheck();
                     
-                    Modal.show(`从JSON网址加载失败: ${errorMessage}。已使用本地数据，请检查网址或数据格式。`);
+                    // 显示简化的错误信息
+                    Modal.show('从JSON网址加载失败。已使用本地数据，请检查网址或数据格式。');
+                    
+                    // 重新抛出错误，让调用者知道JSON加载失败
+                    throw error;
                 }
+            },
+            
+            // 使用fetch API获取数据，如果失败则使用XMLHttpRequest作为备选
+            async fetchDataWithFetchAPI(url) {
+                try {
+                    // 优先使用fetch API
+                    const response = await fetch(url, {
+                        mode: 'cors',
+                        cache: 'no-cache'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    // 先获取文本内容，去除注释后再解析JSON
+                    const responseText = await response.text();
+                    const textWithoutComments = stripJsonComments(responseText);
+                    const data = JSON.parse(textWithoutComments);
+                    // 验证JSON数据字段
+                    validateJsonData(data);
+                    return data;
+                } catch (fetchError) {
+                    // 如果fetch API失败，尝试使用XMLHttpRequest作为备选
+                    return await this.fetchDataWithXHR(url);
+                }
+            },
+            
+            // 使用XMLHttpRequest获取数据
+            fetchDataWithXHR(url) {
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                // 先去除注释再解析JSON
+                                const textWithoutComments = stripJsonComments(xhr.responseText);
+                                const jsonData = JSON.parse(textWithoutComments);
+                                // 验证JSON数据字段
+                                validateJsonData(jsonData);
+                                resolve(jsonData);
+                            } catch (error) {
+                                // 验证失败时显示错误信息并拒绝Promise
+                                if (error.message.includes('JSON数据验证失败')) {
+                                    Modal.show(error.message);
+                                }
+                                reject(error);
+                            }
+                        } else {
+                            reject(new Error(`请求失败: ${xhr.status}`));
+                        }
+                    };
+                    xhr.onerror = function() {
+                        reject(new Error('网络错误'));
+                    };
+                    xhr.send();
+                });
             },
             // 计算推荐项的函数
             calculateRecommendations(trendNames) {
@@ -1811,7 +1561,6 @@
                 
                 // 防御性编程，确保rawData是对象
                 if (!rawData || typeof rawData !== 'object') {
-                    console.warn('输入数据不是有效的对象，使用默认数据');
                     return this.createDefaultNormalizedData();
                 }
 
@@ -1826,13 +1575,11 @@
                     nextUpdate = rawData.nextUpdate;
                 } else {
                     // 兼容可能的其他格式或提供默认值
-                    console.warn('数据格式不完整，使用默认处理方式');
                     return this.createDefaultNormalizedData();
                 }
                 
                 // 确保有nextUpdate
                 if (!nextUpdate) {
-                    console.log('数据中没有nextUpdate字段，设置默认值');
                     const tomorrow = new Date();
                     tomorrow.setDate(tomorrow.getDate() + 1);
                     const dateOnly = tomorrow.toISOString().split('T')[0];
@@ -1878,11 +1625,38 @@
                     nextUpdate: nextUpdate
                 };
             },
+            
+            // 倒计时显示辅助函数
+            updateCountdown(now, nextUpdate, onComplete) {
+                const diffMs = nextUpdate - now;
+                
+                if (diffMs <= 0) {
+                    if (onComplete) onComplete();
+                    return; // 时间已到，不再更新显示
+                }
+                
+                // 处理时间差，确保不会出现负值
+                const positiveDiffMs = Math.max(0, diffMs);
+                
+                // 计算天数差异
+                const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
+                // 计算小时差异，如果超过1天，则在小时位上添加相应数量的24小时
+                let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                if (diffDays > 0) {
+                    diffHours += diffDays * 24;
+                }
+                const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
+
+                DOMElements.countdownTimer.innerHTML = `
+                    <i class="fa fa-clock-o mr-1"></i>
+                    刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
+                `;
+            },
+            
             scheduleUpdateCheck() {
-                console.log('设置倒计时');
                 // 清除现有的倒计时和数据获取间隔
                 if (appState.countdownInterval) {
-                    console.log('清除现有倒计时');
                     clearInterval(appState.countdownInterval);
                     appState.countdownInterval = null;
                 }
@@ -1893,19 +1667,16 @@
 
                 // 确保有当前数据和nextUpdate
                 if (!appState.currentData || !appState.currentData.nextUpdate) {
-                    console.error('无法设置倒计时：缺少数据或nextUpdate');
                     DOMElements.countdownTimer.textContent = '刷新时间未设置';
                     return;
                 }
 
                 const checkAndUpdate = () => {
-                    console.log('检查是否需要更新数据');
                     const now = new Date();
                     let nextUpdate = new Date(appState.currentData.nextUpdate);
 
                     // 确保nextUpdate是有效的日期对象
                     if (isNaN(nextUpdate.getTime())) {
-                        console.error('无效的nextUpdate日期，设置为明天凌晨4点');
                         const tomorrow = new Date();
                         tomorrow.setDate(tomorrow.getDate() + 1);
                         const dateOnly = tomorrow.toISOString().split('T')[0];
@@ -1913,11 +1684,9 @@
                     }
 
                     if (now >= nextUpdate) {
-                        console.log('时间已到，更新数据');
                         if (LocalStorage.get('dataSource') === 'json') {
                             // JSON模式下，刷新时间为0时的处理
                             // 将下期趋势显示为本期趋势，下期趋势留空，并提示用户更新JSON
-                            console.log('JSON模式刷新时间为0，自动处理');
                             
                             // 获取当前数据
                             const currentData = appState.currentData;
@@ -1962,14 +1731,12 @@
                             
                             // 不再自动尝试获取最新的JSON数据，避免无限循环刷新
                             // 用户可以手动刷新或更新JSON数据源
-                            console.log('已处理临时趋势更新，不再自动刷新JSON数据');
                         } else {
                             const localData = LocalStorage.get('localData');
                             if (localData) {
                                 // 本地模式下，刷新时间为0时的处理
                                 // 将下期趋势变为本期趋势，下期趋势留空，刷新时间加3天
                                 if (now >= nextUpdate) {
-                                    console.log('本地模式刷新时间为0，自动处理');
                                     
                                     // 确保趋势连贯性：保持本期和下期趋势的严格统一
                                     // 无论何种情况，都保持趋势数据的一致性
@@ -2039,9 +1806,9 @@
                                 }
                                 
                                 // 不再自动重新设置倒计时，避免一直刷新
-                                console.log('本地数据已更新，不再自动设置倒计时');
                                 // 不显示更新成功提示，保持倒计时区域为空
                                 DOMElements.countdownTimer.innerHTML = '';
+                            } else {
                             }
                         }
                     }
@@ -2053,7 +1820,6 @@
                 const diffMs = nextUpdate - now;
 
                 if (diffMs <= 0) {
-                    console.log('立即检查：时间已到');
                     // 清除当前倒计时(如果存在)
                     if (appState.countdownInterval) {
                         clearInterval(appState.countdownInterval);
@@ -2062,7 +1828,6 @@
                     // 执行更新
                     checkAndUpdate();
                     // 重新设置倒计时
-                    console.log('立即检查：数据已更新，重新设置倒计时');
                     
                     // 对于JSON模式，提示需要手动更新数据
                     const dataSource = LocalStorage.get('dataSource') || 'local';
@@ -2092,21 +1857,12 @@
                                         checkAndUpdate();
                                     }
                                     
-                                    const positiveDiffMs = Math.max(0, diffMs);
-                                    const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
-                                    let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                    if (diffDays > 0) {
-                                        diffHours += diffDays * 24;
-                                    }
-                                    const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
-                                    const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
-                                    
-                                    DOMElements.countdownTimer.innerHTML = `
-                                        <i class="fa fa-clock-o mr-1"></i>
-                                        刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
-                                    `;
+                                    this.updateCountdown(now, nextUpdate, () => {
+                                        clearInterval(appState.countdownInterval);
+                                        appState.countdownInterval = null;
+                                        checkAndUpdate();
+                                    });
                                 } else {
-                                    console.error('倒计时间隔中发现数据缺失');
                                     DOMElements.countdownTimer.textContent = '刷新时间未设置';
                                     clearInterval(appState.countdownInterval);
                                     appState.countdownInterval = null;
@@ -2160,21 +1916,12 @@
                                             checkAndUpdate();
                                         }
                                         
-                                        const positiveDiffMs = Math.max(0, diffMs);
-                                        const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
-                                        let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                        if (diffDays > 0) {
-                                            diffHours += diffDays * 24;
-                                        }
-                                        const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
-                                        const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
-                                        
-                                        DOMElements.countdownTimer.innerHTML = `
-                                            <i class="fa fa-clock-o mr-1"></i>
-                                            刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
-                                        `;
+                                        this.updateCountdown(now, nextUpdate, () => {
+                                            clearInterval(appState.countdownInterval);
+                                            appState.countdownInterval = null;
+                                            checkAndUpdate();
+                                        });
                                     } else {
-                                        console.error('倒计时间隔中发现数据缺失');
                                         DOMElements.countdownTimer.textContent = '刷新时间未设置';
                                         clearInterval(appState.countdownInterval);
                                         appState.countdownInterval = null;
@@ -2183,25 +1930,12 @@
                             }
                         }
 
-                        // 处理时间差，确保不会出现负值
-                        const positiveDiffMs = Math.max(0, diffMs);
-                        
-                        // 计算天数差异
-                        const diffDays = Math.floor(positiveDiffMs / (1000 * 60 * 60 * 24));
-                        // 计算小时差异，如果超过1天，则在小时位上添加相应数量的24小时
-                        let diffHours = Math.floor((positiveDiffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        if (diffDays > 0) {
-                            diffHours += diffDays * 24;
-                        }
-                        const diffMinutes = Math.floor((positiveDiffMs % (1000 * 60 * 60)) / (1000 * 60));
-                        const diffSeconds = Math.floor((positiveDiffMs % (1000 * 60)) / 1000);
-
-                        DOMElements.countdownTimer.innerHTML = `
-                            <i class="fa fa-clock-o mr-1"></i>
-                            刷新：${diffHours.toString().padStart(2, '0')}:${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}
-                        `;
+                        this.updateCountdown(now, nextUpdate, () => {
+                            clearInterval(appState.countdownInterval);
+                            appState.countdownInterval = null;
+                            checkAndUpdate();
+                        });
                     } else {
-                        console.error('倒计时间隔中发现数据缺失');
                         DOMElements.countdownTimer.textContent = '刷新时间未设置';
                         clearInterval(appState.countdownInterval);
                         appState.countdownInterval = null;
@@ -2222,6 +1956,26 @@
                     DOMElements.contentSections.forEach(el => el.classList.remove('content-loading'));
                 }, 300);
             },
+            // 创建空趋势项HTML的辅助函数
+            createEmptyTrendItemHTML(type, trendId) {
+                const hotIconHtml = type === 'current' ? 
+                    '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
+                
+                return `
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
+                        <div class="trend-image-wrapper ${type}">
+                            <div class="flex items-center justify-center h-full w-full">
+                                <i class="fa fa-ban text-2xl text-white/80"></i>
+                            </div>
+                        </div>
+                        ${hotIconHtml}
+                    </div>
+                    <div class="flex-1 min-w-0 mt-2 sm:mt-0">
+                        <p class="text-gray-400 truncate italic" data-text-id="${type}${trendId}">待设置</p>
+                    </div>
+                `;
+            },
+            
             renderTrendItems(trends, type) {
                 const trendIds = ['1', '2'];
                 const trendItems = document.querySelectorAll(`[data-trend-item^="${type}"]`);
@@ -2229,24 +1983,7 @@
                 // 如果trends为空数组或只包含空格，显示提示信息
                 if (!trends || trends.length === 0 || trends.every(t => !t || t.trim() === '')) {
                     trendItems.forEach((el, index) => {
-                        // 即使没有趋势数据，也要根据类型显示不同背景色和HOT标记
-                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
-                        const hotIconHtml = type === 'current' ? 
-                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
-                        
-                        el.innerHTML = `
-                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
-                                <div class="trend-image-wrapper ${type}">
-                                    <div class="flex items-center justify-center h-full w-full">
-                                        <i class="fa fa-ban text-2xl text-white/80"></i>
-                                    </div>
-                                </div>
-                                ${hotIconHtml}
-                            </div>
-                            <div class="flex-1 min-w-0 mt-2 sm:mt-0">
-                                <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
-                            </div>
-                        `;
+                        el.innerHTML = this.createEmptyTrendItemHTML(type, trendIds[index]);
                     });
                     return;
                 }
@@ -2256,24 +1993,7 @@
                     
                     // 如果trendName为空、不存在或仅包含空格，显示提示信息
                     if (!trendName || trendName.trim() === '') {
-                        // 即使趋势名称为空，也要根据类型显示不同背景色和HOT标记
-                        const bgClass = type === 'current' ? 'bg-gold' : 'bg-next-gray';
-                        const hotIconHtml = type === 'current' ? 
-                            '<img src="/sbg/hot.png" class="corner-image" alt="Hot" style="width: 32px; height: 32px; position: absolute; top: -6px; left: -6px; z-index: 10;" onerror="this.style.display=\'none\'"></img>' : '';
-                        
-                        el.innerHTML = `
-                            <div class="w-16 h-16 sm:w-20 sm:h-20 image-container flex-shrink-0" style="position: relative;">
-                                <div class="trend-image-wrapper ${type}">
-                                    <div class="flex items-center justify-center h-full w-full">
-                                        <i class="fa fa-ban text-2xl text-white/80"></i>
-                                    </div>
-                                </div>
-                                ${hotIconHtml}
-                            </div>
-                            <div class="flex-1 min-w-0 mt-2 sm:mt-0">
-                                <p class="text-gray-400 truncate italic" data-text-id="${type}${trendIds[index]}">待设置</p>
-                            </div>
-                        `;
+                        el.innerHTML = this.createEmptyTrendItemHTML(type, trendIds[index]);
                         return;
                     }
                     
@@ -2449,12 +2169,12 @@
                             // 显示复制成功提示
                             const originalText = DOMElements.settings.copyJsonTemplate.innerHTML;
                             DOMElements.settings.copyJsonTemplate.innerHTML = '<i class="fa fa-check mr-1"></i>已复制';
-                            DOMElements.settings.copyJsonTemplate.classList.add('bg-green-100', 'text-green-700');
+                            DOMElements.settings.copyJsonTemplate.classList.add('copied');
                             
                             // 2秒后恢复原状态
                             setTimeout(() => {
                                 DOMElements.settings.copyJsonTemplate.innerHTML = originalText;
-                                DOMElements.settings.copyJsonTemplate.classList.remove('bg-green-100', 'text-green-700');
+                                DOMElements.settings.copyJsonTemplate.classList.remove('copied');
                             }, 2000);
                         }).catch(err => {
                             console.error('复制失败:', err);
