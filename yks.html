@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异环一咖舍助手</title>
+    <link rel="stylesheet" href="ORIGEN/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部标题 -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🎯</span>
+                    异环一咖舍助手
+                </h1>
+                <p class="app-subtitle">智能计算最优经营策略，让收益最大化</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- 风向标选择区域 -->
+            <section class="card windvane-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                    <span class="section-icon">🔥</span>
+                    今日风向标
+                </h2>
+                    <p class="card-desc">选择当前生效的类别和加成数值，影响对应商品的收益</p>
+                </div>
+                <div class="card-body">
+                    <div class="windvane-selectors">
+                        <div class="windvane-selector-row">
+                            <label for="windvane-category-select" class="select-label">类别：</label>
+                            <select id="windvane-category-select" class="custom-select">
+                                <option value="">-- 请选择类别 --</option>
+                                <option value="饮料">饮料</option>
+                                <option value="主食">主食</option>
+                                <option value="甜品">甜品</option>
+                                <option value="面粉">面粉</option>
+                                <option value="咖啡豆">咖啡豆</option>
+                                <option value="水果">水果</option>
+                            </select>
+                        </div>
+                        <div class="windvane-selector-row">
+                            <label for="windvane-bonus-select" class="select-label">加成数值：</label>
+                            <select id="windvane-bonus-select" class="custom-select">
+                                <option value="">-- 请选择加成 --</option>
+                                <option value="0.75">+0.75 方斯</option>
+                                <option value="1">+1 方斯</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 雇员管理区域 -->
+            <section class="card employee-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="section-icon">👥</span>
+                        雇员配置
+                    </h2>
+                    <p class="card-desc">点击等级按钮选择拥有的雇员，系统将自动推荐最优搭配</p>
+                </div>
+                <div class="card-body">
+                    <div id="employee-list" class="employee-list">
+                        <!-- 雇员卡片由JS动态生成 -->
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 推荐方案区域 -->
+            <section class="card recommendation-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="section-icon">💡</span>
+                        最优搭配推荐
+                    </h2>
+                    <p class="card-desc">基于当前配置，系统自动计算收益最高的雇员与菜品组合</p>
+                </div>
+                <div class="card-body">
+                    <div id="recommendation-result" class="recommendation-result">
+                        <div class="recommendation-placeholder">
+                            <p>请选择风向标并配置拥有的雇员后，点击下方按钮计算最优方案</p>
+                        </div>
+                    </div>
+                    <button id="calculate-btn" class="calculate-btn">
+                        <span class="btn-icon">🚀</span>
+                        计算最优方案
+                    </button>
+                </div>
+            </section>
+
+            <!-- 计算明细区域 -->
+            <section class="card calc-detail-section hidden">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="section-icon">📊</span>
+                        计算明细
+                    </h2>
+                    <p class="card-desc">详细的收益计算过程</p>
+                </div>
+                <div class="card-body">
+                    <div id="calc-detail-result" class="calc-detail-container"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>异环一咖舍助手 · 作者：<span class="author-name">雨雾杰</span> · 数据仅供参考，请以游戏内实际数据为准</p>
+        </footer>
+    </div>
+
+    <!-- 高级设置悬浮按钮 -->
+    <button id="advanced-settings-btn" class="advanced-settings-btn">⚙️</button>
+
+    <!-- 高级设置弹窗 -->
+    <div id="advanced-settings-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>高级设置</h2>
+                <button id="close-modal-btn" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="decoration-bonus-input">装修加成 (%)</label>
+                    <input type="number" id="decoration-bonus-input" class="setting-input" min="0" max="100" step="1">
+                </div>
+                <div class="setting-group">
+                    <label for="base-traffic-input">基础人流量</label>
+                    <input type="number" id="base-traffic-input" class="setting-input" min="0" step="100">
+                </div>
+                
+                <hr class="modal-divider">
+                
+                <!-- 自定义风向标 -->
+                <h3 class="setting-section-title">自定义风向标</h3>
+                <p class="setting-desc">添加自定义风向标加成选项，会显示在主页面的选择器中</p>
+                <div id="custom-windvane-list" class="custom-item-list"></div>
+                <button id="add-windvane-btn" class="secondary-btn">+ 添加自定义风向标加成</button>
+                
+                <hr class="modal-divider">
+                <div class="danger-zone">
+                    <h3>危险操作</h3>
+                    <button id="clear-data-btn" class="danger-btn">清除所有本地数据</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑自定义风标弹窗 -->
+    <div id="edit-windvane-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="windvane-edit-title">添加自定义风向标加成</h3>
+                <button id="close-windvane-modal-btn" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="edit-windvane-bonus">加成 (方斯)</label>
+                    <input type="number" id="edit-windvane-bonus" class="setting-input" min="0" step="0.01">
+                </div>
+                <div class="modal-actions">
+                    <button id="save-windvane-btn" class="primary-btn">保存</button>
+                    <button id="cancel-windvane-btn" class="secondary-btn">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="ORIGEN/app.js?v=107"></script>
+</body>
+</html>
