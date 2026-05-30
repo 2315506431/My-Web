@@ -472,7 +472,7 @@ function getLevelBonusDescription(emp, level) {
     currentBonuses.forEach(b => {
         if (b.type === 'conditional') {
             const condDesc = b.conditionType === 'sameTagCount'
-                ? `任意标签×${b.condition.count}`
+                ? `类别标签×${b.condition.count}`
                 : `${b.condition.tag}×${b.condition.count}`;
             const effectDesc = b.effectType === 'direct'
                 ? (b.isPercent ? `售价+${(b.effectValue * 100).toFixed(1)}%` : `售价+${b.effectValue}方斯`)
@@ -993,10 +993,12 @@ function checkConditionWithTags(bonus, tagCounts) {
         const count = tagCounts[bonus.condition.tag] || 0;
         return count >= bonus.condition.count;
     } else if (bonus.conditionType === 'sameTagCount') {
-        // 找出出现次数最多的标签（排除"相同"）
+        // sameTagCount只统计类别标签：主食、饮料、甜品
+        const categoryTags = ['主食', '饮料', '甜品'];
         let maxCount = 0;
-        for (const [tag, count] of Object.entries(tagCounts)) {
-            if (tag !== '相同' && count > maxCount) {
+        for (const tag of categoryTags) {
+            const count = tagCounts[tag] || 0;
+            if (count > maxCount) {
                 maxCount = count;
             }
         }
@@ -1009,7 +1011,7 @@ function checkConditionWithTags(bonus, tagCounts) {
 function getConditionDescription(bonus) {
     let condDesc = '';
     if (bonus.conditionType === 'sameTagCount') {
-        condDesc = `任意标签出现${bonus.condition.count}次`;
+        condDesc = `类别标签(主食/饮料/甜品)出现${bonus.condition.count}次`;
     } else {
         condDesc = `${bonus.condition.tag}标签×${bonus.condition.count}`;
     }
