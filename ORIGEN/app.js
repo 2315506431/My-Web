@@ -596,7 +596,7 @@ function calculateOptimalPlan() {
     }
 
     // 显示计算中状态
-    resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>🔄 正在计算最优方案...</p></div>';
+    resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>🔄 正在计算最优方案...</p><p style="font-size: 0.9em; color: var(--text-muted);">这可能需要几秒钟，请稍候...</p></div>';
 
     // 使用 setTimeout 让UI先更新
     setTimeout(() => {
@@ -628,26 +628,68 @@ function findBestPlan(ownedEmployees) {
             details: bestDishes.details,
         };
     } else {
-        // 雇员数>10，使用贪心策略选择最优10人
+        // 雇员数>10，使用组合搜索找到最优的10人组合
+        // 先按贪心评分排序，取前15个进行组合搜索（减少计算量）
         const sortedEmployees = [...availableEmployees].sort((a, b) => {
             const bonusA = getEmployeeBonusScore(a);
             const bonusB = getEmployeeBonusScore(b);
             return bonusB - bonusA;
         });
-
-        const topEmployees = sortedEmployees.slice(0, MAX_EMPLOYEES);
-        const bestDishes = findBestDishes(topEmployees);
-        bestPlan = {
-            employees: topEmployees,
-            dishes: bestDishes.dishes,
-            totalRevenue: bestDishes.totalRevenue,
-            totalHourlyRevenue: bestDishes.totalHourlyRevenue,
-            totalHourlyRevenueBeforeDecoration: bestDishes.totalHourlyRevenueBeforeDecoration,
-            details: bestDishes.details,
-        };
+        
+        // 取前15个（如果有）进行组合搜索，平衡性能和效果
+        const candidates = sortedEmployees.slice(0, Math.min(availableEmployees.length, 15));
+        bestPlan = findBestEmployeeCombination(candidates);
     }
 
     return bestPlan;
+}
+
+// ========== 搜索最优的雇员组合 ==========
+function findBestEmployeeCombination(candidates) {
+    let bestTotalHourlyRevenue = -Infinity;
+    let bestResult = null;
+    
+    // 生成所有 C(n, 10) 组合
+    const combinations = [];
+    const n = candidates.length;
+    const k = MAX_EMPLOYEES;
+    
+    // 生成组合的索引
+    const indices = [];
+    for (let i = 0; i < k; i++) indices.push(i);
+    
+    while (true) {
+        // 获取当前组合的雇员
+        const employeeCombo = indices.map(i => candidates[i]);
+        // 计算这个组合的收益
+        const result = findBestDishes(employeeCombo);
+        
+        // 更新最优解
+        if (result.totalHourlyRevenue > bestTotalHourlyRevenue) {
+            bestTotalHourlyRevenue = result.totalHourlyRevenue;
+            bestResult = {
+                employees: employeeCombo,
+                dishes: result.dishes,
+                totalRevenue: result.totalRevenue,
+                totalHourlyRevenue: result.totalHourlyRevenue,
+                totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
+                details: result.details,
+            };
+        }
+        
+        // 生成下一个组合
+        let i = k - 1;
+        while (i >= 0 && indices[i] === n - k + i) i--;
+        
+        if (i < 0) break;
+        
+        indices[i]++;
+        for (let j = i + 1; j < k; j++) {
+            indices[j] = indices[i] + j - i;
+        }
+    }
+    
+    return bestResult;
 }
 
 // ========== 获取雇员从Lv.1到当前等级的累计加成 ==========
@@ -685,9 +727,18 @@ function getEmployeeAccumulatedBonuses(emp) {
 function getEmployeeBonusScore(emp) {
     const bonuses = getEmployeeAccumulatedBonuses(emp);
     let score = bonuses.directBonusFlat * 100 + bonuses.trafficBonus;
-    // 条件加成按预估效果计算
+    // 条件加成按预估效果计算，给予更高权重
     bonuses.conditionalBonuses.forEach(b => {
-        score += (b.effectValue || 0) * 50;
+        let value = (b.effectValue || 0);
+        // 百分比加成按更高权重计算
+        if (b.isPercent) {
+            value *= 200;
+        } else if (b.effectType === 'direct') {
+            value *= 100;
+        } else {
+            value *= 1;
+        }
+        score += value;
     });
     return score;
 }
