@@ -697,7 +697,8 @@ function getEmployeeAccumulatedBonuses(emp) {
     const level = emp.level;
     let directBonusFlat = 0;
     let directBonusPercent = 0;
-    let trafficBonus = 0;
+    let trafficBonusFlat = 0;
+    let trafficBonusPercent = 0;
     const conditionalBonuses = [];
 
     // 累加从Lv.1到当前等级的所有加成
@@ -707,7 +708,12 @@ function getEmployeeAccumulatedBonuses(emp) {
             if (b.type === 'direct') {
                 directBonusFlat += b.value;
             } else if (b.type === 'traffic') {
-                trafficBonus += b.value;
+                // 检查是否是百分比加成（虽然当前数据中 traffic 类型都是固定值，但为未来预留）
+                if (b.isPercent) {
+                    trafficBonusPercent += b.value;
+                } else {
+                    trafficBonusFlat += b.value;
+                }
             } else if (b.type === 'conditional') {
                 // 保存条件加成时，同时记录该加成对应的等级
                 conditionalBonuses.push({ ...b, level: lv });
@@ -718,7 +724,8 @@ function getEmployeeAccumulatedBonuses(emp) {
     return {
         directBonusFlat,
         directBonusPercent,
-        trafficBonus,
+        trafficBonusFlat,
+        trafficBonusPercent,
         conditionalBonuses,
     };
 }
@@ -726,20 +733,40 @@ function getEmployeeAccumulatedBonuses(emp) {
 // ========== 计算雇员加成评分（用于排序）==========
 function getEmployeeBonusScore(emp) {
     const bonuses = getEmployeeAccumulatedBonuses(emp);
-    let score = bonuses.directBonusFlat * 100 + bonuses.trafficBonus;
-    // 条件加成按预估效果计算，给予更高权重
+    let score = 0;
+    
+    // 固定值直接加成：1方斯≈ 24人·小时收益（2400基础人流量/100）
+    score += bonuses.directBonusFlat * 2400;
+    
+    // 固定值人流量加成：1人流量≈ 对应收益
+    score += bonuses.trafficBonusFlat * 10; // 粗略估计，每个菜品平均10方斯
+    
+    // 百分比人流量加成：1%≈ 24人流量，按固定值同等方式计算
+    score += bonuses.trafficBonusPercent * 2400;
+    
+    // 条件加成按预估效果计算
     bonuses.conditionalBonuses.forEach(b => {
         let value = (b.effectValue || 0);
-        // 百分比加成按更高权重计算
-        if (b.isPercent) {
-            value *= 200;
-        } else if (b.effectType === 'direct') {
-            value *= 100;
-        } else {
-            value *= 1;
+        if (b.effectType === 'direct') {
+            if (b.isPercent) {
+                // 百分比直接加成，假设每个菜品平均15方斯，2400人流量
+                value *= 15 * 2400;
+            } else {
+                // 固定值直接加成
+                value *= 2400;
+            }
+        } else if (b.effectType === 'traffic') {
+            if (b.isPercent) {
+                // 百分比人流量加成
+                value *= 2400;
+            } else {
+                // 固定值人流量加成
+                value *= 10;
+            }
         }
-        score += value;
+        score += value * 0.5; // 条件加成不一定触发，乘以0.5权重
     });
+    
     return score;
 }
 
@@ -821,7 +848,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
     employeeCombo.forEach(emp => {
         const accBonuses = getEmployeeAccumulatedBonuses(emp);
         directBonusFlat += accBonuses.directBonusFlat;
-        trafficBonusFlat += accBonuses.trafficBonus;
+        trafficBonusFlat += accBonuses.trafficBonusFlat;
+        trafficBonusPercent += accBonuses.trafficBonusPercent;
         
         accBonuses.conditionalBonuses.forEach(b => {
             const met = checkConditionWithTags(b, tagCounts);
