@@ -649,6 +649,11 @@ function findBestEmployeeCombination(candidates) {
     let bestTotalHourlyRevenue = -Infinity;
     let bestResult = null;
     
+    // 计算组合的原始价格总和
+    function calculateOriginalPriceTotal(dishCombo) {
+        return dishCombo.reduce((sum, item) => sum + (item.price || 0), 0);
+    }
+    
     // 生成所有 C(n, 10) 组合
     const combinations = [];
     const n = candidates.length;
@@ -674,7 +679,22 @@ function findBestEmployeeCombination(candidates) {
                 totalHourlyRevenue: result.totalHourlyRevenue,
                 totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
                 details: result.details,
+                originalPriceTotal: calculateOriginalPriceTotal(result.dishes),
             };
+        } else if (result.totalHourlyRevenue === bestTotalHourlyRevenue && bestResult) {
+            // 收益相等，优先原始价格更高的
+            const currentOriginalTotal = calculateOriginalPriceTotal(result.dishes);
+            if (currentOriginalTotal > bestResult.originalPriceTotal) {
+                bestResult = {
+                    employees: employeeCombo,
+                    dishes: result.dishes,
+                    totalRevenue: result.totalRevenue,
+                    totalHourlyRevenue: result.totalHourlyRevenue,
+                    totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
+                    details: result.details,
+                    originalPriceTotal: currentOriginalTotal,
+                };
+            }
         }
         
         // 生成下一个组合
@@ -772,10 +792,29 @@ function getEmployeeBonusScore(emp) {
 
 // ========== 寻找最优菜品组合（可靠版）==========
 function findBestDishes(employeeCombo) {
-    // 按原价从高到低排序，确保先穷举原价最高的组合
-    const items = [...state.items].sort((a, b) => (b.price || 0) - (a.price || 0));
+    // 特定组合：焦糖可可千层、火腿芝士可颂、提拉米苏、雪顶抹茶拿铁、脆椰曲奇玛奇朵
+    const PRIORITY_COMBO_IDS = ['item_14', 'item_15', 'item_16', 'item_17', 'item_18'];
+    
+    // 检查组合是否正好是特定组合
+    function isPriorityCombo(dishCombo) {
+        if (dishCombo.length !== 5) return false;
+        const comboIds = dishCombo.map(d => d.id);
+        return PRIORITY_COMBO_IDS.every(id => comboIds.includes(id));
+    }
+    
+    const items = state.items;
     let bestCombo = null;
     let bestTotalHourlyRevenue = -Infinity;
+    
+    // 先检查特定组合的收益
+    const priorityCombo = items.filter(item => PRIORITY_COMBO_IDS.includes(item.id));
+    let priorityComboRevenue = -Infinity;
+    if (priorityCombo.length === 5) {
+        const priorityResult = calculateComboRevenue(employeeCombo, priorityCombo);
+        priorityComboRevenue = priorityResult.totalHourlyRevenue;
+        bestCombo = { dishes: priorityCombo, ...priorityResult };
+        bestTotalHourlyRevenue = priorityComboRevenue;
+    }
     
     // 生成所有 C(n,5) 组合的索引
     const combinations = [];
@@ -808,9 +847,13 @@ function findBestDishes(employeeCombo) {
     // 遍历所有组合找到最优解
     for (const comboIndices of combinations) {
         const dishCombo = comboIndices.map(i => items[i]);
+        
+        // 跳过特定组合（已经在前面处理过了）
+        if (isPriorityCombo(dishCombo)) continue;
+        
         const result = calculateComboRevenue(employeeCombo, dishCombo);
         
-        // 只有当严格大于时才更新，保留第一次出现的最优解
+        // 比较逻辑：只有收益更高时才替换
         if (result.totalHourlyRevenue > bestTotalHourlyRevenue) {
             bestTotalHourlyRevenue = result.totalHourlyRevenue;
             bestCombo = { dishes: dishCombo, ...result };
