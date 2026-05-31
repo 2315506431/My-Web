@@ -955,9 +955,9 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         }
         
         const directPercentMultiplier = 1 + directBonusPercent;
-        const priceAfterFlat = basePrice + windVaneBonus + directBonusFlat;
+        const priceAfterFlat = basePrice + directBonusFlat;
         const priceAfterPercent = priceAfterFlat * directPercentMultiplier;
-        const unitPrice = priceAfterPercent;
+        const unitPrice = priceAfterPercent + windVaneBonus;
         const hourlyRevenue = unitPrice * (totalTraffic / 100);
 
         totalRevenue += unitPrice;
@@ -1118,7 +1118,7 @@ function renderRecommendation(plan) {
 
     // 详细计算明细
     const detailHtml = `
-        <p class="rec-calc-formula">单价 = (基础价格 + 风向标加成 + 雇员直接加成) × (1 + 百分比加成)</p>
+        <p class="rec-calc-formula">单价 = (基础价格 + 雇员直接加成) × (1 + 百分比加成) + 风向标加成</p>
         <p class="rec-calc-formula">显示每小时收益 = 单价 × (人流量/100)</p>
         <p class="rec-calc-formula">实际每小时收益 = 显示每小时收益 × (1 + 装修加成)</p>
         <div class="rec-calc-summary">
@@ -1156,10 +1156,6 @@ function renderRecommendation(plan) {
                             <span class="calc-step-label">基础价格</span>
                             <span class="calc-step-value">${d.basePrice.toFixed(2)}</span>
                         </div>
-                        <div class="calc-step ${d.windVaneMatch ? 'active' : 'inactive'}">
-                            <span class="calc-step-label">风向标加成</span>
-                            <span class="calc-step-value">${d.windVaneMatch ? '+' + d.windVaneBonus.toFixed(2) : '+0'}</span>
-                        </div>
                         <div class="calc-step">
                             <span class="calc-step-label">雇员直接加成</span>
                             <span class="calc-step-value">+${d.directBonusFlat.toFixed(2)}</span>
@@ -1178,6 +1174,10 @@ function renderRecommendation(plan) {
                             <span class="calc-step-value">${d.priceAfterPercent.toFixed(2)}</span>
                         </div>
                         ` : ''}
+                        <div class="calc-step ${d.windVaneMatch ? 'active' : 'inactive'}">
+                            <span class="calc-step-label">风向标加成</span>
+                            <span class="calc-step-value">${d.windVaneMatch ? '+' + d.windVaneBonus.toFixed(2) : '+0'}</span>
+                        </div>
                         <div class="calc-step-final">
                             <span class="calc-step-label">单价</span>
                             <span class="calc-step-value">${d.revenue.toFixed(2)} 方斯</span>
