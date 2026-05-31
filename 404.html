@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - 哎呀，迷路了</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fdf6ec;
+      font-family: 'ZCOOL KuaiLe', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      overflow: hidden;
+      color: #4a3728;
+      position: relative;
+    }
+
+    /* 背景装饰 - 手绘风波浪 */
+    body::before {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 35%;
+      background: linear-gradient(0deg, #ffecd2 0%, transparent 100%);
+      z-index: 0;
+    }
+
+    /* 漂浮的emoji和小元素 */
+    .floater {
+      position: fixed;
+      font-size: 2rem;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatAround var(--dur) ease-in-out infinite;
+      opacity: 0.6;
+      user-select: none;
+    }
+
+    @keyframes floatAround {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(var(--dx1), var(--dy1)) rotate(15deg); }
+      50% { transform: translate(var(--dx2), var(--dy2)) rotate(-10deg); }
+      75% { transform: translate(var(--dx3), var(--dy3)) rotate(8deg); }
+    }
+
+    /* 主容器 */
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+    }
+
+    /* 404 大字 - 手绘涂鸦风 */
+    .error-code {
+      font-size: clamp(7rem, 18vw, 14rem);
+      font-weight: 400;
+      line-height: 1;
+      color: transparent;
+      position: relative;
+      display: inline-block;
+      animation: wiggle 3s ease-in-out infinite;
+      cursor: default;
+      user-select: none;
+    }
+
+    .error-code span {
+      display: inline-block;
+      position: relative;
+      color: #ff6b6b;
+      text-shadow:
+        3px 3px 0 #ffa07a,
+        6px 6px 0 #ffdab9;
+    }
+
+    .error-code span:nth-child(1) { animation: bounce 2s ease-in-out infinite; }
+    .error-code span:nth-child(2) { animation: bounce 2s ease-in-out 0.15s infinite; }
+    .error-code span:nth-child(3) { animation: bounce 2s ease-in-out 0.3s infinite; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-15px) rotate(-5deg); }
+      75% { transform: translateY(5px) rotate(3deg); }
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-2deg); }
+      75% { transform: rotate(2deg); }
+    }
+
+    /* 404 上面的划线涂鸦效果 */
+    .error-code::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -5%;
+      width: 110%;
+      height: 8px;
+      background: #ff6b6b;
+      border-radius: 4px;
+      transform: rotate(-8deg) translateY(-50%);
+      opacity: 0.5;
+      animation: scribble 3s ease-in-out infinite;
+    }
+
+    @keyframes scribble {
+      0%, 100% { width: 110%; opacity: 0.5; }
+      50% { width: 105%; opacity: 0.3; }
+    }
+
+    /* 标题 - 调皮风格 */
+    .title {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      margin-top: 0.5rem;
+      color: #4a3728;
+      position: relative;
+      display: inline-block;
+    }
+
+    .title::after {
+      content: '😅';
+      position: absolute;
+      top: -10px;
+      right: -40px;
+      font-size: 1.5rem;
+      animation: peek 2s ease-in-out infinite;
+    }
+
+    @keyframes peek {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.1); }
+    }
+
+    /* 描述文字 */
+    .description {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: #8b7355;
+      margin-top: 1.5rem;
+      line-height: 2;
+      font-weight: 400;
+    }
+
+    .description .highlight {
+      color: #ff6b6b;
+      font-weight: 400;
+      position: relative;
+    }
+
+    .description .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #ff6b6b;
+      border-radius: 2px;
+      opacity: 0.4;
+    }
+
+    /* 返回按钮 - 手绘风格 */
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 2rem;
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-family: inherit;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #ffdde1 100%);
+      border: 3px solid #ff6b6b;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 4px 4px 0 #ff6b6b;
+      position: relative;
+      color: #d6336c;
+      font-weight: 400;
+    }
+
+    .btn-home:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #ff6b6b;
+      background: linear-gradient(135deg, #ffb3b3 0%, #ffe0e8 50%, #fff0f3 100%);
+    }
+
+    .btn-home:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #ff6b6b;
+    }
+
+    .btn-home svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.3s;
+    }
+
+    .btn-home:hover svg {
+      transform: translateX(-5px) rotate(-10deg);
+    }
+
+    /* 小贴士卡片 */
+    .tip-card {
+      margin-top: 2.5rem;
+      padding: 1.2rem 1.8rem;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 2px dashed #ffcba4;
+      border-radius: 16px;
+      display: inline-block;
+      max-width: 420px;
+      animation: fadeInUp 1s ease-out 0.5s both;
+    }
+
+    .tip-card .tip-label {
+      font-size: 0.85rem;
+      color: #e8a87c;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.1em;
+    }
+
+    .tip-card .tip-text {
+      font-size: 0.95rem;
+      color: #8b7355;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 底部小脚印装饰 */
+    .footprints {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      letter-spacing: 0.5rem;
+      opacity: 0.3;
+      animation: stepByStep 4s ease-in-out infinite;
+      z-index: 0;
+      user-select: none;
+    }
+
+    @keyframes stepByStep {
+      0%, 100% { opacity: 0.3; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 0.5; transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* 随机旋转的小涂鸦 */
+    .doodle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+      font-size: 3rem;
+      animation: spin var(--spin-dur) linear infinite;
+      user-select: none;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 480px) {
+      .tip-card { margin-left: 1rem; margin-right: 1rem; }
+      .title::after { right: -30px; font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 主内容 -->
+  <div class="container">
+    <div class="error-code">
+      <span>4</span><span>0</span><span>4</span>
+    </div>
+    <h1 class="title">哎呀，页面跑丢啦</h1>
+    <p class="description">
+      这个页面大概是偷偷溜去<span class="highlight">摸鱼</span>了 🐟<br>
+      或者它根本就不存在，只是你的想象力太丰富啦～
+    </p>
+    <a href="/index.html" class="btn-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      回家吧，这里什么都没有
+    </a>
+    <div class="tip-card">
+      <div class="tip-label">💡 小贴士</div>
+      <div class="tip-text">你可以检查一下网址是不是拼错了，或者直接点上面的按钮回家～</div>
+    </div>
+  </div>
+
+  <!-- 底部脚印 -->
+  <div class="footprints">🐾🐾🐾</div>
+
+  <script>
+    // 漂浮装饰元素
+    (function () {
+      const items = ['🎨', '✨', '🌈', '🎪', '🧩', '🎲', '🪄', '🎭', '🫧', '🌸', '🍭', '🦋'];
+      const body = document.body;
+
+      // 漂浮元素
+      for (let i = 0; i < 12; i++) {
+        const el = document.createElement('div');
+        el.className = 'floater';
+        el.textContent = items[i % items.length];
+        el.style.left = Math.random() * 90 + 5 + '%';
+        el.style.top = Math.random() * 90 + 5 + '%';
+        el.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
+        el.style.setProperty('--dur', (8 + Math.random() * 12) + 's');
+        el.style.setProperty('--dx1', (Math.random() * 40 - 20) + 'px');
+        el.style.setProperty('--dy1', (Math.random() * 40 - 20) + 'px');
+        el.style.setProperty('--dx2', (Math.random() * 40 - 20) + 'px');
+        el.style.setProperty('--dy2', (Math.random() * 40 - 20) + 'px');
+        el.style.setProperty('--dx3', (Math.random() * 40 - 20) + 'px');
+        el.style.setProperty('--dy3', (Math.random() * 40 - 20) + 'px');
+        el.style.animationDelay = Math.random() * 5 + 's';
+        body.appendChild(el);
+      }
+
+      // 旋转涂鸦
+      const doodles = ['〰️', '〰️', '✧'];
+      for (let i = 0; i < 3; i++) {
+        const d = document.createElement('div');
+        d.className = 'doodle';
+        d.textContent = doodles[i];
+        d.style.left = (10 + Math.random() * 80) + '%';
+        d.style.top = (10 + Math.random() * 80) + '%';
+        d.style.fontSize = (2 + Math.random() * 3) + 'rem';
+        d.style.setProperty('--spin-dur', (15 + Math.random() * 20) + 's');
+        body.appendChild(d);
+      }
+
+      // 鼠标跟随的小星星效果
+      document.addEventListener('mousemove', (e) => {
+        if (Math.random() > 0.85) {
+          const spark = document.createElement('div');
+          spark.style.cssText = `
+            position: fixed;
+            left: ${e.clientX}px;
+            top: ${e.clientY}px;
+            pointer-events: none;
+            font-size: ${0.8 + Math.random()}rem;
+            z-index: 999;
+            transition: all 1s ease-out;
+            opacity: 1;
+          `;
+          const sparkles = ['✦', '✧', '⋆', '·'];
+          spark.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+          spark.style.color = ['#ff6b6b', '#ffa07a', '#e8a87c', '#ff9a9e'][Math.floor(Math.random() * 4)];
+          body.appendChild(spark);
+          requestAnimationFrame(() => {
+            spark.style.transform = `translate(${(Math.random() - 0.5) * 60}px, ${-30 - Math.random() * 40}px) scale(0)`;
+            spark.style.opacity = '0';
+          });
+          setTimeout(() => spark.remove(), 1000);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
