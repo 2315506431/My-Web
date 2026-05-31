@@ -27,14 +27,6 @@ const ADVANCED_SETTINGS = {
     baseTraffic: 2400,
     // 自定义风向标加成列表
     customWindVaneBonuses: [],
-    // 自定义雇员加成开关和值
-    enableCustomEmployee: false,
-    customDirectBonus: 0,
-    customTrafficBonus: 0,
-    // 自定义风向标开关和值
-    enableCustomWindvane: false,
-    customWindvaneCategory: '',
-    customWindvaneBonus: 0,
 };
 
 // ========== 高级设置本地存储 ==========
@@ -358,21 +350,6 @@ function isWindVaneApplicable(item, windVane) {
     return false;
 }
 
-// ========== 检查自定义风向标的菜品匹配 ==========
-function isItemWindvaneMatch(item, category) {
-    // 对于"面粉"、"咖啡豆"、"水果"，检查标签
-    if (['面粉', '咖啡豆', '水果'].includes(category)) {
-        return item.tags && item.tags.includes(category);
-    }
-    
-    // 对于"饮料"、"主食"、"甜品"，检查菜品类别
-    if (['饮料', '主食', '甜品'].includes(category)) {
-        return item.category === category;
-    }
-    
-    return false;
-}
-
 // ========== 雇员列表 ==========
 function renderEmployeeList() {
     const container = document.getElementById('employee-list');
@@ -431,13 +408,10 @@ function renderEmployeeList() {
                     btn.classList.add('active');
                 }
                 
-                updateOwnedCount();
                 saveEmployeeStates(); // 自动保存
             });
         });
     });
-
-    updateOwnedCount();
 }
 
 // ========== 获取等级加成描述（显示累计加成）==========
@@ -485,11 +459,6 @@ function getLevelBonusDescription(emp, level) {
         return `等级${level}: 无加成`;
     }
     return `等级${level}(累计): ${parts.join(', ')}`;
-}
-
-// ========== 更新拥有数量 ==========
-function updateOwnedCount() {
-    // 已移除UI显示，保留函数以便后续需要
 }
 
 // ========== 本地存储 ==========
@@ -919,12 +888,6 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         });
     });
 
-    // 应用自定义雇员加成
-    if (ADVANCED_SETTINGS.enableCustomEmployee) {
-        directBonusFlat += ADVANCED_SETTINGS.customDirectBonus;
-        trafficBonusFlat += ADVANCED_SETTINGS.customTrafficBonus;
-    }
-
     // 方案A：先加固定值，再乘百分比
     const trafficA = (ADVANCED_SETTINGS.baseTraffic + trafficBonusFlat) * (1 + trafficBonusPercent);
     const totalTraffic = trafficA;
@@ -938,16 +901,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         let windVaneBonus = 0;
         let windVaneMatch = false;
         
-        // 检查是否启用自定义风向标
-        if (ADVANCED_SETTINGS.enableCustomWindvane) {
-            // 自定义风标逻辑
-            const customCategory = ADVANCED_SETTINGS.customWindvaneCategory;
-            windVaneMatch = isItemWindvaneMatch(item, customCategory);
-            if (windVaneMatch) {
-                windVaneBonus = ADVANCED_SETTINGS.customWindvaneBonus;
-            }
-        } else if (state.selectedWindVane) {
-            // 原始风标逻辑
+        // 原始风标逻辑
+        if (state.selectedWindVane) {
             windVaneMatch = isWindVaneApplicable(item, state.selectedWindVane);
             if (windVaneMatch) {
                 windVaneBonus = state.selectedWindVane.bonus;
@@ -982,9 +937,9 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
     });
 
     const totalHourlyRevenueBeforeDecoration = dishDetails.reduce((sum, d) => sum + d.hourlyRevenue, 0);
-    // 装修加成：使用用户设置的值
+    // 装修加成：游戏里是加两遍的（一遍在累计营收里，一遍在提取收益时）
     const decorationMultiplier = 1 + ADVANCED_SETTINGS.decorationBonus;
-    const totalHourlyRevenue = totalHourlyRevenueBeforeDecoration * decorationMultiplier;
+    const totalHourlyRevenue = totalHourlyRevenueBeforeDecoration * decorationMultiplier * decorationMultiplier;
 
     return {
         totalRevenue,
@@ -1004,31 +959,7 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
     };
 }
 
-// ========== 计算单品收益（不考虑条件加成，等级技能叠加）==========
-function calculateItemRevenue(employeeCombo, item) {
-    let directBonusFlat = 0;
-    let trafficBonus = 0;
 
-    // 使用累计加成计算（Lv.1到当前等级）
-    employeeCombo.forEach(emp => {
-        const accBonuses = getEmployeeAccumulatedBonuses(emp);
-        directBonusFlat += accBonuses.directBonusFlat;
-        trafficBonus += accBonuses.trafficBonus;
-    });
-
-    const basePrice = item.price;
-    // 风向标加成：直接加到基础价格上（纯数值，不是百分比）
-    let windVaneBonus = 0;
-    if (state.selectedWindVane && isWindVaneApplicable(item, state.selectedWindVane)) {
-        windVaneBonus = state.selectedWindVane.bonus;
-    }
-    const trafficMultiplier = 1 + trafficBonus;
-
-    // 公式：(基础价格 + 风向标加成 + 直接加成) × (1 + 人流量加成)
-    const revenue = (basePrice + windVaneBonus + directBonusFlat) * trafficMultiplier;
-
-    return { revenue, directBonusFlat, trafficBonus };
-}
 
 // ========== 条件检查（基于标签统计）==========
 function checkConditionWithTags(bonus, tagCounts) {
@@ -1120,7 +1051,8 @@ function renderRecommendation(plan) {
     const detailHtml = `
         <p class="rec-calc-formula">单价 = (基础价格 + 雇员直接加成) × (1 + 百分比加成) + 风向标加成</p>
         <p class="rec-calc-formula">显示每小时收益 = 单价 × (人流量/100)</p>
-        <p class="rec-calc-formula">实际每小时收益 = 显示每小时收益 × (1 + 装修加成)</p>
+        <p class="rec-calc-formula">实际每小时收益 = 显示每小时收益 × (1 + 装修加成)²</p>
+        <p class="rec-calc-note">装修加成在游戏中被计算两次：一次直接反映在累计营收中，另一次在提取收益时。</p>
         <div class="rec-calc-summary">
             <div class="rec-calc-summary-item">
                 <span class="summary-label">基础人流量</span>
@@ -1140,7 +1072,7 @@ function renderRecommendation(plan) {
             </div>
             <div class="rec-calc-summary-item">
                 <span class="summary-label">装修加成</span>
-                <span class="summary-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(0)}%</span>
+                <span class="summary-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(0)}% × 2</span>
             </div>
         </div>
         <div class="rec-calc-list">

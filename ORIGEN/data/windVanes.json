@@ -1,86 +1,50 @@
 [
   {
-    "id": "windvane_drink",
-    "name": "饮料",
     "category": "饮料",
-    "bonus": 0.75,
-    "description": "饮料类菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_main",
-    "name": "主食",
     "category": "主食",
-    "bonus": 0.75,
-    "description": "主食类菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_dessert",
-    "name": "甜品",
     "category": "甜品",
-    "bonus": 0.75,
-    "description": "甜品类菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_flour",
-    "name": "面粉",
     "category": "面粉",
-    "bonus": 0.75,
-    "description": "面粉标签菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_coffee",
-    "name": "咖啡豆",
     "category": "咖啡豆",
-    "bonus": 0.75,
-    "description": "咖啡豆标签菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_fruit",
-    "name": "水果",
     "category": "水果",
-    "bonus": 0.75,
-    "description": "水果标签菜品售价+0.75方斯"
+    "bonus": 0.75
   },
   {
-    "id": "windvane_drink_1",
-    "name": "饮料",
     "category": "饮料",
-    "bonus": 1,
-    "description": "饮料类菜品售价+1方斯"
+    "bonus": 1
   },
   {
-    "id": "windvane_main_1",
-    "name": "主食",
     "category": "主食",
-    "bonus": 1,
-    "description": "主食类菜品售价+1方斯"
+    "bonus": 1
   },
   {
-    "id": "windvane_dessert_1",
-    "name": "甜品",
     "category": "甜品",
-    "bonus": 1,
-    "description": "甜品类菜品售价+1方斯"
+    "bonus": 1
   },
   {
-    "id": "windvane_flour_1",
-    "name": "面粉",
     "category": "面粉",
-    "bonus": 1,
-    "description": "面粉标签菜品售价+1方斯"
+    "bonus": 1
   },
   {
-    "id": "windvane_coffee_1",
-    "name": "咖啡豆",
     "category": "咖啡豆",
-    "bonus": 1,
-    "description": "咖啡豆标签菜品售价+1方斯"
+    "bonus": 1
   },
   {
-    "id": "windvane_fruit_1",
-    "name": "水果",
     "category": "水果",
-    "bonus": 1,
-    "description": "水果标签菜品售价+1方斯"
+    "bonus": 1
   }
 ]
