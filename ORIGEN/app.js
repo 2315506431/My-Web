@@ -11,6 +11,7 @@ const state = {
     windVanes: [],           // 所有风向标数据
     employees: [],          // 所有雇员数据
     items: [],              // 所有商品数据
+    announcements: [],      // 公告数据
     selectedWindVane: null, // 当前选中的风向标
     employeeStates: {},     // 雇员状态 { id: { owned: boolean, level: number } }
 };
@@ -31,6 +32,36 @@ const ADVANCED_SETTINGS = {
 
 // ========== 高级设置本地存储 ==========
 const ADVANCED_SETTINGS_KEY = 'yihuan_advanced_settings';
+
+// ========== 公告已读状态本地存储 ==========
+const ANNOUNCEMENT_READ_KEY = 'yihuan_announcement_read_max_id';
+
+function getMaxReadAnnouncementId() {
+    try {
+        const saved = localStorage.getItem(ANNOUNCEMENT_READ_KEY);
+        return saved ? parseInt(saved, 10) : 0;
+    } catch (error) {
+        console.error('读取公告已读状态失败:', error);
+        return 0;
+    }
+}
+
+function saveMaxReadAnnouncementId(maxId) {
+    try {
+        localStorage.setItem(ANNOUNCEMENT_READ_KEY, maxId.toString());
+    } catch (error) {
+        console.error('保存公告已读状态失败:', error);
+    }
+}
+
+function getMaxAnnouncementId() {
+    if (!state.announcements.length) return 0;
+    return Math.max(...state.announcements.map(a => a.id || 0));
+}
+
+function hasNewAnnouncements() {
+    return getMaxAnnouncementId() > getMaxReadAnnouncementId();
+}
 
 function saveAdvancedSettings() {
     try {
@@ -140,6 +171,40 @@ function openAdvancedSettingsModal() {
     modal.classList.remove('hidden');
 }
 
+// ========== 公告弹窗 ==========
+function openAnnouncementModal() {
+    const modal = document.getElementById('announcement-modal');
+    
+    // 渲染公告
+    renderAnnouncements();
+    
+    // 保存当前最大id为已读
+    const maxId = getMaxAnnouncementId();
+    if (maxId > 0) {
+        saveMaxReadAnnouncementId(maxId);
+        // 移除按钮红点
+        updateAnnouncementButtonBadge();
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeAnnouncementModal() {
+    const modal = document.getElementById('announcement-modal');
+    modal.classList.add('hidden');
+}
+
+function updateAnnouncementButtonBadge() {
+    const btn = document.getElementById('announcement-btn');
+    if (!btn) return;
+    
+    if (hasNewAnnouncements()) {
+        btn.classList.add('announcement-btn-new');
+    } else {
+        btn.classList.remove('announcement-btn-new');
+    }
+}
+
 function closeAdvancedSettingsModal() {
     const modal = document.getElementById('advanced-settings-modal');
     modal.classList.add('hidden');
@@ -221,15 +286,17 @@ function updateEmployeeList() {
 // ========== 数据加载 ==========
 async function loadData() {
     try {
-        const [windVanesRes, employeesRes, itemsRes] = await Promise.all([
+        const [windVanesRes, employeesRes, itemsRes, announcementsRes] = await Promise.all([
             fetch('./ORIGEN/data/windVanes.json'),
             fetch('./ORIGEN/data/employees.json'),
             fetch('./ORIGEN/data/items.json'),
+            fetch('./ORIGEN/data/announcements.json'),
         ]);
 
         state.windVanes = await windVanesRes.json();
         state.employees = await employeesRes.json();
         state.items = await itemsRes.json();
+        state.announcements = await announcementsRes.json();
 
         // 加载高级设置
         loadAdvancedSettings();
@@ -260,8 +327,43 @@ async function loadData() {
     }
 }
 
+// ========== 渲染公告 ==========
+function renderAnnouncements() {
+    const container = document.getElementById('announcement-content');
+    if (!container) return;
+    
+    if (state.announcements.length === 0 || (state.announcements.length === 1 && !state.announcements[0].title)) {
+        container.innerHTML = `<div class="announcement-empty">暂无公告</div>`;
+        return;
+    }
+    
+    const maxReadId = getMaxReadAnnouncementId();
+    
+    // 按id倒序排列（大的在上面）
+    const sortedAnnouncements = [...state.announcements].sort((a, b) => (b.id || 0) - (a.id || 0));
+    
+    container.innerHTML = sortedAnnouncements.map(ann => {
+        if (!ann.title && !ann.time && !ann.content) return '';
+        const isNew = ann.id && ann.id > maxReadId;
+        return `
+        <div class="announcement-item ${isNew ? 'announcement-item-new' : ''}">
+            <div class="announcement-item-header">
+                <div class="announcement-item-title">
+                    ${isNew ? '<span class="announcement-new-badge">新</span>' : ''}
+                    ${ann.title}
+                </div>
+                <div class="announcement-item-date">${ann.time}</div>
+            </div>
+            <div class="announcement-item-body">
+                ${ann.content}
+            </div>
+        </div>
+    `}).join('');
+}
+
 // ========== UI 初始化 ==========
 function initUI() {
+    updateAnnouncementButtonBadge();
     updateWindVaneSelectors();
     updateEmployeeList();
 }
@@ -1181,6 +1283,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // 计算按钮
     document.getElementById('calculate-btn').addEventListener('click', calculateOptimalPlan);
 
+    // 公告按钮
+    document.getElementById('announcement-btn').addEventListener('click', openAnnouncementModal);
+
+    // 关闭公告模态框按钮
+    document.getElementById('close-announcement-btn').addEventListener('click', closeAnnouncementModal);
+
+    // 点击公告模态框背景关闭
+    document.getElementById('announcement-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'announcement-modal') {
+            closeAnnouncementModal();
+        }
+    });
+
     // 高级设置按钮
     document.getElementById('advanced-settings-btn').addEventListener('click', openAdvancedSettingsModal);
 
@@ -1237,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ESC键关闭模态框
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            closeAnnouncementModal();
             closeAdvancedSettingsModal();
         }
     });

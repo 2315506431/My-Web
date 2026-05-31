@@ -114,8 +114,26 @@
         </footer>
     </div>
 
-    <!-- 高级设置悬浮按钮 -->
-    <button id="advanced-settings-btn" class="advanced-settings-btn">⚙️</button>
+    <!-- 悬浮按钮组 -->
+    <div class="floating-btn-group">
+        <button id="advanced-settings-btn" class="floating-btn advanced-settings-btn">⚙️</button>
+        <button id="announcement-btn" class="floating-btn announcement-btn">📢</button>
+    </div>
+
+    <!-- 公告弹窗 -->
+    <div id="announcement-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>📢 公告</h2>
+                <button id="close-announcement-btn" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="announcement-content" class="announcement-content">
+                    <!-- 公告内容由JS动态渲染 -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- 高级设置弹窗 -->
     <div id="advanced-settings-modal" class="modal-overlay hidden">
@@ -171,6 +189,6 @@
         </div>
     </div>
 
-    <script src="ORIGEN/app.js?v=202"></script>
+    <script src="ORIGEN/app.js?v=208"></script>
 </body>
 </html>
