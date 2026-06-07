@@ -14,11 +14,21 @@ const state = {
     announcements: [],      // 公告数据
     selectedWindVane: null, // 当前选中的风向标
     employeeStates: {},     // 雇员状态 { id: { owned: boolean, level: number } }
+    itemStates: {},         // 菜品状态 { id: { owned: boolean, level: number } }
 };
 
 // ========== 常量 ==========
-const MAX_EMPLOYEES = 10;   // 最多上场雇员数
-const MAX_DISHES = 5;       // 最多上架菜品数
+// 根据店铺数量动态计算最大雇员和菜品数
+// 每店铺解锁2雇员+1菜品
+function getMaxEmployees() {
+    return ADVANCED_SETTINGS.shopCount * 2;
+}
+
+function getMaxDishes() {
+    return ADVANCED_SETTINGS.shopCount;
+}
+
+
 
 // ========== 高级设置参数 ==========
 const ADVANCED_SETTINGS = {
@@ -26,6 +36,10 @@ const ADVANCED_SETTINGS = {
     decorationBonus: 0.09,
     // 基础人流量
     baseTraffic: 2400,
+    // 风向标功能开关（默认开启）
+    windVaneEnabled: true,
+    // 店铺数量（默认5，每店铺解锁2雇员+1菜品）
+    shopCount: 5,
     // 自定义风向标加成列表
     customWindVaneBonuses: [],
 };
@@ -68,6 +82,8 @@ function saveAdvancedSettings() {
         localStorage.setItem(ADVANCED_SETTINGS_KEY, JSON.stringify({
             decorationBonus: ADVANCED_SETTINGS.decorationBonus,
             baseTraffic: ADVANCED_SETTINGS.baseTraffic,
+            windVaneEnabled: ADVANCED_SETTINGS.windVaneEnabled,
+            shopCount: ADVANCED_SETTINGS.shopCount,
             customWindVaneBonuses: ADVANCED_SETTINGS.customWindVaneBonuses,
         }));
     } catch (error) {
@@ -82,6 +98,8 @@ function loadAdvancedSettings() {
             const data = JSON.parse(saved);
             ADVANCED_SETTINGS.decorationBonus = data.decorationBonus ?? 0.09;
             ADVANCED_SETTINGS.baseTraffic = data.baseTraffic ?? 2400;
+            ADVANCED_SETTINGS.windVaneEnabled = data.windVaneEnabled ?? true;
+            ADVANCED_SETTINGS.shopCount = data.shopCount ?? 5;
             ADVANCED_SETTINGS.customWindVaneBonuses = data.customWindVaneBonuses ?? [];
         }
     } catch (error) {
@@ -98,7 +116,7 @@ function renderCustomWindVaneList() {
     if (!container) return;
     
     if (ADVANCED_SETTINGS.customWindVaneBonuses.length === 0) {
-        container.innerHTML = '<div class="rec-placeholder" style="padding: 20px; text-align: center; color: var(--text-muted);">暂无自定义加成</div>';
+        container.innerHTML = '';
         return;
     }
     
@@ -160,15 +178,153 @@ function openAdvancedSettingsModal() {
     const modal = document.getElementById('advanced-settings-modal');
     const decorationInput = document.getElementById('decoration-bonus-input');
     const trafficInput = document.getElementById('base-traffic-input');
+    const windVaneSwitch = document.getElementById('windvane-enabled-switch');
+    const resetTrafficBtn = document.getElementById('reset-traffic-btn');
     
     // 填充当前值
-    decorationInput.value = Math.round(ADVANCED_SETTINGS.decorationBonus * 100);
+    decorationInput.value = ADVANCED_SETTINGS.decorationBonus.toFixed(3);
     trafficInput.value = ADVANCED_SETTINGS.baseTraffic;
+    windVaneSwitch.checked = ADVANCED_SETTINGS.windVaneEnabled;
+    
+    // 重置人流量按钮
+    if (resetTrafficBtn) {
+        resetTrafficBtn.onclick = () => {
+            trafficInput.value = 2400;
+            ADVANCED_SETTINGS.baseTraffic = 2400;
+            saveAdvancedSettings();
+        };
+    }
+    
+    // 更新店铺数量选择器
+    updateShopCountSelector();
+    
+    // 渲染菜品设置列表
+    renderItemSettingsList();
     
     // 渲染自定义列表
     renderCustomWindVaneList();
     
     modal.classList.remove('hidden');
+}
+
+// ========== 更新店铺数量选择器 ==========
+function updateShopCountSelector() {
+    const container = document.getElementById('shop-count-selector');
+    if (!container) return;
+    
+    container.innerHTML = [1, 2, 3, 4, 5].map(num => `
+        <button class="shop-count-btn ${ADVANCED_SETTINGS.shopCount === num ? 'active' : ''}" 
+                data-shop-count="${num}">
+            ${num}
+        </button>
+    `).join('');
+    
+    // 绑定点击事件
+    container.querySelectorAll('.shop-count-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            ADVANCED_SETTINGS.shopCount = parseInt(btn.dataset.shopCount);
+            saveAdvancedSettings();
+            updateShopCountSelector();
+        });
+    });
+    
+    // 更新提示信息
+    updateShopCountInfo();
+}
+
+// ========== 更新店铺数量提示信息 ==========
+function updateShopCountInfo() {
+    const countSpan = document.getElementById('shop-count-info');
+    const dishSpan = document.getElementById('shop-count-dish-info');
+    
+    if (countSpan) {
+        countSpan.textContent = ADVANCED_SETTINGS.shopCount * 2;
+    }
+    if (dishSpan) {
+        dishSpan.textContent = ADVANCED_SETTINGS.shopCount;
+    }
+}
+
+// ========== 渲染菜品设置列表 ==========
+function renderItemSettingsList() {
+    const container = document.getElementById('item-settings-list');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    state.items.forEach(item => {
+        const itemState = state.itemStates[item.id];
+        
+        const card = document.createElement('div');
+        card.className = `employee-card ${itemState.owned ? 'active' : ''}`;
+        card.id = `item-card-${item.id}`;
+        
+        card.innerHTML = `
+            <div class="employee-info">
+                <div class="employee-name" style="display: flex; align-items: center; height: 100%;">${item.name}</div>
+            </div>
+            <div class="employee-controls">
+                <div class="level-selector" id="item-level-selector-${item.id}">
+                    <span class="level-label">Lv.</span>
+                    ${[1, 2].map(lv => `
+                        <button class="level-btn ${itemState.owned && itemState.level === lv ? 'active' : ''}"
+                                data-item-id="${item.id}" data-level="${lv}">
+                            ${lv}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(card);
+        
+        // 绑定等级按钮事件
+        card.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const clickedLevel = parseInt(btn.dataset.level);
+                const currentState = state.itemStates[item.id];
+                
+                if (currentState.owned && currentState.level === clickedLevel) {
+                    // 已拥有且点击的是当前等级，取消拥有
+                    currentState.owned = false;
+                    card.classList.remove('active');
+                    card.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                } else {
+                    // 选择等级并设置为拥有
+                    currentState.owned = true;
+                    currentState.level = clickedLevel;
+                    card.classList.add('active');
+                    card.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
+                
+                saveItemStates(); // 自动保存
+            });
+        });
+    });
+    
+    // 绑定批量按钮事件
+    document.querySelectorAll('.bulk-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const level = parseInt(btn.dataset.level);
+            setAllItemsLevel(level);
+        });
+    });
+}
+
+// ========== 设置所有菜品等级 ==========
+function setAllItemsLevel(level) {
+    state.items.forEach(item => {
+        if (level === 0) {
+            state.itemStates[item.id].owned = false;
+        } else {
+            state.itemStates[item.id].owned = true;
+            state.itemStates[item.id].level = level;
+        }
+    });
+    
+    saveItemStates();
+    renderItemSettingsList();
 }
 
 // ========== 公告弹窗 ==========
@@ -211,14 +367,17 @@ function closeAdvancedSettingsModal() {
 }
 
 function clearAllLocalData() {
-    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、风向标设置和高级设置。此操作不可撤销！')) {
+    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、风向标设置和高级设置。此操作不可撤销！')) {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(ITEM_STORAGE_KEY);
         localStorage.removeItem(WINDVANE_STORAGE_KEY);
         localStorage.removeItem(ADVANCED_SETTINGS_KEY);
         
         // 重置状态
         ADVANCED_SETTINGS.decorationBonus = 0.09;
         ADVANCED_SETTINGS.baseTraffic = 2400;
+        ADVANCED_SETTINGS.windVaneEnabled = true;
+        ADVANCED_SETTINGS.shopCount = 5;
         ADVANCED_SETTINGS.customWindVaneBonuses = [];
         
         // 重置雇员状态
@@ -226,6 +385,14 @@ function clearAllLocalData() {
             state.employeeStates[emp.id] = {
                 owned: false,
                 level: 1,
+            };
+        });
+
+        // 重置菜品状态（默认全2级）
+        state.items.forEach(item => {
+            state.itemStates[item.id] = {
+                owned: true,
+                level: 2,
             };
         });
         
@@ -249,8 +416,10 @@ function clearAllLocalData() {
             calcDetailSection.classList.add('hidden');
         }
         
-        alert('所有本地数据已清除！');
         closeAdvancedSettingsModal();
+        
+        // 刷新页面以应用新数据
+        location.reload();
     }
 }
 
@@ -311,13 +480,37 @@ async function loadData() {
             }
         });
 
-        // 加载本地保存的状态
+        // 加载本地保存的雇员状态
         const savedStates = loadEmployeeStates();
         if (savedStates) {
             Object.keys(savedStates).forEach(empId => {
                 state.employeeStates[empId] = savedStates[empId];
             });
         }
+
+        // 加载本地保存的菜品状态
+        const savedItemStates = loadItemStates();
+        
+        // 初始化菜品状态（默认全2级）
+        state.items.forEach(item => {
+            // 如果有保存的状态，使用它；否则使用默认状态
+            if (savedItemStates && savedItemStates[item.id]) {
+                state.itemStates[item.id] = savedItemStates[item.id];
+                // 确保状态格式正确
+                if (typeof state.itemStates[item.id].owned !== 'boolean') {
+                    state.itemStates[item.id].owned = true;
+                }
+                if (state.itemStates[item.id].level !== 1 && state.itemStates[item.id].level !== 2) {
+                    state.itemStates[item.id].level = 2;
+                }
+            } else {
+                // 默认状态
+                state.itemStates[item.id] = {
+                    owned: true,
+                    level: 2,
+                };
+            }
+        });
 
         initUI();
     } catch (error) {
@@ -361,11 +554,60 @@ function renderAnnouncements() {
     `}).join('');
 }
 
-// ========== UI 初始化 ==========
+// ========== 初始化UI ==========
 function initUI() {
     updateAnnouncementButtonBadge();
     updateWindVaneSelectors();
     updateEmployeeList();
+    updateWindVaneDisabledNotice();
+    initCollapsibleSections();
+}
+
+// ========== 初始化可折叠菜单 ==========
+function initCollapsibleSections() {
+    // 菜品设置
+    const itemSettingsToggle = document.getElementById('item-settings-toggle');
+    const itemSettingsSection = document.getElementById('item-settings-content')?.parentElement;
+    const itemSettingsArrow = itemSettingsToggle?.querySelector('.collapsible-arrow');
+    
+    if (itemSettingsToggle && itemSettingsSection) {
+        itemSettingsToggle.addEventListener('click', () => {
+            itemSettingsSection.classList.toggle('collapsed');
+            if (itemSettingsArrow) {
+                itemSettingsArrow.textContent = itemSettingsSection.classList.contains('collapsed') ? '☰' : '▼';
+            }
+        });
+    }
+    
+    // 其他设置
+    const otherSettingsToggle = document.getElementById('other-settings-toggle');
+    const otherSettingsSection = document.getElementById('other-settings-content')?.parentElement;
+    const otherSettingsArrow = otherSettingsToggle?.querySelector('.collapsible-arrow');
+    
+    if (otherSettingsToggle && otherSettingsSection) {
+        otherSettingsToggle.addEventListener('click', () => {
+            otherSettingsSection.classList.toggle('collapsed');
+            if (otherSettingsArrow) {
+                otherSettingsArrow.textContent = otherSettingsSection.classList.contains('collapsed') ? '☰' : '▼';
+            }
+        });
+    }
+}
+
+// ========== 更新风向标禁用提示 ==========
+function updateWindVaneDisabledNotice() {
+    const notice = document.getElementById('windvane-disabled-notice');
+    const selectors = document.getElementById('windvane-selectors-container');
+    
+    if (!notice || !selectors) return;
+    
+    if (ADVANCED_SETTINGS.windVaneEnabled) {
+        notice.classList.add('hidden');
+        selectors.classList.remove('disabled');
+    } else {
+        notice.classList.remove('hidden');
+        selectors.classList.add('disabled');
+    }
 }
 
 // ========== 风向标选择器 ==========
@@ -563,8 +805,39 @@ function getLevelBonusDescription(emp, level) {
     return `等级${level}(累计): ${parts.join(', ')}`;
 }
 
+// ========== 统一的菜品价格获取函数 ==========
+function getItemPrice(item) {
+    if (!item) return 0;
+    
+    const itemState = state.itemStates[item.id];
+    const level = itemState ? itemState.level : 2; // 默认2级
+    
+    // 2级就用price2
+    if (level === 2) {
+        if (item.price2 !== null) {
+            return item.price2;
+        }
+        // price2是null就用price1
+        if (item.price1 !== null) {
+            return item.price1;
+        }
+        return 0;
+    } else {
+        // 1级就用price1
+        if (item.price1 !== null) {
+            return item.price1;
+        }
+        // price1是null就用price2
+        if (item.price2 !== null) {
+            return item.price2;
+        }
+        return 0;
+    }
+}
+
 // ========== 本地存储 ==========
 const STORAGE_KEY = 'yihuan_employee_states';
+const ITEM_STORAGE_KEY = 'yihuan_item_states';
 const WINDVANE_STORAGE_KEY = 'yihuan_windvane';
 
 function saveEmployeeStates() {
@@ -583,6 +856,26 @@ function loadEmployeeStates() {
         }
     } catch (error) {
         console.error('读取雇员状态失败:', error);
+    }
+    return null;
+}
+
+function saveItemStates() {
+    try {
+        localStorage.setItem(ITEM_STORAGE_KEY, JSON.stringify(state.itemStates));
+    } catch (error) {
+        console.error('保存菜品状态失败:', error);
+    }
+}
+
+function loadItemStates() {
+    try {
+        const saved = localStorage.getItem(ITEM_STORAGE_KEY);
+        if (saved) {
+            return JSON.parse(saved);
+        }
+    } catch (error) {
+        console.error('读取菜品状态失败:', error);
     }
     return null;
 }
@@ -649,10 +942,14 @@ function loadWindVane() {
 // ========== 推荐算法 ==========
 function calculateOptimalPlan() {
     const resultContainer = document.getElementById('recommendation-result');
+    const calcDetailSection = document.querySelector('.calc-detail-section');
 
-    // 检查前置条件
-    if (!state.selectedWindVane) {
+    // 检查风向标条件
+    if (ADVANCED_SETTINGS.windVaneEnabled && !state.selectedWindVane) {
         resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>⚠️ 请先选择今日风向标</p></div>';
+        if (calcDetailSection) {
+            calcDetailSection.classList.add('hidden');
+        }
         return;
     }
 
@@ -663,6 +960,9 @@ function calculateOptimalPlan() {
     
     if (ownedEmployees.length === 0) {
         resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>⚠️ 请先勾选拥有的雇员</p></div>';
+        if (calcDetailSection) {
+            calcDetailSection.classList.add('hidden');
+        }
         return;
     }
 
@@ -686,9 +986,10 @@ function findBestPlan(ownedEmployees) {
     }));
 
     let bestPlan = null;
+    const maxEmployees = getMaxEmployees();
 
-    if (availableEmployees.length <= MAX_EMPLOYEES) {
-        // 雇员数<=10，直接找最优菜品
+    if (availableEmployees.length <= maxEmployees) {
+        // 雇员数<=上限，直接找最优菜品
         const bestDishes = findBestDishes(availableEmployees);
         bestPlan = {
             employees: availableEmployees,
@@ -699,7 +1000,7 @@ function findBestPlan(ownedEmployees) {
             details: bestDishes.details,
         };
     } else {
-        // 雇员数>10，使用组合搜索找到最优的10人组合
+        // 雇员数>上限，使用组合搜索找到最优的雇员组合
         // 先按贪心评分排序，取前15个进行组合搜索（减少计算量）
         const sortedEmployees = [...availableEmployees].sort((a, b) => {
             const bonusA = getEmployeeBonusScore(a);
@@ -722,13 +1023,13 @@ function findBestEmployeeCombination(candidates) {
     
     // 计算组合的原始价格总和
     function calculateOriginalPriceTotal(dishCombo) {
-        return dishCombo.reduce((sum, item) => sum + (item.price || 0), 0);
+        return dishCombo.reduce((sum, item) => sum + (getItemPrice(item) || 0), 0);
     }
     
-    // 生成所有 C(n, 10) 组合
+    // 生成所有 C(n, maxEmployees) 组合
     const combinations = [];
     const n = candidates.length;
-    const k = MAX_EMPLOYEES;
+    const k = getMaxEmployees();
     
     // 生成组合的索引
     const indices = [];
@@ -861,83 +1162,147 @@ function getEmployeeBonusScore(emp) {
     return score;
 }
 
-// ========== 寻找最优菜品组合（可靠版）==========
+// ========== 寻找最优菜品组合（简化可靠版）==========
 function findBestDishes(employeeCombo) {
+    const maxDishes = getMaxDishes();
+    
     // 特定组合：焦糖可可千层、火腿芝士可颂、提拉米苏、雪顶抹茶拿铁、脆椰曲奇玛奇朵
     const PRIORITY_COMBO_IDS = ['item_14', 'item_15', 'item_16', 'item_17', 'item_18'];
     
-    // 检查组合是否正好是特定组合
-    function isPriorityCombo(dishCombo) {
-        if (dishCombo.length !== 5) return false;
-        const comboIds = dishCombo.map(d => d.id);
-        return PRIORITY_COMBO_IDS.every(id => comboIds.includes(id));
+    // 获取所有已解锁的菜品 - 简化过滤条件
+    const availableItems = [];
+    for (let i = 0; i < state.items.length; i++) {
+        const item = state.items[i];
+        const itemState = state.itemStates[item.id];
+        if (itemState && itemState.owned === true) {
+            availableItems.push(item);
+        }
     }
     
-    const items = state.items;
+    // 如果没有可用菜品，返回空结果
+    if (availableItems.length === 0) {
+        return {
+            dishes: [],
+            totalRevenue: 0,
+            totalHourlyRevenue: 0,
+            totalHourlyRevenueBeforeDecoration: 0,
+            details: {
+                directBonusFlat: 0,
+                directBonusPercent: 0,
+                trafficBonusFlat: 0,
+                trafficBonusPercent: 0,
+                trafficA: 0,
+                totalTraffic: 0,
+                decorationMultiplier: 1,
+                triggeredConditions: [],
+                dishDetails: []
+            },
+        };
+    }
+    
+    // 实际使用的菜品数量
+    const actualDishCount = Math.min(availableItems.length, maxDishes);
+    
     let bestCombo = null;
     let bestTotalHourlyRevenue = -Infinity;
     
-    // 先检查特定组合的收益
-    const priorityCombo = items.filter(item => PRIORITY_COMBO_IDS.includes(item.id));
-    let priorityComboRevenue = -Infinity;
-    if (priorityCombo.length === 5) {
-        const priorityResult = calculateComboRevenue(employeeCombo, priorityCombo);
-        priorityComboRevenue = priorityResult.totalHourlyRevenue;
-        bestCombo = { dishes: priorityCombo, ...priorityResult };
-        bestTotalHourlyRevenue = priorityComboRevenue;
-    }
-    
-    // 生成所有 C(n,5) 组合的索引
-    const combinations = [];
-    const n = items.length;
-    const k = MAX_DISHES;
-    
-    // 用迭代法生成组合，避免递归问题
-    function generateCombinations() {
-        const indices = [];
-        for (let i = 0; i < k; i++) indices.push(i);
-        
-        while (true) {
-            combinations.push([...indices]);
-            
-            // 找到最右边可以增加的位置
-            let i = k - 1;
-            while (i >= 0 && indices[i] === n - k + i) i--;
-            
-            if (i < 0) break;
-            
-            indices[i]++;
-            for (let j = i + 1; j < k; j++) {
-                indices[j] = indices[i] + j - i;
+    // 先尝试特定组合（如果有5个或更多）
+    if (availableItems.length >= 5 && actualDishCount >= 5) {
+        const priorityCombo = availableItems.filter(item => PRIORITY_COMBO_IDS.includes(item.id));
+        if (priorityCombo.length === 5) {
+            const priorityResult = calculateComboRevenue(employeeCombo, priorityCombo);
+            if (priorityResult && priorityResult.totalHourlyRevenue > -Infinity) {
+                bestCombo = { dishes: priorityCombo, ...priorityResult };
+                bestTotalHourlyRevenue = priorityResult.totalHourlyRevenue;
             }
         }
     }
     
-    generateCombinations();
+    // 生成组合进行比较
+    const combinations = [];
+    const n = availableItems.length;
+    const k = actualDishCount;
     
-    // 遍历所有组合找到最优解
-    for (const comboIndices of combinations) {
-        const dishCombo = comboIndices.map(i => items[i]);
+    // 生成组合
+    const indices = [];
+    for (let i = 0; i < k; i++) indices.push(i);
+    
+    while (true) {
+        combinations.push([...indices]);
         
-        // 跳过特定组合（已经在前面处理过了）
-        if (isPriorityCombo(dishCombo)) continue;
+        let i = k - 1;
+        while (i >= 0 && indices[i] === n - k + i) i--;
         
-        const result = calculateComboRevenue(employeeCombo, dishCombo);
+        if (i < 0) break;
         
-        // 比较逻辑：只有收益更高时才替换
-        if (result.totalHourlyRevenue > bestTotalHourlyRevenue) {
-            bestTotalHourlyRevenue = result.totalHourlyRevenue;
-            bestCombo = { dishes: dishCombo, ...result };
+        indices[i]++;
+        for (let j = i + 1; j < k; j++) {
+            indices[j] = indices[i] + j - i;
         }
     }
     
-    return {
-        dishes: bestCombo.dishes,
-        totalRevenue: bestCombo.totalRevenue,
-        totalHourlyRevenue: bestCombo.totalHourlyRevenue,
-        totalHourlyRevenueBeforeDecoration: bestCombo.totalHourlyRevenueBeforeDecoration,
-        details: bestCombo.details,
-    };
+    // 遍历所有组合
+    for (let c = 0; c < combinations.length; c++) {
+        const comboIndices = combinations[c];
+        const dishCombo = [];
+        for (let i = 0; i < comboIndices.length; i++) {
+            dishCombo.push(availableItems[comboIndices[i]]);
+        }
+        
+        // 计算收益
+        const result = calculateComboRevenue(employeeCombo, dishCombo);
+        
+        // 更新最优解
+        if (result && result.totalHourlyRevenue > bestTotalHourlyRevenue) {
+            bestTotalHourlyRevenue = result.totalHourlyRevenue;
+            bestCombo = { dishes: dishCombo, ...result };
+        } else if (result && result.totalHourlyRevenue === bestTotalHourlyRevenue && bestCombo) {
+            // 收益相等时，选原价高的
+            const currentTotal = dishCombo.reduce((sum, item) => sum + getItemPrice(item), 0);
+            const bestTotal = bestCombo.dishes.reduce((sum, item) => sum + getItemPrice(item), 0);
+            if (currentTotal > bestTotal) {
+                bestCombo = { dishes: dishCombo, ...result };
+            }
+        }
+    }
+    
+    // 如果都不行，就用第一个组合
+    if (!bestCombo && availableItems.length > 0) {
+        const fallbackCombo = availableItems.slice(0, actualDishCount);
+        const fallbackResult = calculateComboRevenue(employeeCombo, fallbackCombo);
+        if (fallbackResult) {
+            bestCombo = { dishes: fallbackCombo, ...fallbackResult };
+        }
+    }
+    
+    // 返回结果
+    if (bestCombo) {
+        return {
+            dishes: bestCombo.dishes,
+            totalRevenue: bestCombo.totalRevenue,
+            totalHourlyRevenue: bestCombo.totalHourlyRevenue,
+            totalHourlyRevenueBeforeDecoration: bestCombo.totalHourlyRevenueBeforeDecoration,
+            details: bestCombo.details,
+        };
+    } else {
+        return {
+            dishes: [],
+            totalRevenue: 0,
+            totalHourlyRevenue: 0,
+            totalHourlyRevenueBeforeDecoration: 0,
+            details: {
+                directBonusFlat: 0,
+                directBonusPercent: 0,
+                trafficBonusFlat: 0,
+                trafficBonusPercent: 0,
+                trafficA: 0,
+                totalTraffic: 0,
+                decorationMultiplier: 1,
+                triggeredConditions: [],
+                dishDetails: []
+            },
+        };
+    }
 }
 
 // 计算特定组合的收益
@@ -999,12 +1364,14 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
     const dishDetails = [];
 
     dishCombo.forEach(item => {
-        const basePrice = item.price;
+        // 使用统一的价格获取函数
+        let basePrice = getItemPrice(item);
+        
         let windVaneBonus = 0;
         let windVaneMatch = false;
         
-        // 原始风标逻辑
-        if (state.selectedWindVane) {
+        // 风向标加成（仅在风向标功能开启时计算）
+        if (ADVANCED_SETTINGS.windVaneEnabled && state.selectedWindVane) {
             windVaneMatch = isWindVaneApplicable(item, state.selectedWindVane);
             if (windVaneMatch) {
                 windVaneBonus = state.selectedWindVane.bonus;
@@ -1103,8 +1470,18 @@ function renderRecommendation(plan) {
     const calcDetailSection = document.querySelector('.calc-detail-section');
     const calcDetailContainer = document.getElementById('calc-detail-result');
 
+    // 如果 plan 无效或者没有有效内容时，也可以显示
     if (!plan) {
         container.innerHTML = '<div class="recommendation-placeholder"><p>未能计算出有效方案</p></div>';
+        if (calcDetailSection) {
+            calcDetailSection.classList.add('hidden');
+        }
+        return;
+    }
+
+    // 检查是否有有效数据
+    if (!plan.dishes || plan.dishes.length === 0) {
+        container.innerHTML = '<div class="recommendation-placeholder"><p>没有可用的菜品进行计算</p></div>';
         if (calcDetailSection) {
             calcDetailSection.classList.add('hidden');
         }
@@ -1129,7 +1506,7 @@ function renderRecommendation(plan) {
         <div class="rec-dish-item">
             <span class="rec-dish-rank">${idx + 1}</span>
             <span class="rec-dish-name">${d.item.name}</span>
-            <span class="rec-dish-price">${d.item.price} 方斯</span>
+            <span class="rec-dish-price">${d.basePrice} 方斯</span>
             <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
         </div>
     `).join('');
@@ -1174,7 +1551,7 @@ function renderRecommendation(plan) {
             </div>
             <div class="rec-calc-summary-item">
                 <span class="summary-label">装修加成</span>
-                <span class="summary-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(0)}% × 2</span>
+                <span class="summary-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(1)}% × 2</span>
             </div>
         </div>
         <div class="rec-calc-list">
@@ -1312,7 +1689,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 装修加成输入变化
     document.getElementById('decoration-bonus-input').addEventListener('change', (e) => {
         const value = parseFloat(e.target.value) || 0;
-        ADVANCED_SETTINGS.decorationBonus = Math.max(0, Math.min(100, value)) / 100;
+        ADVANCED_SETTINGS.decorationBonus = Math.max(0, parseFloat(value));
         saveAdvancedSettings();
     });
 
@@ -1322,7 +1699,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ADVANCED_SETTINGS.baseTraffic = Math.max(0, value);
         saveAdvancedSettings();
     });
-
+    
+    // 风向标开关变化
+    document.getElementById('windvane-enabled-switch').addEventListener('change', (e) => {
+        ADVANCED_SETTINGS.windVaneEnabled = e.target.checked;
+        saveAdvancedSettings();
+        updateWindVaneDisabledNotice();
+    });
+    
     // 添加自定义风向标按钮
     document.getElementById('add-windvane-btn').addEventListener('click', openAddWindVaneModal);
 

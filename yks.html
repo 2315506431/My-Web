@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>异环一咖舍助手</title>
-    <link rel="stylesheet" href="ORIGEN/style.css">
+    <link rel="stylesheet" href="ORIGEN/style.css?v=211">
 </head>
 <body>
     <div class="app-container">
@@ -30,7 +30,15 @@
                     <p class="card-desc">选择当前生效的类别和加成数值，影响对应商品的收益</p>
                 </div>
                 <div class="card-body">
-                    <div class="windvane-selectors">
+                    <div id="windvane-disabled-notice" class="windvane-disabled-notice hidden">
+                        <span class="notice-icon">⚠️</span>
+                        <div class="notice-content">
+                            <span class="notice-title">风向标功能已关闭</span>
+                            <span class="notice-desc">所有菜品按原价计算，无需选择风向标。</span>
+                            <span class="notice-action">可在高级设置(⚙️)中开启</span>
+                        </div>
+                    </div>
+                    <div class="windvane-selectors" id="windvane-selectors-container">
                         <div class="windvane-selector-row">
                             <label for="windvane-category-select" class="select-label">类别：</label>
                             <select id="windvane-category-select" class="custom-select">
@@ -82,15 +90,15 @@
                     <p class="card-desc">基于当前配置，系统自动计算收益最高的雇员与菜品组合</p>
                 </div>
                 <div class="card-body">
-                    <div id="recommendation-result" class="recommendation-result">
-                        <div class="recommendation-placeholder">
-                            <p>请选择风向标并配置拥有的雇员后，点击下方按钮计算最优方案</p>
-                        </div>
-                    </div>
                     <button id="calculate-btn" class="calculate-btn">
                         <span class="btn-icon">🚀</span>
                         计算最优方案
                     </button>
+                    <div id="recommendation-result" class="recommendation-result">
+                        <div class="recommendation-placeholder">
+                            <p>请选择风向标并配置拥有的雇员后，点击上方按钮计算最优方案</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -144,21 +152,69 @@
             </div>
             <div class="modal-body">
                 <div class="setting-group">
-                    <label for="decoration-bonus-input">装修加成 (%)</label>
-                    <input type="number" id="decoration-bonus-input" class="setting-input" min="0" max="100" step="1">
+                    <label for="decoration-bonus-input">装修加成</label>
+                    <input type="number" id="decoration-bonus-input" class="setting-input" min="0" step="0.001">
                 </div>
                 <div class="setting-group">
-                    <label for="base-traffic-input">基础人流量</label>
-                    <input type="number" id="base-traffic-input" class="setting-input" min="0" step="100">
+                    <label>风向标功能</label>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="windvane-enabled-switch" class="switch-input">
+                        <label for="windvane-enabled-switch" class="switch-slider"></label>
+                    </div>
+                    <p class="setting-hint">关闭后风向标加成不生效，适用于风向标未解锁的情况</p>
+                </div>
+                <div class="setting-group">
+                    <label>店铺数量</label>
+                    <div id="shop-count-selector" class="shop-count-selector"></div>
+                    <p class="setting-hint">每店铺解锁2雇员+1菜品，共<span id="shop-count-info">10</span>雇员/<span id="shop-count-dish-info">5</span>菜品</p>
                 </div>
                 
                 <hr class="modal-divider">
                 
-                <!-- 自定义风向标 -->
-                <h3 class="setting-section-title">自定义风向标</h3>
-                <p class="setting-desc">添加自定义风向标加成选项，会显示在主页面的选择器中</p>
-                <div id="custom-windvane-list" class="custom-item-list"></div>
-                <button id="add-windvane-btn" class="secondary-btn">+ 添加自定义风向标加成</button>
+                <!-- 菜品设置 -->
+                <div class="collapsible-section collapsed">
+                    <div class="collapsible-header" id="item-settings-toggle">
+                        <h3 class="setting-section-title">菜品设置</h3>
+                        <span class="collapsible-arrow">☰</span>
+                    </div>
+                    <div class="collapsible-content" id="item-settings-content">
+                        <p class="setting-desc">配置已解锁的菜品及其等级</p>
+                        <div class="item-bulk-selector">
+                            <button class="bulk-btn secondary-btn" data-level="0">全不解锁</button>
+                            <button class="bulk-btn primary-btn" data-level="1">全1级</button>
+                            <button class="bulk-btn primary-btn" data-level="2">全2级</button>
+                        </div>
+                        <div id="item-settings-list" class="employee-list item-settings-scroll"></div>
+                    </div>
+                </div>
+                
+                <hr class="modal-divider">
+                
+                <!-- 其他设置 -->
+                <div class="collapsible-section collapsed">
+                    <div class="collapsible-header" id="other-settings-toggle">
+                        <h3 class="setting-section-title">其他设置</h3>
+                        <span class="collapsible-arrow">☰</span>
+                    </div>
+                    <div class="collapsible-content" id="other-settings-content" style="padding-top: 4px;">
+                        <!-- 基础人流量 -->
+                        <div class="setting-group" style="margin-bottom: 8px; margin-top: 0;">
+                            <label for="base-traffic-input">基础人流量</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="number" id="base-traffic-input" class="setting-input" min="0" step="100" style="flex: 1;">
+                                <button id="reset-traffic-btn" class="secondary-btn" style="white-space: nowrap;">恢复默认</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 自定义风向标 -->
+                        <div class="setting-group" style="margin-bottom: 0;">
+                            <h3 class="sub-section-title" style="margin: 0 0 4px;">自定义风向标</h3>
+                            <p class="setting-desc" style="margin-bottom: 8px;">添加自定义风向标加成选项，会显示在主页面的选择器中</p>
+                            <div id="custom-windvane-list" class="custom-item-list"></div>
+                            <button id="add-windvane-btn" class="secondary-btn" style="width: 100%; margin-top: 4px;">+ 添加自定义风向标加成</button>
+                        </div>
+                    </div>
+                </div>
                 
                 <hr class="modal-divider">
                 <div class="danger-zone">
@@ -189,6 +245,6 @@
         </div>
     </div>
 
-    <script src="ORIGEN/app.js?v=209"></script>
+    <script src="ORIGEN/app.js?v=237"></script>
 </body>
 </html>
