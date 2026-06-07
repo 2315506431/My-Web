@@ -351,13 +351,15 @@ function closeAnnouncementModal() {
 }
 
 function updateAnnouncementButtonBadge() {
+    const hasNew = hasNewAnnouncements();
     const btn = document.getElementById('announcement-btn');
-    if (!btn) return;
+    const btnFloat = document.getElementById('announcement-btn-float');
     
-    if (hasNewAnnouncements()) {
-        btn.classList.add('announcement-btn-new');
-    } else {
-        btn.classList.remove('announcement-btn-new');
+    if (btn) {
+        btn.classList.toggle('announcement-btn-new', hasNew);
+    }
+    if (btnFloat) {
+        btnFloat.classList.toggle('announcement-btn-new', hasNew);
     }
 }
 
@@ -367,11 +369,12 @@ function closeAdvancedSettingsModal() {
 }
 
 function clearAllLocalData() {
-    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、风向标设置和高级设置。此操作不可撤销！')) {
+    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、风向标、设置和公告已读状态。此操作不可撤销！')) {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(ITEM_STORAGE_KEY);
         localStorage.removeItem(WINDVANE_STORAGE_KEY);
         localStorage.removeItem(ADVANCED_SETTINGS_KEY);
+        localStorage.removeItem(ANNOUNCEMENT_READ_KEY);
         
         // 重置状态
         ADVANCED_SETTINGS.decorationBonus = 0.09;
@@ -440,7 +443,7 @@ function updateWindVaneSelectors() {
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     
     // 更新加成选项
-    bonusSelect.innerHTML = '<option value="">-- 请选择加成 --</option>' + 
+    bonusSelect.innerHTML = '<option value="">-- 请选择数值 --</option>' + 
         allBonuses.map(b => `<option value="${b}">+${b} 方斯</option>`).join('');
     
     // 重新初始化选择器
@@ -1506,8 +1509,10 @@ function renderRecommendation(plan) {
         <div class="rec-dish-item">
             <span class="rec-dish-rank">${idx + 1}</span>
             <span class="rec-dish-name">${d.item.name}</span>
-            <span class="rec-dish-price">${d.basePrice} 方斯</span>
-            <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
+            <div class="rec-dish-price-group">
+                <span class="rec-dish-price">${d.basePrice} 方斯</span>
+                <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
+            </div>
         </div>
     `).join('');
 
@@ -1662,6 +1667,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 公告按钮
     document.getElementById('announcement-btn').addEventListener('click', openAnnouncementModal);
+    const announcementBtnFloat = document.getElementById('announcement-btn-float');
+    if (announcementBtnFloat) {
+        announcementBtnFloat.addEventListener('click', openAnnouncementModal);
+    }
 
     // 关闭公告模态框按钮
     document.getElementById('close-announcement-btn').addEventListener('click', closeAnnouncementModal);
@@ -1675,6 +1684,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 高级设置按钮
     document.getElementById('advanced-settings-btn').addEventListener('click', openAdvancedSettingsModal);
+    const advancedSettingsBtnFloat = document.getElementById('advanced-settings-btn-float');
+    if (advancedSettingsBtnFloat) {
+        advancedSettingsBtnFloat.addEventListener('click', openAdvancedSettingsModal);
+    }
 
     // 关闭高级设置模态框按钮
     document.getElementById('close-modal-btn').addEventListener('click', closeAdvancedSettingsModal);

@@ -27,7 +27,7 @@
                     <span class="section-icon">🔥</span>
                     今日风向标
                 </h2>
-                    <p class="card-desc">选择当前生效的类别和加成数值，影响对应商品的收益</p>
+                    <p class="card-desc">选择当前生效的加成类别和加成数值，影响对应商品的收益</p>
                 </div>
                 <div class="card-body">
                     <div id="windvane-disabled-notice" class="windvane-disabled-notice hidden">
@@ -35,28 +35,20 @@
                         <div class="notice-content">
                             <span class="notice-title">风向标功能已关闭</span>
                             <span class="notice-desc">所有菜品按原价计算，无需选择风向标。</span>
-                            <span class="notice-action">可在高级设置(⚙️)中开启</span>
+                            <span class="notice-action">可在设置(⚙️)中开启</span>
                         </div>
                     </div>
                     <div class="windvane-selectors" id="windvane-selectors-container">
                         <div class="windvane-selector-row">
-                            <label for="windvane-category-select" class="select-label">类别：</label>
+                            <label for="windvane-category-select" class="select-label">加成类别：</label>
                             <select id="windvane-category-select" class="custom-select">
-                                <option value="">-- 请选择类别 --</option>
-                                <option value="饮料">饮料</option>
-                                <option value="主食">主食</option>
-                                <option value="甜品">甜品</option>
-                                <option value="面粉">面粉</option>
-                                <option value="咖啡豆">咖啡豆</option>
-                                <option value="水果">水果</option>
+                                <option value="">-- 请选择加成类别 --</option>
                             </select>
                         </div>
                         <div class="windvane-selector-row">
                             <label for="windvane-bonus-select" class="select-label">加成数值：</label>
                             <select id="windvane-bonus-select" class="custom-select">
-                                <option value="">-- 请选择加成 --</option>
-                                <option value="0.75">+0.75 方斯</option>
-                                <option value="1">+1 方斯</option>
+                                <option value="">-- 请选择加成数值 --</option>
                             </select>
                         </div>
                     </div>
@@ -122,10 +114,35 @@
         </footer>
     </div>
 
-    <!-- 悬浮按钮组 -->
+    <!-- 底部固定按钮条（窄屏） -->
+    <div class="bottom-bar">
+        <a href="https://github.com/2315506431/My-Web" target="_blank" class="bottom-bar-btn">
+            <span class="btn-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </span>
+            <span class="btn-text">GitHub</span>
+        </a>
+        <button id="announcement-btn" class="bottom-bar-btn">
+            <span class="btn-icon">📢</span>
+            <span class="btn-text">公告</span>
+        </button>
+        <button id="advanced-settings-btn" class="bottom-bar-btn">
+            <span class="btn-icon">⚙️</span>
+            <span class="btn-text">设置</span>
+        </button>
+    </div>
+
+    <!-- 悬浮按钮组（宽屏） -->
     <div class="floating-btn-group">
-        <button id="advanced-settings-btn" class="floating-btn advanced-settings-btn">⚙️</button>
-        <button id="announcement-btn" class="floating-btn announcement-btn">📢</button>
+        <button id="advanced-settings-btn-float" class="floating-btn advanced-settings-btn" title="设置">⚙️</button>
+        <button id="announcement-btn-float" class="floating-btn announcement-btn" title="公告">📢</button>
+        <a href="https://github.com/2315506431/My-Web" target="_blank" class="floating-btn github-btn" title="GitHub 仓库">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+        </a>
     </div>
 
     <!-- 公告弹窗 -->
@@ -143,11 +160,11 @@
         </div>
     </div>
 
-    <!-- 高级设置弹窗 -->
+    <!-- 设置弹窗 -->
     <div id="advanced-settings-modal" class="modal-overlay hidden">
         <div class="modal-container">
             <div class="modal-header">
-                <h2>高级设置</h2>
+                <h2>设置</h2>
                 <button id="close-modal-btn" class="close-btn">×</button>
             </div>
             <div class="modal-body">
