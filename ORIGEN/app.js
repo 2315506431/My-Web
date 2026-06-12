@@ -994,6 +994,7 @@ function findBestPlan(ownedEmployees) {
     if (availableEmployees.length <= maxEmployees) {
         // 雇员数<=上限，直接找最优菜品
         const bestDishes = findBestDishes(availableEmployees);
+        const originalPriceTotal = bestDishes.dishes.reduce((sum, item) => sum + getItemPrice(item), 0);
         bestPlan = {
             employees: availableEmployees,
             dishes: bestDishes.dishes,
@@ -1001,6 +1002,7 @@ function findBestPlan(ownedEmployees) {
             totalHourlyRevenue: bestDishes.totalHourlyRevenue,
             totalHourlyRevenueBeforeDecoration: bestDishes.totalHourlyRevenueBeforeDecoration,
             details: bestDishes.details,
+            originalPriceTotal: originalPriceTotal,
         };
     } else {
         // 雇员数>上限，使用组合搜索找到最优的雇员组合
@@ -1023,6 +1025,7 @@ function findBestPlan(ownedEmployees) {
 function findBestEmployeeCombination(candidates) {
     let bestTotalHourlyRevenue = -Infinity;
     let bestResult = null;
+    const EPSILON = 0.01; // 收益差值小于0.01时视为相等
     
     // 计算组合的原始价格总和
     function calculateOriginalPriceTotal(dishCombo) {
@@ -1044,8 +1047,10 @@ function findBestEmployeeCombination(candidates) {
         // 计算这个组合的收益
         const result = findBestDishes(employeeCombo);
         
-        // 更新最优解
-        if (result.totalHourlyRevenue > bestTotalHourlyRevenue) {
+        // 更新最优解（使用 epsilon 避免浮点数精度问题）
+        const revenueDiff = result.totalHourlyRevenue - bestTotalHourlyRevenue;
+        if (revenueDiff > EPSILON) {
+            // 收益明显更高
             bestTotalHourlyRevenue = result.totalHourlyRevenue;
             bestResult = {
                 employees: employeeCombo,
@@ -1056,10 +1061,11 @@ function findBestEmployeeCombination(candidates) {
                 details: result.details,
                 originalPriceTotal: calculateOriginalPriceTotal(result.dishes),
             };
-        } else if (result.totalHourlyRevenue === bestTotalHourlyRevenue && bestResult) {
-            // 收益相等，优先原始价格更高的
+        } else if (Math.abs(revenueDiff) <= EPSILON && bestResult) {
+            // 收益相近（视为相等），优先原始价格更高的
             const currentOriginalTotal = calculateOriginalPriceTotal(result.dishes);
             if (currentOriginalTotal > bestResult.originalPriceTotal) {
+                bestTotalHourlyRevenue = result.totalHourlyRevenue;
                 bestResult = {
                     employees: employeeCombo,
                     dishes: result.dishes,
@@ -1245,6 +1251,7 @@ function findBestDishes(employeeCombo) {
     }
     
     // 遍历所有组合
+    const EPSILON = 0.01; // 收益差值小于0.01时视为相等
     for (let c = 0; c < combinations.length; c++) {
         const comboIndices = combinations[c];
         const dishCombo = [];
@@ -1254,16 +1261,20 @@ function findBestDishes(employeeCombo) {
         
         // 计算收益
         const result = calculateComboRevenue(employeeCombo, dishCombo);
+        if (!result) continue;
         
         // 更新最优解
-        if (result && result.totalHourlyRevenue > bestTotalHourlyRevenue) {
+        const revenueDiff = result.totalHourlyRevenue - bestTotalHourlyRevenue;
+        if (revenueDiff > EPSILON) {
+            // 收益明显更高
             bestTotalHourlyRevenue = result.totalHourlyRevenue;
             bestCombo = { dishes: dishCombo, ...result };
-        } else if (result && result.totalHourlyRevenue === bestTotalHourlyRevenue && bestCombo) {
-            // 收益相等时，选原价高的
+        } else if (Math.abs(revenueDiff) <= EPSILON && bestCombo) {
+            // 收益相近（视为相等），选原价高的
             const currentTotal = dishCombo.reduce((sum, item) => sum + getItemPrice(item), 0);
             const bestTotal = bestCombo.dishes.reduce((sum, item) => sum + getItemPrice(item), 0);
             if (currentTotal > bestTotal) {
+                bestTotalHourlyRevenue = result.totalHourlyRevenue;
                 bestCombo = { dishes: dishCombo, ...result };
             }
         }
@@ -1382,9 +1393,33 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         }
         
         const directPercentMultiplier = 1 + directBonusPercent;
-        const priceAfterFlat = basePrice + windVaneBonus + directBonusFlat;
-        const priceAfterPercent = priceAfterFlat * directPercentMultiplier;
-        const unitPrice = priceAfterPercent;
+
+        // ============================================================
+        // === TEMPORARY MODIFICATION START (可整块删除) ============
+        // === 临时更改：风向标为咖啡豆时，风向标加成在百分比加成之后相加 ===
+        // === 删除此块即可恢复原始计算逻辑 ==========================
+        const isCoffeeBeanWindVane = state.selectedWindVane &&
+            state.selectedWindVane.category === '咖啡豆' &&
+            ADVANCED_SETTINGS.windVaneEnabled;
+
+        let priceAfterFlat;
+        let priceAfterPercent;
+        let unitPrice;
+
+        if (isCoffeeBeanWindVane && windVaneMatch) {
+            // 咖啡豆特殊规则：(基础 + 雇员直接加成) * (1 + 百分比加成) + 风向标加成
+            priceAfterFlat = basePrice + directBonusFlat;
+            priceAfterPercent = priceAfterFlat * directPercentMultiplier;
+            unitPrice = priceAfterPercent + windVaneBonus;
+        } else {
+            // 原始逻辑：(基础 + 风向标 + 雇员直接加成) * (1 + 百分比加成)
+            priceAfterFlat = basePrice + windVaneBonus + directBonusFlat;
+            priceAfterPercent = priceAfterFlat * directPercentMultiplier;
+            unitPrice = priceAfterPercent;
+        }
+        // === TEMPORARY MODIFICATION END =============================
+        // ============================================================
+
         const hourlyRevenue = unitPrice * (totalTraffic / 100);
 
         totalRevenue += unitPrice;
