@@ -130,5 +130,16 @@
       "4": [],
       "5": [{ "type": "conditional", "conditionType": "tagCount", "condition": { "tag": "甜品", "count": 2 }, "effectType": "direct", "effectValue": 0.015, "isPercent": true }]
     }
+  },
+  {
+    "id": "employee_zhenhong",
+    "name": "真红",
+    "levels": {
+      "1": [{ "type": "conditional", "conditionType": "tagCount", "condition": { "tag": "饮料", "count": 3 }, "effectType": "direct", "effectValue": 0.3 }],
+      "2": [],
+      "3": [{ "type": "conditional", "conditionType": "tagCount", "condition": { "tag": "饮料", "count": 3 }, "effectType": "direct", "effectValue": 0.3 }],
+      "4": [],
+      "5": [{ "type": "conditional", "conditionType": "tagCount", "condition": { "tag": "饮料", "count": 3 }, "effectType": "direct", "effectValue": 0.03, "isPercent": true }]
+    }
   }
 ]
