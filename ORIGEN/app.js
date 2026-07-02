@@ -1555,8 +1555,8 @@ function renderRecommendation(plan) {
     const conditionsHtml = `<div class="rec-conditions">
             <h4>🎯 雇员加成总结</h4>
             <div class="rec-bonuses">
-                <span class="rec-bonus-item">售价加成: +${plan.details.directBonusFlat.toFixed(2)} +${(plan.details.directBonusPercent * 100).toFixed(0)}%</span>
-                <span class="rec-bonus-item">人流量加成: +${plan.details.trafficBonusFlat.toFixed(0)} +${(plan.details.trafficBonusPercent * 100).toFixed(0)}%</span>
+                <span class="rec-bonus-item">售价加成: +${plan.details.directBonusFlat.toFixed(2)} +${(plan.details.directBonusPercent * 100).toFixed(1)}%</span>
+                <span class="rec-bonus-item">人流量加成: +${plan.details.trafficBonusFlat.toFixed(0)} +${(plan.details.trafficBonusPercent * 100).toFixed(1)}%</span>
             </div>
             ${plan.details.triggeredConditions.length > 0 ? `
                 <h5 style="margin: 12px 0 8px 0;">触发的条件加成</h5>
