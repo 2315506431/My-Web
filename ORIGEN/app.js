@@ -14,7 +14,7 @@ const state = {
     announcements: [],      // 公告数据
     selectedWindVane: null, // 当前选中的风向标
     employeeStates: {},     // 雇员状态 { id: { owned: boolean, level: number } }
-    itemStates: {},         // 菜品状态 { id: { owned: boolean, level: number } }
+    itemStates: {},         // 菜品状态 { id: { level: number } } 0=未拥有, 1=1级, 2=2级
 };
 
 // ========== 常量 ==========
@@ -40,8 +40,10 @@ const ADVANCED_SETTINGS = {
     windVaneEnabled: true,
     // 店铺数量（默认5，每店铺解锁2雇员+1菜品）
     shopCount: 5,
-    // 自定义风向标加成列表
+    // 自定义风向标加成列表 [{category, bonus}]
     customWindVaneBonuses: [],
+    // 专属客服（浔羁遇等级7奖励，+1%人流量）
+    exclusiveServiceEnabled: false,
 };
 
 // ========== 高级设置本地存储 ==========
@@ -85,6 +87,7 @@ function saveAdvancedSettings() {
             windVaneEnabled: ADVANCED_SETTINGS.windVaneEnabled,
             shopCount: ADVANCED_SETTINGS.shopCount,
             customWindVaneBonuses: ADVANCED_SETTINGS.customWindVaneBonuses,
+            exclusiveServiceEnabled: ADVANCED_SETTINGS.exclusiveServiceEnabled,
         }));
     } catch (error) {
         console.error('保存高级设置失败:', error);
@@ -101,6 +104,7 @@ function loadAdvancedSettings() {
             ADVANCED_SETTINGS.windVaneEnabled = data.windVaneEnabled ?? true;
             ADVANCED_SETTINGS.shopCount = data.shopCount ?? 5;
             ADVANCED_SETTINGS.customWindVaneBonuses = data.customWindVaneBonuses ?? [];
+            ADVANCED_SETTINGS.exclusiveServiceEnabled = data.exclusiveServiceEnabled ?? false;
         }
     } catch (error) {
         console.error('加载高级设置失败:', error);
@@ -120,10 +124,10 @@ function renderCustomWindVaneList() {
         return;
     }
     
-    container.innerHTML = ADVANCED_SETTINGS.customWindVaneBonuses.map((bonus, index) => `
+    container.innerHTML = ADVANCED_SETTINGS.customWindVaneBonuses.map((item, index) => `
         <div class="custom-item">
             <div class="custom-item-info">
-                <div class="custom-item-name">+${bonus} 方斯</div>
+                <div class="custom-item-name">${item.category} +${item.bonus} 方斯</div>
             </div>
             <div class="custom-item-actions">
                 <button class="icon-btn edit-btn" onclick="editCustomWindVane(${index})">编辑</button>
@@ -136,26 +140,38 @@ function renderCustomWindVaneList() {
 function openAddWindVaneModal() {
     editingBonusIndex = null;
     document.getElementById('windvane-edit-title').textContent = '添加自定义风向标加成';
+    document.getElementById('edit-windvane-category').value = '';
     document.getElementById('edit-windvane-bonus').value = '';
     document.getElementById('edit-windvane-modal').classList.remove('hidden');
 }
 
 function editCustomWindVane(index) {
     editingBonusIndex = index;
+    const item = ADVANCED_SETTINGS.customWindVaneBonuses[index];
     document.getElementById('windvane-edit-title').textContent = '编辑自定义风向标加成';
-    document.getElementById('edit-windvane-bonus').value = ADVANCED_SETTINGS.customWindVaneBonuses[index];
+    document.getElementById('edit-windvane-category').value = item.category;
+    document.getElementById('edit-windvane-bonus').value = item.bonus;
     document.getElementById('edit-windvane-modal').classList.remove('hidden');
 }
 
 function saveCustomWindVane() {
+    const category = document.getElementById('edit-windvane-category').value;
     const bonus = parseFloat(document.getElementById('edit-windvane-bonus').value) || 0;
     
+    if (!category) {
+        alert('请选择类别');
+        return;
+    }
+    
+    const newItem = { category, bonus };
+    
     if (editingBonusIndex !== null) {
-        ADVANCED_SETTINGS.customWindVaneBonuses[editingBonusIndex] = bonus;
+        ADVANCED_SETTINGS.customWindVaneBonuses[editingBonusIndex] = newItem;
     } else {
-        ADVANCED_SETTINGS.customWindVaneBonuses.push(bonus);
-        // 去重并排序
-        ADVANCED_SETTINGS.customWindVaneBonuses = [...new Set(ADVANCED_SETTINGS.customWindVaneBonuses)].sort((a, b) => a - b);
+        ADVANCED_SETTINGS.customWindVaneBonuses.push(newItem);
+        ADVANCED_SETTINGS.customWindVaneBonuses = [...new Set(ADVANCED_SETTINGS.customWindVaneBonuses.map(JSON.stringify))]
+            .map(JSON.parse)
+            .sort((a, b) => a.category.localeCompare(b.category) || a.bonus - b.bonus);
     }
     
     saveAdvancedSettings();
@@ -179,12 +195,14 @@ function openAdvancedSettingsModal() {
     const decorationInput = document.getElementById('decoration-bonus-input');
     const trafficInput = document.getElementById('base-traffic-input');
     const windVaneSwitch = document.getElementById('windvane-enabled-switch');
+    const exclusiveServiceSwitch = document.getElementById('exclusive-service-switch');
     const resetTrafficBtn = document.getElementById('reset-traffic-btn');
     
     // 填充当前值
     decorationInput.value = ADVANCED_SETTINGS.decorationBonus.toFixed(3);
     trafficInput.value = ADVANCED_SETTINGS.baseTraffic;
     windVaneSwitch.checked = ADVANCED_SETTINGS.windVaneEnabled;
+    exclusiveServiceSwitch.checked = ADVANCED_SETTINGS.exclusiveServiceEnabled;
     
     // 重置人流量按钮
     if (resetTrafficBtn) {
@@ -256,7 +274,7 @@ function renderItemSettingsList() {
         const itemState = state.itemStates[item.id];
         
         const card = document.createElement('div');
-        card.className = `employee-card ${itemState.owned ? 'active' : ''}`;
+        card.className = `employee-card ${itemState.level > 0 ? 'active' : ''}`;
         card.id = `item-card-${item.id}`;
         
         card.innerHTML = `
@@ -267,7 +285,7 @@ function renderItemSettingsList() {
                 <div class="level-selector" id="item-level-selector-${item.id}">
                     <span class="level-label">Lv.</span>
                     ${[1, 2].map(lv => `
-                        <button class="level-btn ${itemState.owned && itemState.level === lv ? 'active' : ''}"
+                        <button class="level-btn ${itemState.level === lv ? 'active' : ''}"
                                 data-item-id="${item.id}" data-level="${lv}">
                             ${lv}
                         </button>
@@ -278,20 +296,16 @@ function renderItemSettingsList() {
         
         container.appendChild(card);
         
-        // 绑定等级按钮事件
         card.querySelectorAll('.level-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const clickedLevel = parseInt(btn.dataset.level);
                 const currentState = state.itemStates[item.id];
                 
-                if (currentState.owned && currentState.level === clickedLevel) {
-                    // 已拥有且点击的是当前等级，取消拥有
-                    currentState.owned = false;
+                if (currentState.level === clickedLevel) {
+                    currentState.level = 0;
                     card.classList.remove('active');
                     card.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
                 } else {
-                    // 选择等级并设置为拥有
-                    currentState.owned = true;
                     currentState.level = clickedLevel;
                     card.classList.add('active');
                     card.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
@@ -315,12 +329,7 @@ function renderItemSettingsList() {
 // ========== 设置所有菜品等级 ==========
 function setAllItemsLevel(level) {
     state.items.forEach(item => {
-        if (level === 0) {
-            state.itemStates[item.id].owned = false;
-        } else {
-            state.itemStates[item.id].owned = true;
-            state.itemStates[item.id].level = level;
-        }
+        state.itemStates[item.id].level = level;
     });
     
     saveItemStates();
@@ -391,10 +400,8 @@ function clearAllLocalData() {
             };
         });
 
-        // 重置菜品状态（默认全2级）
         state.items.forEach(item => {
             state.itemStates[item.id] = {
-                owned: true,
                 level: 2,
             };
         });
@@ -428,25 +435,24 @@ function clearAllLocalData() {
 
 // ========== 更新风向标选择器 ==========
 function updateWindVaneSelectors() {
-    const categorySelect = document.getElementById('windvane-category-select');
-    const bonusSelect = document.getElementById('windvane-bonus-select');
+    const windVaneSelect = document.getElementById('windvane-select');
+    if (!windVaneSelect) return;
     
-    if (!categorySelect || !bonusSelect) return;
+    const allWindVanes = [...state.windVanes, ...ADVANCED_SETTINGS.customWindVaneBonuses];
+    const order = ['主食', '甜品', '饮料', '面粉', '水果', '咖啡豆'];
     
-    // 收集所有可能的类别和加成
-    const categories = [...new Set(state.windVanes.map(w => w.category))];
-    const originalBonuses = [...new Set(state.windVanes.map(w => w.bonus))];
-    const allBonuses = [...new Set([...originalBonuses, ...ADVANCED_SETTINGS.customWindVaneBonuses])].sort((a, b) => a - b);
+    allWindVanes.sort((a, b) => {
+        const idxA = order.indexOf(a.category);
+        const idxB = order.indexOf(b.category);
+        if (idxA !== idxB) {
+            return idxA - idxB;
+        }
+        return a.bonus - b.bonus;
+    });
     
-    // 更新类别选项
-    categorySelect.innerHTML = '<option value="">-- 请选择类别 --</option>' + 
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    windVaneSelect.innerHTML = '<option value="">-- 请选择风向标 --</option>' + 
+        allWindVanes.map(wv => `<option value="${wv.category}|${wv.bonus}">${wv.category} +${wv.bonus} 方斯</option>`).join('');
     
-    // 更新加成选项
-    bonusSelect.innerHTML = '<option value="">-- 请选择数值 --</option>' + 
-        allBonuses.map(b => `<option value="${b}">+${b} 方斯</option>`).join('');
-    
-    // 重新初始化选择器
     renderWindVaneSelector();
 }
 
@@ -457,7 +463,10 @@ function updateEmployeeList() {
 
 // ========== 数据加载 ==========
 async function loadData() {
+    const loadingOverlay = document.getElementById('loading-overlay');
     try {
+        loadingOverlay.classList.remove('hidden');
+        
         const [windVanesRes, employeesRes, itemsRes, announcementsRes] = await Promise.all([
             fetch('./ORIGEN/data/windVanes.json'),
             fetch('./ORIGEN/data/employees.json'),
@@ -470,10 +479,8 @@ async function loadData() {
         state.items = await itemsRes.json();
         state.announcements = await announcementsRes.json();
 
-        // 加载高级设置
         loadAdvancedSettings();
 
-        // 初始化雇员状态
         state.employees.forEach(emp => {
             if (!state.employeeStates[emp.id]) {
                 state.employeeStates[emp.id] = {
@@ -483,7 +490,6 @@ async function loadData() {
             }
         });
 
-        // 加载本地保存的雇员状态
         const savedStates = loadEmployeeStates();
         if (savedStates) {
             Object.keys(savedStates).forEach(empId => {
@@ -491,35 +497,34 @@ async function loadData() {
             });
         }
 
-        // 加载本地保存的菜品状态
         const savedItemStates = loadItemStates();
         
-        // 初始化菜品状态（默认全2级）
         state.items.forEach(item => {
-            // 如果有保存的状态，使用它；否则使用默认状态
             if (savedItemStates && savedItemStates[item.id]) {
-                state.itemStates[item.id] = savedItemStates[item.id];
-                // 确保状态格式正确
-                if (typeof state.itemStates[item.id].owned !== 'boolean') {
-                    state.itemStates[item.id].owned = true;
-                }
-                if (state.itemStates[item.id].level !== 1 && state.itemStates[item.id].level !== 2) {
-                    state.itemStates[item.id].level = 2;
+                const saved = savedItemStates[item.id];
+                if (saved.level !== undefined) {
+                    state.itemStates[item.id] = { level: saved.level };
+                } else if (saved.owned === false) {
+                    state.itemStates[item.id] = { level: 0 };
+                } else {
+                    state.itemStates[item.id] = { level: saved.level || 2 };
                 }
             } else {
-                // 默认状态
-                state.itemStates[item.id] = {
-                    owned: true,
-                    level: 2,
-                };
+                state.itemStates[item.id] = { level: 2 };
             }
         });
 
         initUI();
+        
+        setTimeout(() => {
+            loadingOverlay.classList.add('hidden');
+        }, 300);
     } catch (error) {
         console.error('数据加载失败:', error);
-        document.getElementById('recommendation-result').innerHTML =
-            '<div class="recommendation-placeholder"><p>⚠️ 数据加载失败，请确保 data 目录下的 JSON 文件存在</p></div>';
+        loadingOverlay.innerHTML = '<div class="loading-spinner"></div><p>数据加载失败，请刷新重试</p>';
+        setTimeout(() => {
+            loadingOverlay.classList.add('hidden');
+        }, 2000);
     }
 }
 
@@ -615,21 +620,14 @@ function updateWindVaneDisabledNotice() {
 
 // ========== 风向标选择器 ==========
 function renderWindVaneSelector() {
-    const categorySelect = document.getElementById('windvane-category-select');
-    const bonusSelect = document.getElementById('windvane-bonus-select');
+    const windVaneSelect = document.getElementById('windvane-select');
+    if (!windVaneSelect) return;
 
-    // 类别选择事件
-    categorySelect.addEventListener('change', updateWindVaneSelection);
-    
-    // 加成选择事件
-    bonusSelect.addEventListener('change', updateWindVaneSelection);
+    windVaneSelect.addEventListener('change', updateWindVaneSelection);
 
-    // 恢复保存的风向标
     const savedWindVane = loadWindVane();
     if (savedWindVane) {
-        categorySelect.value = savedWindVane.category;
-        bonusSelect.value = String(savedWindVane.bonus);
-        // 触发状态更新
+        windVaneSelect.value = `${savedWindVane.category}|${savedWindVane.bonus}`;
         let foundWindVane = state.windVanes.find(wv =>
             wv.category === savedWindVane.category && wv.bonus === savedWindVane.bonus
         );
@@ -647,19 +645,19 @@ function renderWindVaneSelector() {
 }
 
 function updateWindVaneSelection() {
-    const categorySelect = document.getElementById('windvane-category-select');
-    const bonusSelect = document.getElementById('windvane-bonus-select');
+    const windVaneSelect = document.getElementById('windvane-select');
+    if (!windVaneSelect) return;
     
-    const category = categorySelect.value;
-    const bonus = parseFloat(bonusSelect.value);
+    const value = windVaneSelect.value;
     
-    if (category && !isNaN(bonus)) {
-        // 先尝试从原始风向标的查找
+    if (value) {
+        const [category, bonusStr] = value.split('|');
+        const bonus = parseFloat(bonusStr);
+        
         let foundWindVane = state.windVanes.find(wv => 
             wv.category === category && wv.bonus === bonus
         );
         
-        // 如果没找到，就创建一个临时的风向标对象
         if (!foundWindVane) {
             foundWindVane = {
                 category: category,
@@ -671,10 +669,10 @@ function updateWindVaneSelection() {
         }
         
         state.selectedWindVane = foundWindVane;
-        saveWindVane(); // 自动保存
+        saveWindVane();
     } else {
         state.selectedWindVane = null;
-        saveWindVane(); // 清空保存
+        saveWindVane();
     }
 }
 
@@ -742,8 +740,8 @@ function renderEmployeeList() {
                 const currentState = state.employeeStates[emp.id];
                 
                 if (currentState.owned && currentState.level === clickedLevel) {
-                    // 已拥有且点击的是当前等级，取消拥有
                     currentState.owned = false;
+                    currentState.level = 0;
                     card.classList.remove('active');
                     card.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
                 } else {
@@ -812,30 +810,12 @@ function getLevelBonusDescription(emp, level) {
 function getItemPrice(item) {
     if (!item) return 0;
     
-    const itemState = state.itemStates[item.id];
-    const level = itemState ? itemState.level : 2; // 默认2级
+    const level = state.itemStates[item.id].level;
     
-    // 2级就用price2
     if (level === 2) {
-        if (item.price2 !== null) {
-            return item.price2;
-        }
-        // price2是null就用price1
-        if (item.price1 !== null) {
-            return item.price1;
-        }
-        return 0;
-    } else {
-        // 1级就用price1
-        if (item.price1 !== null) {
-            return item.price1;
-        }
-        // price1是null就用price2
-        if (item.price2 !== null) {
-            return item.price2;
-        }
-        return 0;
+        return item.price2 !== null ? item.price2 : (item.price1 !== null ? item.price1 : 0);
     }
+    return item.price1 !== null ? item.price1 : (item.price2 !== null ? item.price2 : 0);
 }
 
 // ========== 本地存储 ==========
@@ -1171,24 +1151,39 @@ function getEmployeeBonusScore(emp) {
     return score;
 }
 
-// ========== 寻找最优菜品组合（简化可靠版）==========
+function selectCandidateDishes(availableItems) {
+    const countPerCategory = 3;
+    const selected = new Set();
+    
+    ['主食', '甜品', '饮料'].forEach(cat => {
+        const categoryItems = availableItems.filter(item => item.category === cat);
+        const sorted = [...categoryItems].sort((a, b) => {
+            const priceA = getItemPrice(a);
+            const priceB = getItemPrice(b);
+            return priceB - priceA;
+        });
+        sorted.slice(0, countPerCategory).forEach(item => {
+            selected.add(item.id);
+        });
+    });
+    
+    return availableItems.filter(item => selected.has(item.id));
+}
+
 function findBestDishes(employeeCombo) {
     const maxDishes = getMaxDishes();
     
-    // 特定组合：焦糖可可千层、火腿芝士可颂、提拉米苏、雪顶抹茶拿铁、脆椰曲奇玛奇朵
-    const PRIORITY_COMBO_IDS = ['item_14', 'item_15', 'item_16', 'item_17', 'item_18'];
-    
-    // 获取所有已解锁的菜品 - 简化过滤条件
     const availableItems = [];
     for (let i = 0; i < state.items.length; i++) {
         const item = state.items[i];
         const itemState = state.itemStates[item.id];
-        if (itemState && itemState.owned === true) {
+        if (itemState && itemState.level > 0) {
             availableItems.push(item);
         }
     }
     
-    // 如果没有可用菜品，返回空结果
+    const candidateItems = selectCandidateDishes(availableItems);
+    
     if (availableItems.length === 0) {
         return {
             dishes: [],
@@ -1200,6 +1195,7 @@ function findBestDishes(employeeCombo) {
                 directBonusPercent: 0,
                 trafficBonusFlat: 0,
                 trafficBonusPercent: 0,
+                exclusiveServiceMultiplier: 0,
                 trafficA: 0,
                 totalTraffic: 0,
                 decorationMultiplier: 1,
@@ -1209,27 +1205,13 @@ function findBestDishes(employeeCombo) {
         };
     }
     
-    // 实际使用的菜品数量
-    const actualDishCount = Math.min(availableItems.length, maxDishes);
+    const actualDishCount = Math.min(candidateItems.length, maxDishes);
     
     let bestCombo = null;
     let bestTotalHourlyRevenue = -Infinity;
     
-    // 先尝试特定组合（如果有5个或更多）
-    if (availableItems.length >= 5 && actualDishCount >= 5) {
-        const priorityCombo = availableItems.filter(item => PRIORITY_COMBO_IDS.includes(item.id));
-        if (priorityCombo.length === 5) {
-            const priorityResult = calculateComboRevenue(employeeCombo, priorityCombo);
-            if (priorityResult && priorityResult.totalHourlyRevenue > -Infinity) {
-                bestCombo = { dishes: priorityCombo, ...priorityResult };
-                bestTotalHourlyRevenue = priorityResult.totalHourlyRevenue;
-            }
-        }
-    }
-    
-    // 生成组合进行比较
     const combinations = [];
-    const n = availableItems.length;
+    const n = candidateItems.length;
     const k = actualDishCount;
     
     // 生成组合
@@ -1250,13 +1232,12 @@ function findBestDishes(employeeCombo) {
         }
     }
     
-    // 遍历所有组合
-    const EPSILON = 0.01; // 收益差值小于0.01时视为相等
+    const EPSILON = 0.01;
     for (let c = 0; c < combinations.length; c++) {
         const comboIndices = combinations[c];
         const dishCombo = [];
         for (let i = 0; i < comboIndices.length; i++) {
-            dishCombo.push(availableItems[comboIndices[i]]);
+            dishCombo.push(candidateItems[comboIndices[i]]);
         }
         
         // 计算收益
@@ -1280,9 +1261,8 @@ function findBestDishes(employeeCombo) {
         }
     }
     
-    // 如果都不行，就用第一个组合
-    if (!bestCombo && availableItems.length > 0) {
-        const fallbackCombo = availableItems.slice(0, actualDishCount);
+    if (!bestCombo && candidateItems.length > 0) {
+        const fallbackCombo = candidateItems.slice(0, actualDishCount);
         const fallbackResult = calculateComboRevenue(employeeCombo, fallbackCombo);
         if (fallbackResult) {
             bestCombo = { dishes: fallbackCombo, ...fallbackResult };
@@ -1309,6 +1289,7 @@ function findBestDishes(employeeCombo) {
                 directBonusPercent: 0,
                 trafficBonusFlat: 0,
                 trafficBonusPercent: 0,
+                exclusiveServiceMultiplier: 0,
                 trafficA: 0,
                 totalTraffic: 0,
                 decorationMultiplier: 1,
@@ -1370,7 +1351,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
     });
 
     // 方案A：先加固定值，再乘百分比
-    const trafficA = (ADVANCED_SETTINGS.baseTraffic + trafficBonusFlat) * (1 + trafficBonusPercent);
+    const exclusiveServiceMultiplier = ADVANCED_SETTINGS.exclusiveServiceEnabled ? 0.01 : 0;
+    const trafficA = (ADVANCED_SETTINGS.baseTraffic + trafficBonusFlat) * (1 + trafficBonusPercent + exclusiveServiceMultiplier);
     const totalTraffic = trafficA;
 
     // 计算每道菜收益
@@ -1457,6 +1439,7 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
             directBonusPercent,
             trafficBonusFlat,
             trafficBonusPercent,
+            exclusiveServiceMultiplier,
             trafficA,
             totalTraffic,
             decorationMultiplier,
@@ -1585,13 +1568,15 @@ function renderRecommendation(plan) {
                 <span class="summary-label">百分比人流量加成</span>
                 <span class="summary-value">+${(plan.details.trafficBonusPercent * 100).toFixed(1)}%</span>
             </div>
+            ${plan.details.exclusiveServiceMultiplier > 0 ? `
+            <div class="rec-calc-summary-item">
+                <span class="summary-label">专属客服</span>
+                <span class="summary-value">+${(plan.details.exclusiveServiceMultiplier * 100).toFixed(1)}%</span>
+            </div>
+            ` : ''}
             <div class="rec-calc-summary-item highlight">
                 <span class="summary-label">总人流量</span>
                 <span class="summary-value">${plan.details.totalTraffic.toFixed(1)}</span>
-            </div>
-            <div class="rec-calc-summary-item">
-                <span class="summary-label">装修加成</span>
-                <span class="summary-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(1)}% × 2</span>
             </div>
         </div>
         <div class="rec-calc-list">
@@ -1649,6 +1634,10 @@ function renderRecommendation(plan) {
             <div class="rec-calc-total-item">
                 <span class="total-label">显示每小时收益</span>
                 <span class="total-value">${plan.totalHourlyRevenueBeforeDecoration.toFixed(2)} 方斯/小时</span>
+            </div>
+            <div class="rec-calc-total-item">
+                <span class="total-label">装修加成</span>
+                <span class="total-value">+${((plan.details.decorationMultiplier - 1) * 100).toFixed(1)}% × 2</span>
             </div>
             <div class="rec-calc-total-item highlight">
                 <span class="total-label">实际每小时收益</span>
@@ -1753,6 +1742,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ADVANCED_SETTINGS.windVaneEnabled = e.target.checked;
         saveAdvancedSettings();
         updateWindVaneDisabledNotice();
+    });
+    
+    // 专属客服开关变化
+    document.getElementById('exclusive-service-switch').addEventListener('change', (e) => {
+        ADVANCED_SETTINGS.exclusiveServiceEnabled = e.target.checked;
+        saveAdvancedSettings();
     });
     
     // 添加自定义风向标按钮

@@ -1,3 +1,45 @@
+/* ========== 加载状态 ========== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-overlay p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
 /* ========== 基础重置与变量 ========== */
 :root {
     --bg-primary: #0f1117;
@@ -992,6 +1034,7 @@ body {
     gap: 4px;
     flex: 1;
     padding: 8px;
+    text-align: center;
 }
 
 .rec-calc-total-item .total-label {
@@ -1017,9 +1060,46 @@ body {
     color: white;
 }
 
-/* 窄屏适配：总收益区域上下排列 */
-@media (max-width: 600px) {
+/* 桌面UI中等屏（740-850px）：2×2网格 */
+@media (max-width: 850px) and (min-width: 740px) {
     .rec-calc-total {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* 移动UI宽屏（710-739px）：一行显示 */
+@media (max-width: 739px) and (min-width: 710px) {
+    .rec-calc-total {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+}
+
+/* 移动UI中等宽屏（500-709px）：2×2网格 */
+@media (max-width: 709px) and (min-width: 500px) {
+    .rec-calc-total {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* 移动UI窄中等屏（400-499px）：2×2网格 */
+@media (max-width: 499px) and (min-width: 400px) {
+    .rec-calc-total {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* 移动UI窄屏（≤399px）：四行垂直排列 */
+@media (max-width: 399px) {
+    .rec-calc-total {
+        display: flex;
         flex-direction: column;
         gap: 12px;
     }

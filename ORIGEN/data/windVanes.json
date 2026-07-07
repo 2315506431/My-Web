@@ -1,30 +1,6 @@
 [
   {
     "category": "饮料",
-    "bonus": 0.75
-  },
-  {
-    "category": "主食",
-    "bonus": 0.75
-  },
-  {
-    "category": "甜品",
-    "bonus": 0.75
-  },
-  {
-    "category": "面粉",
-    "bonus": 0.75
-  },
-  {
-    "category": "咖啡豆",
-    "bonus": 0.75
-  },
-  {
-    "category": "水果",
-    "bonus": 0.75
-  },
-  {
-    "category": "饮料",
     "bonus": 1
   },
   {
@@ -37,14 +13,14 @@
   },
   {
     "category": "面粉",
-    "bonus": 1
+    "bonus": 0.75
   },
   {
     "category": "咖啡豆",
-    "bonus": 1
+    "bonus": 0.75
   },
   {
     "category": "水果",
-    "bonus": 1
+    "bonus": 0.75
   }
 ]

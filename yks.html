@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="ORIGEN/style.css?v=211">
 </head>
 <body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>加载中...</p>
+    </div>
     <div class="app-container">
         <!-- 顶部标题 -->
         <header class="app-header">
@@ -40,15 +44,9 @@
                     </div>
                     <div class="windvane-selectors" id="windvane-selectors-container">
                         <div class="windvane-selector-row">
-                            <label for="windvane-category-select" class="select-label">加成类别：</label>
-                            <select id="windvane-category-select" class="custom-select">
-                                <option value="">-- 请选择加成类别 --</option>
-                            </select>
-                        </div>
-                        <div class="windvane-selector-row">
-                            <label for="windvane-bonus-select" class="select-label">加成数值：</label>
-                            <select id="windvane-bonus-select" class="custom-select">
-                                <option value="">-- 请选择加成数值 --</option>
+                            <label for="windvane-select" class="select-label">风向标：</label>
+                            <select id="windvane-select" class="custom-select">
+                                <option value="">-- 请选择风向标 --</option>
                             </select>
                         </div>
                     </div>
@@ -181,6 +179,14 @@
                     <p class="setting-hint">关闭后风向标加成不生效，适用于风向标未解锁的情况</p>
                 </div>
                 <div class="setting-group">
+                    <label>专属客服</label>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="exclusive-service-switch" class="switch-input">
+                        <label for="exclusive-service-switch" class="switch-slider"></label>
+                    </div>
+                    <p class="setting-hint">浔羁遇等级7级的奖励，开启后增加1%人流量</p>
+                </div>
+                <div class="setting-group">
                     <label>店铺数量</label>
                     <div id="shop-count-selector" class="shop-count-selector"></div>
                     <p class="setting-hint">每店铺解锁2雇员+1菜品，共<span id="shop-count-info">10</span>雇员/<span id="shop-count-dish-info">5</span>菜品</p>
@@ -250,6 +256,18 @@
                 <button id="close-windvane-modal-btn" class="close-btn">×</button>
             </div>
             <div class="modal-body">
+                <div class="setting-group">
+                    <label for="edit-windvane-category">类别</label>
+                    <select id="edit-windvane-category" class="setting-input">
+                        <option value="">-- 请选择类别 --</option>
+                        <option value="主食">主食</option>
+                        <option value="甜品">甜品</option>
+                        <option value="饮料">饮料</option>
+                        <option value="面粉">面粉</option>
+                        <option value="水果">水果</option>
+                        <option value="咖啡豆">咖啡豆</option>
+                    </select>
+                </div>
                 <div class="setting-group">
                     <label for="edit-windvane-bonus">加成 (方斯)</label>
                     <input type="number" id="edit-windvane-bonus" class="setting-input" min="0" step="0.01">
