@@ -8,7 +8,6 @@
 
 // ========== 全局状态 ==========
 const state = {
-    windVanes: [],           // 所有风向标数据
     employees: [],          // 所有雇员数据
     items: [],              // 所有商品数据
     announcements: [],      // 公告数据
@@ -32,18 +31,11 @@ function getMaxDishes() {
 
 // ========== 高级设置参数 ==========
 const ADVANCED_SETTINGS = {
-    // 装修加成（默认9%，范围0-1）
     decorationBonus: 0.09,
-    // 基础人流量
     baseTraffic: 2400,
-    // 风向标功能开关（默认开启）
-    windVaneEnabled: true,
-    // 店铺数量（默认5，每店铺解锁2雇员+1菜品）
     shopCount: 5,
-    // 自定义风向标加成列表 [{category, bonus}]
-    customWindVaneBonuses: [],
-    // 专属客服（浔羁遇等级7奖励，+1%人流量）
     exclusiveServiceEnabled: false,
+    windVaneEnabled: true,
 };
 
 // ========== 高级设置本地存储 ==========
@@ -84,10 +76,9 @@ function saveAdvancedSettings() {
         localStorage.setItem(ADVANCED_SETTINGS_KEY, JSON.stringify({
             decorationBonus: ADVANCED_SETTINGS.decorationBonus,
             baseTraffic: ADVANCED_SETTINGS.baseTraffic,
-            windVaneEnabled: ADVANCED_SETTINGS.windVaneEnabled,
             shopCount: ADVANCED_SETTINGS.shopCount,
-            customWindVaneBonuses: ADVANCED_SETTINGS.customWindVaneBonuses,
             exclusiveServiceEnabled: ADVANCED_SETTINGS.exclusiveServiceEnabled,
+            windVaneEnabled: ADVANCED_SETTINGS.windVaneEnabled,
         }));
     } catch (error) {
         console.error('保存高级设置失败:', error);
@@ -101,92 +92,51 @@ function loadAdvancedSettings() {
             const data = JSON.parse(saved);
             ADVANCED_SETTINGS.decorationBonus = data.decorationBonus ?? 0.09;
             ADVANCED_SETTINGS.baseTraffic = data.baseTraffic ?? 2400;
-            ADVANCED_SETTINGS.windVaneEnabled = data.windVaneEnabled ?? true;
             ADVANCED_SETTINGS.shopCount = data.shopCount ?? 5;
-            ADVANCED_SETTINGS.customWindVaneBonuses = data.customWindVaneBonuses ?? [];
             ADVANCED_SETTINGS.exclusiveServiceEnabled = data.exclusiveServiceEnabled ?? false;
+            ADVANCED_SETTINGS.windVaneEnabled = data.windVaneEnabled ?? true;
         }
     } catch (error) {
         console.error('加载高级设置失败:', error);
     }
 }
 
-// ========== 编辑状态 ==========
-let editingBonusIndex = null;
-
-// ========== 自定义风向标加成功能 ==========
-function renderCustomWindVaneList() {
-    const container = document.getElementById('custom-windvane-list');
-    if (!container) return;
+// ========== 自动风向标计算 ==========
+// 循环顺序：面粉(0) → 水果(1) → 咖啡豆(2) → 主食(3) → 甜品(4) → 饮料(5) → 面粉...
+// 基准日期：2026-07-04 12:00 = 面粉(0)
+// 2026-07-08 12:00 = 甜品(4) → 验证：(8-4)=4天 → 4%6=4 ✓
+function getTodayWindVane() {
+    const cycle = ['面粉', '水果', '咖啡豆', '主食', '甜品', '饮料'];
+    const now = new Date();
     
-    if (ADVANCED_SETTINGS.customWindVaneBonuses.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
+    const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+    const baseDate = new Date(2026, 6, 4, 12, 0, 0); // 基准日期：2026-07-04 12:00
     
-    container.innerHTML = ADVANCED_SETTINGS.customWindVaneBonuses.map((item, index) => `
-        <div class="custom-item">
-            <div class="custom-item-info">
-                <div class="custom-item-name">${item.category} +${item.bonus} 方斯</div>
-            </div>
-            <div class="custom-item-actions">
-                <button class="icon-btn edit-btn" onclick="editCustomWindVane(${index})">编辑</button>
-                <button class="icon-btn delete-btn" onclick="deleteCustomWindVane(${index})">删除</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function openAddWindVaneModal() {
-    editingBonusIndex = null;
-    document.getElementById('windvane-edit-title').textContent = '添加自定义风向标加成';
-    document.getElementById('edit-windvane-category').value = '';
-    document.getElementById('edit-windvane-bonus').value = '';
-    document.getElementById('edit-windvane-modal').classList.remove('hidden');
-}
-
-function editCustomWindVane(index) {
-    editingBonusIndex = index;
-    const item = ADVANCED_SETTINGS.customWindVaneBonuses[index];
-    document.getElementById('windvane-edit-title').textContent = '编辑自定义风向标加成';
-    document.getElementById('edit-windvane-category').value = item.category;
-    document.getElementById('edit-windvane-bonus').value = item.bonus;
-    document.getElementById('edit-windvane-modal').classList.remove('hidden');
-}
-
-function saveCustomWindVane() {
-    const category = document.getElementById('edit-windvane-category').value;
-    const bonus = parseFloat(document.getElementById('edit-windvane-bonus').value) || 0;
-    
-    if (!category) {
-        alert('请选择类别');
-        return;
-    }
-    
-    const newItem = { category, bonus };
-    
-    if (editingBonusIndex !== null) {
-        ADVANCED_SETTINGS.customWindVaneBonuses[editingBonusIndex] = newItem;
+    // 根据当前时间确定所处风向标周期的12点
+    // 未到今天12点，当前风向标是昨天12点切换的；已过今天12点，是今天12点切换的
+    let currentPeriodNoon;
+    if (now >= todayNoon) {
+        currentPeriodNoon = todayNoon;
     } else {
-        ADVANCED_SETTINGS.customWindVaneBonuses.push(newItem);
-        ADVANCED_SETTINGS.customWindVaneBonuses = [...new Set(ADVANCED_SETTINGS.customWindVaneBonuses.map(JSON.stringify))]
-            .map(JSON.parse)
-            .sort((a, b) => a.category.localeCompare(b.category) || a.bonus - b.bonus);
+        currentPeriodNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 12, 0, 0);
     }
     
-    saveAdvancedSettings();
-    renderCustomWindVaneList();
-    updateWindVaneSelectors();
-    document.getElementById('edit-windvane-modal').classList.add('hidden');
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    const daysDiff = Math.floor((currentPeriodNoon.getTime() - baseDate.getTime()) / millisecondsPerDay);
+    
+    const index = ((daysDiff % cycle.length) + cycle.length) % cycle.length;
+    
+    const category = cycle[index];
+    const bonus = ['面粉', '水果', '咖啡豆'].includes(category) ? 0.75 : 1;
+    
+    return { category, bonus, index };
 }
 
-function deleteCustomWindVane(index) {
-    if (confirm('确定要删除这个自定义加成吗？')) {
-        ADVANCED_SETTINGS.customWindVaneBonuses.splice(index, 1);
-        saveAdvancedSettings();
-        renderCustomWindVaneList();
-        updateWindVaneSelectors();
-    }
+function getNextWindVane() {
+    const cycle = ['面粉', '水果', '咖啡豆', '主食', '甜品', '饮料'];
+    const current = getTodayWindVane();
+    const nextIndex = (current.index + 1) % cycle.length;
+    return { category: cycle[nextIndex], bonus: ['面粉', '水果', '咖啡豆'].includes(cycle[nextIndex]) ? 0.75 : 1 };
 }
 
 // ========== 高级设置模态框 ==========
@@ -194,15 +144,15 @@ function openAdvancedSettingsModal() {
     const modal = document.getElementById('advanced-settings-modal');
     const decorationInput = document.getElementById('decoration-bonus-input');
     const trafficInput = document.getElementById('base-traffic-input');
-    const windVaneSwitch = document.getElementById('windvane-enabled-switch');
     const exclusiveServiceSwitch = document.getElementById('exclusive-service-switch');
+    const windVaneSwitch = document.getElementById('windvane-switch');
     const resetTrafficBtn = document.getElementById('reset-traffic-btn');
     
     // 填充当前值
     decorationInput.value = ADVANCED_SETTINGS.decorationBonus.toFixed(3);
     trafficInput.value = ADVANCED_SETTINGS.baseTraffic;
-    windVaneSwitch.checked = ADVANCED_SETTINGS.windVaneEnabled;
     exclusiveServiceSwitch.checked = ADVANCED_SETTINGS.exclusiveServiceEnabled;
+    windVaneSwitch.checked = ADVANCED_SETTINGS.windVaneEnabled;
     
     // 重置人流量按钮
     if (resetTrafficBtn) {
@@ -219,8 +169,8 @@ function openAdvancedSettingsModal() {
     // 渲染菜品设置列表
     renderItemSettingsList();
     
-    // 渲染自定义列表
-    renderCustomWindVaneList();
+    // 初始化菜品设置布局监听
+    initItemSettingsResizeObserver();
     
     modal.classList.remove('hidden');
 }
@@ -324,6 +274,53 @@ function renderItemSettingsList() {
             setAllItemsLevel(level);
         });
     });
+    
+    checkItemSettingsLayout();
+}
+
+function checkItemSettingsLayout() {
+    const container = document.getElementById('item-settings-list');
+    const cards = container ? container.querySelectorAll('.employee-card') : [];
+    if (cards.length === 0 || !container) return;
+    
+    cards.forEach(card => card.style.transition = 'none');
+    container.style.transition = 'none';
+    
+    container.classList.remove('single-column');
+    
+    container.getBoundingClientRect();
+    
+    let maxCardWidth = 0;
+    cards.forEach(card => {
+        const cardWidth = card.scrollWidth;
+        maxCardWidth = Math.max(maxCardWidth, cardWidth);
+    });
+    
+    const containerWidth = container.getBoundingClientRect().width;
+    const gap = 12;
+    const twoColMinWidth = maxCardWidth * 2 + gap;
+    
+    if (containerWidth >= twoColMinWidth) {
+        container.classList.remove('single-column');
+    } else {
+        container.classList.add('single-column');
+    }
+    
+    cards.forEach(card => card.style.transition = '');
+    container.style.transition = '';
+}
+
+let itemSettingsResizeObserver = null;
+
+function initItemSettingsResizeObserver() {
+    const container = document.getElementById('item-settings-list');
+    if (!container || itemSettingsResizeObserver) return;
+    
+    itemSettingsResizeObserver = new ResizeObserver(() => {
+        checkItemSettingsLayout();
+    });
+    
+    itemSettingsResizeObserver.observe(container);
 }
 
 // ========== 设置所有菜品等级 ==========
@@ -378,19 +375,16 @@ function closeAdvancedSettingsModal() {
 }
 
 function clearAllLocalData() {
-    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、风向标、设置和公告已读状态。此操作不可撤销！')) {
+    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、设置和公告已读状态。此操作不可撤销！')) {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(ITEM_STORAGE_KEY);
-        localStorage.removeItem(WINDVANE_STORAGE_KEY);
         localStorage.removeItem(ADVANCED_SETTINGS_KEY);
         localStorage.removeItem(ANNOUNCEMENT_READ_KEY);
         
         // 重置状态
         ADVANCED_SETTINGS.decorationBonus = 0.09;
         ADVANCED_SETTINGS.baseTraffic = 2400;
-        ADVANCED_SETTINGS.windVaneEnabled = true;
         ADVANCED_SETTINGS.shopCount = 5;
-        ADVANCED_SETTINGS.customWindVaneBonuses = [];
         
         // 重置雇员状态
         state.employees.forEach(emp => {
@@ -406,21 +400,11 @@ function clearAllLocalData() {
             };
         });
         
-        // 重置风向标
-        state.selectedWindVane = null;
-        
-        // 重新渲染
-        updateWindVaneSelectors();
-        const categorySelect = document.getElementById('windvane-category-select');
-        const bonusSelect = document.getElementById('windvane-bonus-select');
-        if (categorySelect) categorySelect.value = '';
-        if (bonusSelect) bonusSelect.value = '';
-        
         // 清空推荐结果
         const resultContainer = document.getElementById('recommendation-result');
         const calcDetailSection = document.querySelector('.calc-detail-section');
         if (resultContainer) {
-            resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>请选择风向标并配置拥有的雇员后，点击下方按钮计算最优方案</p></div>';
+            resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>配置拥有的雇员后，点击上方按钮计算最优方案</p></div>';
         }
         if (calcDetailSection) {
             calcDetailSection.classList.add('hidden');
@@ -431,29 +415,6 @@ function clearAllLocalData() {
         // 刷新页面以应用新数据
         location.reload();
     }
-}
-
-// ========== 更新风向标选择器 ==========
-function updateWindVaneSelectors() {
-    const windVaneSelect = document.getElementById('windvane-select');
-    if (!windVaneSelect) return;
-    
-    const allWindVanes = [...state.windVanes, ...ADVANCED_SETTINGS.customWindVaneBonuses];
-    const order = ['主食', '甜品', '饮料', '面粉', '水果', '咖啡豆'];
-    
-    allWindVanes.sort((a, b) => {
-        const idxA = order.indexOf(a.category);
-        const idxB = order.indexOf(b.category);
-        if (idxA !== idxB) {
-            return idxA - idxB;
-        }
-        return a.bonus - b.bonus;
-    });
-    
-    windVaneSelect.innerHTML = '<option value="">-- 请选择风向标 --</option>' + 
-        allWindVanes.map(wv => `<option value="${wv.category}|${wv.bonus}">${wv.category} +${wv.bonus} 方斯</option>`).join('');
-    
-    renderWindVaneSelector();
 }
 
 // ========== 更新雇员列表 ==========
@@ -467,14 +428,12 @@ async function loadData() {
     try {
         loadingOverlay.classList.remove('hidden');
         
-        const [windVanesRes, employeesRes, itemsRes, announcementsRes] = await Promise.all([
-            fetch('./ORIGEN/data/windVanes.json'),
+        const [employeesRes, itemsRes, announcementsRes] = await Promise.all([
             fetch('./ORIGEN/data/employees.json'),
             fetch('./ORIGEN/data/items.json'),
             fetch('./ORIGEN/data/announcements.json'),
         ]);
 
-        state.windVanes = await windVanesRes.json();
         state.employees = await employeesRes.json();
         state.items = await itemsRes.json();
         state.announcements = await announcementsRes.json();
@@ -565,10 +524,10 @@ function renderAnnouncements() {
 // ========== 初始化UI ==========
 function initUI() {
     updateAnnouncementButtonBadge();
-    updateWindVaneSelectors();
+    renderCurrentWindVane();
     updateEmployeeList();
-    updateWindVaneDisabledNotice();
     initCollapsibleSections();
+    initWindVaneResizeObserver();
 }
 
 // ========== 初始化可折叠菜单 ==========
@@ -602,78 +561,94 @@ function initCollapsibleSections() {
     }
 }
 
-// ========== 更新风向标禁用提示 ==========
-function updateWindVaneDisabledNotice() {
-    const notice = document.getElementById('windvane-disabled-notice');
-    const selectors = document.getElementById('windvane-selectors-container');
+// ========== 渲染当前风向标 ==========
+function renderCurrentWindVane() {
+    const windVaneSection = document.querySelector('.windvane-section');
     
-    if (!notice || !selectors) return;
-    
-    if (ADVANCED_SETTINGS.windVaneEnabled) {
-        notice.classList.add('hidden');
-        selectors.classList.remove('disabled');
-    } else {
-        notice.classList.remove('hidden');
-        selectors.classList.add('disabled');
-    }
-}
-
-// ========== 风向标选择器 ==========
-function renderWindVaneSelector() {
-    const windVaneSelect = document.getElementById('windvane-select');
-    if (!windVaneSelect) return;
-
-    windVaneSelect.addEventListener('change', updateWindVaneSelection);
-
-    const savedWindVane = loadWindVane();
-    if (savedWindVane) {
-        windVaneSelect.value = `${savedWindVane.category}|${savedWindVane.bonus}`;
-        let foundWindVane = state.windVanes.find(wv =>
-            wv.category === savedWindVane.category && wv.bonus === savedWindVane.bonus
-        );
-        if (!foundWindVane) {
-            foundWindVane = {
-                category: savedWindVane.category,
-                bonus: savedWindVane.bonus,
-                name: savedWindVane.category,
-                description: `${savedWindVane.category} +${savedWindVane.bonus} 方斯`,
-                isCustom: true
-            };
-        }
-        state.selectedWindVane = foundWindVane;
-    }
-}
-
-function updateWindVaneSelection() {
-    const windVaneSelect = document.getElementById('windvane-select');
-    if (!windVaneSelect) return;
-    
-    const value = windVaneSelect.value;
-    
-    if (value) {
-        const [category, bonusStr] = value.split('|');
-        const bonus = parseFloat(bonusStr);
-        
-        let foundWindVane = state.windVanes.find(wv => 
-            wv.category === category && wv.bonus === bonus
-        );
-        
-        if (!foundWindVane) {
-            foundWindVane = {
-                category: category,
-                bonus: bonus,
-                name: category,
-                description: `${category} +${bonus} 方斯`,
-                isCustom: true
-            };
-        }
-        
-        state.selectedWindVane = foundWindVane;
-        saveWindVane();
-    } else {
+    if (!ADVANCED_SETTINGS.windVaneEnabled) {
+        if (windVaneSection) windVaneSection.classList.add('hidden');
         state.selectedWindVane = null;
-        saveWindVane();
+        return;
     }
+    
+    if (windVaneSection) windVaneSection.classList.remove('hidden');
+    
+    const windVane = getTodayWindVane();
+    const nextWindVane = getNextWindVane();
+    
+    const nameEl = document.getElementById('windvane-name');
+    const bonusEl = document.getElementById('windvane-bonus');
+    const nextNameEl = document.getElementById('next-windvane-name');
+    const nextBonusEl = document.getElementById('next-windvane-bonus');
+    const nextHoursEl = document.getElementById('next-windvane-hours');
+    
+    if (nameEl) nameEl.textContent = windVane.category;
+    if (bonusEl) bonusEl.textContent = `+${windVane.bonus} 方斯`;
+    
+    if (nextNameEl) nextNameEl.textContent = nextWindVane.category;
+    if (nextBonusEl) nextBonusEl.textContent = `+${nextWindVane.bonus} 方斯`;
+    
+    if (nextHoursEl) {
+        const now = new Date();
+        const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+        let nextNoon;
+        if (now >= todayNoon) {
+            nextNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0);
+        } else {
+            nextNoon = todayNoon;
+        }
+        const msLeft = nextNoon.getTime() - now.getTime();
+        const minutesLeft = Math.floor(msLeft / (1000 * 60));
+        if (minutesLeft >= 60) {
+            const hoursLeft = Math.floor(minutesLeft / 60);
+            nextHoursEl.textContent = `${hoursLeft}小时后`;
+        } else {
+            nextHoursEl.textContent = `${minutesLeft}分钟后`;
+        }
+    }
+    
+    state.selectedWindVane = windVane;
+    
+    checkWindVaneLayout();
+}
+
+function checkWindVaneLayout() {
+    const container = document.querySelector('.windvane-container');
+    const currentCard = document.getElementById('current-windvane');
+    const nextCard = document.getElementById('next-windvane');
+    
+    if (!container || !currentCard || !nextCard) return;
+    
+    const containerWidth = container.offsetWidth;
+    const gap = 12;
+    const availableWidthPerCard = (containerWidth - gap) / 2;
+    
+    const wasVertical = container.classList.contains('vertical');
+    if (wasVertical) {
+        container.classList.remove('vertical');
+    }
+    
+    const currentCardContentWidth = currentCard.scrollWidth;
+    const nextCardContentWidth = nextCard.scrollWidth;
+    
+    if (currentCardContentWidth > availableWidthPerCard || nextCardContentWidth > availableWidthPerCard) {
+        container.classList.add('vertical');
+    } else {
+        container.classList.remove('vertical');
+    }
+}
+
+let windVaneResizeObserver = null;
+
+function initWindVaneResizeObserver() {
+    const container = document.querySelector('.windvane-container');
+    if (!container || windVaneResizeObserver) return;
+    
+    windVaneResizeObserver = new ResizeObserver(() => {
+        checkWindVaneLayout();
+    });
+    
+    windVaneResizeObserver.observe(container);
 }
 
 // ========== 检查风向标是否适用于菜品 ==========
@@ -757,6 +732,237 @@ function renderEmployeeList() {
             });
         });
     });
+    
+    // 渲染完成后更新布局
+    requestAnimationFrame(updateEmployeeCardLayout);
+}
+
+// ========== 测量文本像素宽度 ==========
+function measureTextWidth(text, element) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const style = window.getComputedStyle(element);
+    const font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    ctx.font = font;
+    return ctx.measureText(text).width;
+}
+
+// ========== 动态调整雇员卡片布局 ==========
+function updateEmployeeCardLayout() {
+    const container = document.getElementById('employee-list');
+    const cards = container ? container.querySelectorAll('.employee-card') : [];
+    if (cards.length === 0 || !container) return;
+
+    // 临时关闭过渡，确保测量准确
+    cards.forEach(card => card.style.transition = 'none');
+    container.style.transition = 'none';
+
+    // 先恢复到默认状态（两列横排）再测量，避免当前布局影响测量结果
+    container.classList.remove('single-column');
+    cards.forEach(card => card.classList.remove('vertical-layout'));
+
+    // 强制浏览器重排，确保恢复生效
+    container.getBoundingClientRect();
+
+    // 测量等级选择区域的实际宽度（取第一个作为参考）
+    const sampleControls = cards[0].querySelector('.employee-controls');
+    const controlsWidth = sampleControls ? sampleControls.getBoundingClientRect().width : 190;
+
+    // 获取容器宽度
+    const containerWidth = container.getBoundingClientRect().width;
+    const gap = 12; // employee-list gap
+
+    // 找出最长的名字宽度
+    let maxNameWidth = 0;
+    cards.forEach(card => {
+        const nameEl = card.querySelector('.employee-name');
+        if (nameEl) {
+            const nameWidth = measureTextWidth(nameEl.textContent.trim(), nameEl);
+            maxNameWidth = Math.max(maxNameWidth, nameWidth);
+        }
+    });
+
+    // 计算卡片所需宽度（不依赖当前布局）
+    // 横排：名字 + 按钮区 + padding(24) + gap(12) + 安全边距(8)
+    const horizontalCardWidth = maxNameWidth + controlsWidth + 24 + 12 + 8;
+    
+    // 竖排：max(名字, 按钮区) + padding(24) + 安全边距(8)
+    const verticalCardWidth = Math.max(maxNameWidth, controlsWidth) + 24 + 8;
+
+    // 计算各状态阈值（从宽到窄）
+    // 状态1: 两列横排 → 2个横排卡片 + gap
+    const state1MinWidth = horizontalCardWidth * 2 + gap;
+    
+    // 状态2: 两列竖排 → 2个竖排卡片 + gap
+    const state2MinWidth = verticalCardWidth * 2 + gap;
+    
+    // 状态3: 一列横排 → 1个横排卡片
+    const state3MinWidth = horizontalCardWidth;
+    
+    // 状态4: 一列竖排 → 1个竖排卡片
+    const state4MinWidth = verticalCardWidth;
+
+    // 从最占宽度的方式开始试
+    let needSingleColumn = false;
+    let needVertical = false;
+
+    if (containerWidth >= state1MinWidth) {
+        // 状态1: 两列横排
+    } else if (containerWidth >= state2MinWidth) {
+        // 状态2: 两列竖排
+        needVertical = true;
+    } else if (containerWidth >= state3MinWidth) {
+        // 状态3: 一列横排
+        needSingleColumn = true;
+    } else {
+        // 状态4: 一列竖排
+        needSingleColumn = true;
+        needVertical = true;
+    }
+
+    // 设置容器列数
+    if (needSingleColumn) {
+        container.classList.add('single-column');
+    }
+
+    // 设置卡片布局
+    cards.forEach(card => {
+        if (needVertical) {
+            card.classList.add('vertical-layout');
+        }
+    });
+
+    // 恢复过渡
+    requestAnimationFrame(() => {
+        cards.forEach(card => card.style.transition = '');
+        container.style.transition = '';
+    });
+}
+
+// ========== 窗口大小变化时重新计算布局 ==========
+let layoutResizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(layoutResizeTimeout);
+    layoutResizeTimeout = setTimeout(() => {
+        requestAnimationFrame(() => {
+            updateEmployeeCardLayout();
+            updateRecommendationLayout();
+        });
+    }, 100);
+});
+
+// ========== 动态调整推荐区域布局 ==========
+function updateRecommendationLayout() {
+    const recSections = document.querySelector('.rec-sections');
+    if (!recSections) return;
+
+    const dishItems = recSections.querySelectorAll('.rec-dish-item');
+    const employeeItems = recSections.querySelectorAll('.rec-employee-item');
+    if (dishItems.length === 0 && employeeItems.length === 0) return;
+
+    // 临时关闭过渡
+    recSections.style.transition = 'none';
+    dishItems.forEach(item => item.style.transition = 'none');
+    employeeItems.forEach(item => item.style.transition = 'none');
+
+    const containerWidth = recSections.getBoundingClientRect().width;
+    const gap = 20; // rec-sections gap
+
+    // === 测量菜品区域所需宽度 ===
+    let maxDishItemWidthH = 0; // 价格左右排列时最宽的菜品item
+    let maxDishItemWidthV = 0; // 价格上下排列时最宽的菜品item
+    let maxPriceHWidth = 0;    // 价格左右排列时价格组宽度
+    let maxPriceVWidth = 0;    // 价格上下排列时单行价格最大宽度
+    let maxInfoWidth = 0;      // 排名+名字最大宽度
+
+    dishItems.forEach(item => {
+        const rankEl = item.querySelector('.rec-dish-rank');
+        const nameEl = item.querySelector('.rec-dish-name');
+        const priceEl = item.querySelector('.rec-dish-price');
+        const revenueEl = item.querySelector('.rec-dish-revenue');
+
+        // 排名宽度
+        const rankWidth = rankEl ? 22 + 10 : 0; // 22px圆形 + 10px gap
+
+        // 名字文本宽度
+        const nameWidth = nameEl ? measureTextWidth(nameEl.textContent.trim(), nameEl) : 0;
+
+        // 信息区宽度
+        const infoWidth = rankWidth + nameWidth;
+        maxInfoWidth = Math.max(maxInfoWidth, infoWidth);
+
+        // 价格文本宽度
+        const priceWidth = priceEl ? measureTextWidth(priceEl.textContent.trim(), priceEl) : 0;
+        const revenueWidth = revenueEl ? measureTextWidth(revenueEl.textContent.trim(), revenueEl) : 0;
+
+        // 价格左右排列：两个价格并排
+        const priceHWidth = priceWidth + revenueWidth + 8; // 8px gap
+        maxPriceHWidth = Math.max(maxPriceHWidth, priceHWidth);
+
+        // 价格上下排列：取较宽的那个
+        const priceVWidth = Math.max(priceWidth, revenueWidth);
+        maxPriceVWidth = Math.max(maxPriceVWidth, priceVWidth);
+
+        // item padding = 12px * 2 = 24px
+        // 信息区和价格组之间的 gap = 10px
+        const itemPadding = 24;
+
+        maxDishItemWidthH = Math.max(maxDishItemWidthH, infoWidth + 10 + priceHWidth + itemPadding);
+        maxDishItemWidthV = Math.max(maxDishItemWidthV, infoWidth + 10 + priceVWidth + itemPadding);
+    });
+
+    // === 测量雇员区域所需宽度 ===
+    let maxEmployeeItemWidth = 0;
+    employeeItems.forEach(item => {
+        const nameEl = item.querySelector('.rec-employee-name');
+        const levelEl = item.querySelector('.rec-employee-level');
+        const nameWidth = nameEl ? measureTextWidth(nameEl.textContent.trim(), nameEl) : 0;
+        const levelWidth = levelEl ? measureTextWidth(levelEl.textContent.trim(), levelEl) : 0;
+        // padding 24px + gap 10px
+        maxEmployeeItemWidth = Math.max(maxEmployeeItemWidth, nameWidth + levelWidth + 24 + 10);
+    });
+
+    // === 计算四种状态的阈值 ===
+    // 两列时，取两列中更宽的作为统一列宽，确保不被压扁
+    const colWidthH = Math.max(maxDishItemWidthH, maxEmployeeItemWidth);
+    const colWidthV = Math.max(maxDishItemWidthV, maxEmployeeItemWidth);
+
+    // 状态1: 两列 + 价格左右
+    const twoColPriceH = colWidthH * 2 + gap;
+
+    // 状态2: 两列 + 价格上下
+    const twoColPriceV = colWidthV * 2 + gap;
+
+    // 状态3: 单列 + 价格左右
+    const oneColPriceH = colWidthH;
+
+    // 状态4: 单列 + 价格上下
+    const oneColPriceV = colWidthV;
+
+    // === 设置布局类 ===
+    recSections.classList.remove('single-column');
+    recSections.classList.remove('price-vertical');
+
+    if (containerWidth >= twoColPriceH) {
+        // 状态1: 两列 + 价格左右
+    } else if (containerWidth >= twoColPriceV) {
+        // 状态2: 两列 + 价格上下
+        recSections.classList.add('price-vertical');
+    } else if (containerWidth >= oneColPriceH) {
+        // 状态3: 单列 + 价格左右
+        recSections.classList.add('single-column');
+    } else {
+        // 状态4: 单列 + 价格上下
+        recSections.classList.add('single-column');
+        recSections.classList.add('price-vertical');
+    }
+
+    // 恢复过渡
+    requestAnimationFrame(() => {
+        recSections.style.transition = '';
+        dishItems.forEach(item => item.style.transition = '');
+        employeeItems.forEach(item => item.style.transition = '');
+    });
 }
 
 // ========== 获取等级加成描述（显示累计加成）==========
@@ -821,7 +1027,6 @@ function getItemPrice(item) {
 // ========== 本地存储 ==========
 const STORAGE_KEY = 'yihuan_employee_states';
 const ITEM_STORAGE_KEY = 'yihuan_item_states';
-const WINDVANE_STORAGE_KEY = 'yihuan_windvane';
 
 function saveEmployeeStates() {
     try {
@@ -863,78 +1068,10 @@ function loadItemStates() {
     return null;
 }
 
-// ========== 风向标本地存储 ==========
-function getTodayNoon() {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0);
-}
-
-function isWindVaneExpired(savedTimestamp) {
-    const savedTime = new Date(savedTimestamp);
-    const now = new Date();
-    const todayNoon = getTodayNoon();
-
-    if (now < todayNoon) {
-        // 当前在今日12点前：保存时间需在昨日12点之后才有效
-        const yesterdayNoon = new Date(todayNoon.getTime() - 24 * 60 * 60 * 1000);
-        return savedTime < yesterdayNoon;
-    } else {
-        // 当前在今日12点后：保存时间需在今日12点之后才有效
-        return savedTime < todayNoon;
-    }
-}
-
-function saveWindVane() {
-    if (!state.selectedWindVane) {
-        localStorage.removeItem(WINDVANE_STORAGE_KEY);
-        return;
-    }
-    try {
-        const data = {
-            category: state.selectedWindVane.category,
-            bonus: state.selectedWindVane.bonus,
-            savedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(WINDVANE_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-        console.error('保存风向标失败:', error);
-    }
-}
-
-function loadWindVane() {
-    try {
-        const saved = localStorage.getItem(WINDVANE_STORAGE_KEY);
-        if (!saved) return null;
-
-        const data = JSON.parse(saved);
-
-        // 检查是否过期
-        if (isWindVaneExpired(data.savedAt)) {
-            localStorage.removeItem(WINDVANE_STORAGE_KEY);
-            return null;
-        }
-
-        return data;
-    } catch (error) {
-        console.error('读取风向标失败:', error);
-        localStorage.removeItem(WINDVANE_STORAGE_KEY);
-        return null;
-    }
-}
-
 // ========== 推荐算法 ==========
 function calculateOptimalPlan() {
     const resultContainer = document.getElementById('recommendation-result');
     const calcDetailSection = document.querySelector('.calc-detail-section');
-
-    // 检查风向标条件
-    if (ADVANCED_SETTINGS.windVaneEnabled && !state.selectedWindVane) {
-        resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>⚠️ 请先选择今日风向标</p></div>';
-        if (calcDetailSection) {
-            calcDetailSection.classList.add('hidden');
-        }
-        return;
-    }
 
     // 检查是否有选择的雇员
     const ownedEmployees = state.employees.filter(emp => 
@@ -1326,8 +1463,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         trafficBonusPercent += accBonuses.trafficBonusPercent;
         
         accBonuses.conditionalBonuses.forEach(b => {
-            const met = checkConditionWithTags(b, tagCounts);
-            if (met) {
+            const result = checkConditionWithTags(b, tagCounts);
+            if (result.met) {
                 if (b.effectType === 'direct') {
                     if (b.isPercent) {
                         directBonusPercent += b.effectValue;
@@ -1341,10 +1478,12 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
                         trafficBonusFlat += b.effectValue;
                     }
                 }
+                const condDesc = getConditionDescription(b, result.matchedTag);
                 triggeredConditions.push({
                     employee: emp.data.name,
-                    level: b.level, // 使用该加成对应的等级，而不是雇员当前等级
-                    description: getConditionDescription(b),
+                    level: b.level,
+                    description: condDesc,
+                    tooltip: b.conditionType === 'sameTagCount' ? `实际触发: ${result.matchedTag}×${b.condition.count}` : null,
                 });
             }
         });
@@ -1366,8 +1505,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         let windVaneBonus = 0;
         let windVaneMatch = false;
         
-        // 风向标加成（仅在风向标功能开启时计算）
-        if (ADVANCED_SETTINGS.windVaneEnabled && state.selectedWindVane) {
+        // 风向标加成
+        if (state.selectedWindVane) {
             windVaneMatch = isWindVaneApplicable(item, state.selectedWindVane);
             if (windVaneMatch) {
                 windVaneBonus = state.selectedWindVane.bonus;
@@ -1376,13 +1515,8 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
         
         const directPercentMultiplier = 1 + directBonusPercent;
 
-        // ============================================================
-        // === TEMPORARY MODIFICATION START (可整块删除) ============
-        // === 临时更改：风向标为咖啡豆时，风向标加成在百分比加成之后相加 ===
-        // === 删除此块即可恢复原始计算逻辑 ==========================
         const isCoffeeBeanWindVane = state.selectedWindVane &&
-            state.selectedWindVane.category === '咖啡豆' &&
-            ADVANCED_SETTINGS.windVaneEnabled;
+            state.selectedWindVane.category === '咖啡豆';
 
         let priceAfterFlat;
         let priceAfterPercent;
@@ -1399,8 +1533,6 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
             priceAfterPercent = priceAfterFlat * directPercentMultiplier;
             unitPrice = priceAfterPercent;
         }
-        // === TEMPORARY MODIFICATION END =============================
-        // ============================================================
 
         const hourlyRevenue = unitPrice * (totalTraffic / 100);
 
@@ -1455,27 +1587,29 @@ function calculateComboRevenue(employeeCombo, dishCombo) {
 function checkConditionWithTags(bonus, tagCounts) {
     if (bonus.conditionType === 'tagCount') {
         const count = tagCounts[bonus.condition.tag] || 0;
-        return count >= bonus.condition.count;
+        return { met: count >= bonus.condition.count, matchedTag: bonus.condition.tag };
     } else if (bonus.conditionType === 'sameTagCount') {
-        // sameTagCount只统计类别标签：主食、饮料、甜品
         const categoryTags = ['主食', '饮料', '甜品'];
         let maxCount = 0;
+        let matchedTag = '';
         for (const tag of categoryTags) {
             const count = tagCounts[tag] || 0;
             if (count > maxCount) {
                 maxCount = count;
+                matchedTag = tag;
             }
         }
-        return maxCount >= bonus.condition.count;
+        return { met: maxCount >= bonus.condition.count, matchedTag };
     }
-    return false;
+    return { met: false, matchedTag: '' };
 }
 
 // ========== 获取条件描述 ==========
-function getConditionDescription(bonus) {
+function getConditionDescription(bonus, matchedTag = '') {
     let condDesc = '';
     if (bonus.conditionType === 'sameTagCount') {
-        condDesc = `类别标签(主食/饮料/甜品)出现${bonus.condition.count}次`;
+        const tooltipText = matchedTag ? `当前触发: ${matchedTag}×${bonus.condition.count}` : '';
+        condDesc = `<span class="tooltip-tag" ${tooltipText ? `data-tooltip="${tooltipText}"` : ''}>任意标签×${bonus.condition.count}</span>`;
     } else {
         condDesc = `${bonus.condition.tag}标签×${bonus.condition.count}`;
     }
@@ -1517,16 +1651,20 @@ function renderRecommendation(plan) {
     // 雇员列表
     const employeesHtml = plan.employees.map(emp => `
         <div class="rec-employee-item">
-            <span class="rec-employee-name">${emp.data.name}</span>
-            <span class="rec-employee-level">Lv.${emp.level}</span>
+            <div class="rec-employee-info">
+                <span class="rec-employee-name">${emp.data.name}</span>
+                <span class="rec-employee-level">Lv.${emp.level}</span>
+            </div>
         </div>
     `).join('');
 
     // 菜品列表
     const dishesHtml = plan.details.dishDetails.map((d, idx) => `
         <div class="rec-dish-item">
-            <span class="rec-dish-rank">${idx + 1}</span>
-            <span class="rec-dish-name">${d.item.name}</span>
+            <div class="rec-dish-info">
+                <span class="rec-dish-rank">${idx + 1}</span>
+                <span class="rec-dish-name">${d.item.name}</span>
+            </div>
             <div class="rec-dish-price-group">
                 <span class="rec-dish-price">${d.basePrice} 方斯</span>
                 <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
@@ -1680,6 +1818,29 @@ function renderRecommendation(plan) {
     // 将计算明细渲染到独立的card中
     const detailContainer = document.getElementById('calc-detail-result');
     detailContainer.innerHTML = detailHtml;
+
+    // 绑定 tooltip 点击事件（移动端）
+    document.querySelectorAll('[data-tooltip]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (window.matchMedia('(hover: none)').matches) {
+                e.stopPropagation();
+                document.querySelectorAll('[data-tooltip]').forEach(other => {
+                    if (other !== el) other.classList.remove('show-tooltip');
+                });
+                el.classList.toggle('show-tooltip');
+            }
+        });
+    });
+
+    // 点击其他地方关闭 tooltip
+    document.addEventListener('click', () => {
+        document.querySelectorAll('[data-tooltip]').forEach(el => {
+            el.classList.remove('show-tooltip');
+        });
+    });
+
+    // 渲染完成后更新布局
+    requestAnimationFrame(updateRecommendationLayout);
 }
 
 // ========== 事件绑定 ==========
@@ -1737,42 +1898,19 @@ document.addEventListener('DOMContentLoaded', () => {
         saveAdvancedSettings();
     });
     
-    // 风向标开关变化
-    document.getElementById('windvane-enabled-switch').addEventListener('change', (e) => {
-        ADVANCED_SETTINGS.windVaneEnabled = e.target.checked;
-        saveAdvancedSettings();
-        updateWindVaneDisabledNotice();
-    });
-    
     // 专属客服开关变化
     document.getElementById('exclusive-service-switch').addEventListener('change', (e) => {
         ADVANCED_SETTINGS.exclusiveServiceEnabled = e.target.checked;
         saveAdvancedSettings();
     });
     
-    // 添加自定义风向标按钮
-    document.getElementById('add-windvane-btn').addEventListener('click', openAddWindVaneModal);
-
-    // 保存自定义风向标按钮
-    document.getElementById('save-windvane-btn').addEventListener('click', saveCustomWindVane);
-
-    // 取消自定义风向标按钮
-    document.getElementById('cancel-windvane-btn').addEventListener('click', () => {
-        document.getElementById('edit-windvane-modal').classList.add('hidden');
+    // 风向标开关变化
+    document.getElementById('windvane-switch').addEventListener('change', (e) => {
+        ADVANCED_SETTINGS.windVaneEnabled = e.target.checked;
+        saveAdvancedSettings();
+        renderCurrentWindVane();
     });
-
-    // 关闭编辑风向标模态框
-    document.getElementById('close-windvane-modal-btn').addEventListener('click', () => {
-        document.getElementById('edit-windvane-modal').classList.add('hidden');
-    });
-
-    // 点击编辑风向标模态框背景关闭
-    document.getElementById('edit-windvane-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'edit-windvane-modal') {
-            document.getElementById('edit-windvane-modal').classList.add('hidden');
-        }
-    });
-
+    
     // 清除数据按钮
     document.getElementById('clear-data-btn').addEventListener('click', clearAllLocalData);
 

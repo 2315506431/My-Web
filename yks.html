@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>异环一咖舍助手</title>
     <link rel="stylesheet" href="ORIGEN/style.css?v=211">
+    <link rel="icon" href="ORIGEN/favicon.ico">
 </head>
 <body>
     <div id="loading-overlay" class="loading-overlay">
@@ -24,30 +25,28 @@
         </header>
 
         <main class="main-content">
-            <!-- 风向标选择区域 -->
+            <!-- 风向标区域 -->
             <section class="card windvane-section">
                 <div class="card-header">
                     <h2 class="card-title">
                     <span class="section-icon">🔥</span>
-                    今日风向标
+                    风向标
                 </h2>
-                    <p class="card-desc">选择当前生效的加成类别和加成数值，影响对应商品的收益</p>
+                    <p class="card-desc">根据现实日期自动变更，每天中午12点切换</p>
                 </div>
                 <div class="card-body">
-                    <div id="windvane-disabled-notice" class="windvane-disabled-notice hidden">
-                        <span class="notice-icon">⚠️</span>
-                        <div class="notice-content">
-                            <span class="notice-title">风向标功能已关闭</span>
-                            <span class="notice-desc">所有菜品按原价计算，无需选择风向标。</span>
-                            <span class="notice-action">可在设置(⚙️)中开启</span>
+                    <div class="windvane-container">
+                        <div id="current-windvane" class="windvane-card current-windvane">
+                            <span class="windvane-flame">🔥</span>
+                            <span class="windvane-prefix">当前</span>
+                            <span id="windvane-name" class="windvane-name">加载中...</span>
+                            <span id="windvane-bonus" class="windvane-bonus">+0</span>
                         </div>
-                    </div>
-                    <div class="windvane-selectors" id="windvane-selectors-container">
-                        <div class="windvane-selector-row">
-                            <label for="windvane-select" class="select-label">风向标：</label>
-                            <select id="windvane-select" class="custom-select">
-                                <option value="">-- 请选择风向标 --</option>
-                            </select>
+                        <div id="next-windvane" class="windvane-card next-windvane">
+                            <span class="windvane-flame">🌪️</span>
+                            <span id="next-windvane-hours" class="windvane-hours">--小时后</span>
+                            <span id="next-windvane-name" class="windvane-name">加载中...</span>
+                            <span id="next-windvane-bonus" class="windvane-bonus">+0</span>
                         </div>
                     </div>
                 </div>
@@ -86,7 +85,7 @@
                     </button>
                     <div id="recommendation-result" class="recommendation-result">
                         <div class="recommendation-placeholder">
-                            <p>请选择风向标并配置拥有的雇员后，点击上方按钮计算最优方案</p>
+                            <p>配置拥有的雇员后，点击上方按钮计算最优方案</p>
                         </div>
                     </div>
                 </div>
@@ -171,20 +170,20 @@
                     <input type="number" id="decoration-bonus-input" class="setting-input" min="0" step="0.001">
                 </div>
                 <div class="setting-group">
-                    <label>风向标功能</label>
-                    <div class="switch-wrapper">
-                        <input type="checkbox" id="windvane-enabled-switch" class="switch-input">
-                        <label for="windvane-enabled-switch" class="switch-slider"></label>
-                    </div>
-                    <p class="setting-hint">关闭后风向标加成不生效，适用于风向标未解锁的情况</p>
-                </div>
-                <div class="setting-group">
                     <label>专属客服</label>
                     <div class="switch-wrapper">
                         <input type="checkbox" id="exclusive-service-switch" class="switch-input">
                         <label for="exclusive-service-switch" class="switch-slider"></label>
                     </div>
                     <p class="setting-hint">浔羁遇等级7级的奖励，开启后增加1%人流量</p>
+                </div>
+                <div class="setting-group">
+                    <label>风向标</label>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="windvane-switch" class="switch-input" checked>
+                        <label for="windvane-switch" class="switch-slider"></label>
+                    </div>
+                    <p class="setting-hint">未解锁风向标的用户可关闭此功能</p>
                 </div>
                 <div class="setting-group">
                     <label>店铺数量</label>
@@ -228,14 +227,6 @@
                                 <button id="reset-traffic-btn" class="secondary-btn" style="white-space: nowrap;">恢复默认</button>
                             </div>
                         </div>
-                        
-                        <!-- 自定义风向标 -->
-                        <div class="setting-group" style="margin-bottom: 0;">
-                            <h3 class="sub-section-title" style="margin: 0 0 4px;">自定义风向标</h3>
-                            <p class="setting-desc" style="margin-bottom: 8px;">添加自定义风向标加成选项，会显示在主页面的选择器中</p>
-                            <div id="custom-windvane-list" class="custom-item-list"></div>
-                            <button id="add-windvane-btn" class="secondary-btn" style="width: 100%; margin-top: 4px;">+ 添加自定义风向标加成</button>
-                        </div>
                     </div>
                 </div>
                 
@@ -248,38 +239,6 @@
         </div>
     </div>
     
-    <!-- 编辑自定义风标弹窗 -->
-    <div id="edit-windvane-modal" class="modal-overlay hidden">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 id="windvane-edit-title">添加自定义风向标加成</h3>
-                <button id="close-windvane-modal-btn" class="close-btn">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="setting-group">
-                    <label for="edit-windvane-category">类别</label>
-                    <select id="edit-windvane-category" class="setting-input">
-                        <option value="">-- 请选择类别 --</option>
-                        <option value="主食">主食</option>
-                        <option value="甜品">甜品</option>
-                        <option value="饮料">饮料</option>
-                        <option value="面粉">面粉</option>
-                        <option value="水果">水果</option>
-                        <option value="咖啡豆">咖啡豆</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <label for="edit-windvane-bonus">加成 (方斯)</label>
-                    <input type="number" id="edit-windvane-bonus" class="setting-input" min="0" step="0.01">
-                </div>
-                <div class="modal-actions">
-                    <button id="save-windvane-btn" class="primary-btn">保存</button>
-                    <button id="cancel-windvane-btn" class="secondary-btn">取消</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="ORIGEN/app.js?v=237"></script>
 </body>
 </html>
