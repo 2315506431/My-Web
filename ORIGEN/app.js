@@ -36,6 +36,7 @@ const ADVANCED_SETTINGS = {
     shopCount: 5,
     exclusiveServiceEnabled: false,
     windVaneEnabled: true,
+    cyclePrediction: false, // 6天预测模式
 };
 
 // ========== 高级设置本地存储 ==========
@@ -79,6 +80,7 @@ function saveAdvancedSettings() {
             shopCount: ADVANCED_SETTINGS.shopCount,
             exclusiveServiceEnabled: ADVANCED_SETTINGS.exclusiveServiceEnabled,
             windVaneEnabled: ADVANCED_SETTINGS.windVaneEnabled,
+            cyclePrediction: ADVANCED_SETTINGS.cyclePrediction,
         }));
     } catch (error) {
         console.error('保存高级设置失败:', error);
@@ -95,6 +97,7 @@ function loadAdvancedSettings() {
             ADVANCED_SETTINGS.shopCount = data.shopCount ?? 5;
             ADVANCED_SETTINGS.exclusiveServiceEnabled = data.exclusiveServiceEnabled ?? false;
             ADVANCED_SETTINGS.windVaneEnabled = data.windVaneEnabled ?? true;
+            ADVANCED_SETTINGS.cyclePrediction = data.cyclePrediction ?? false;
         }
     } catch (error) {
         console.error('加载高级设置失败:', error);
@@ -137,6 +140,24 @@ function getNextWindVane() {
     const current = getTodayWindVane();
     const nextIndex = (current.index + 1) % cycle.length;
     return { category: cycle[nextIndex], bonus: ['面粉', '水果', '咖啡豆'].includes(cycle[nextIndex]) ? 0.75 : 1 };
+}
+
+// 获取以今天为第1天的未来6天风向标列表
+function getUpcomingWindVanes(days = 6) {
+    const cycle = ['面粉', '水果', '咖啡豆', '主食', '甜品', '饮料'];
+    const current = getTodayWindVane();
+    const result = [];
+    for (let i = 0; i < days; i++) {
+        const idx = (current.index + i) % cycle.length;
+        const category = cycle[idx];
+        result.push({
+            category,
+            bonus: ['面粉', '水果', '咖啡豆'].includes(category) ? 0.75 : 1,
+            index: idx,
+            dayOffset: i,
+        });
+    }
+    return result;
 }
 
 // ========== 高级设置模态框 ==========
@@ -374,47 +395,73 @@ function closeAdvancedSettingsModal() {
     modal.classList.add('hidden');
 }
 
-function clearAllLocalData() {
-    if (confirm('确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、设置和公告已读状态。此操作不可撤销！')) {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(ITEM_STORAGE_KEY);
-        localStorage.removeItem(ADVANCED_SETTINGS_KEY);
-        localStorage.removeItem(ANNOUNCEMENT_READ_KEY);
-        
-        // 重置状态
-        ADVANCED_SETTINGS.decorationBonus = 0.09;
-        ADVANCED_SETTINGS.baseTraffic = 2400;
-        ADVANCED_SETTINGS.shopCount = 5;
-        
-        // 重置雇员状态
-        state.employees.forEach(emp => {
-            state.employeeStates[emp.id] = {
-                owned: false,
-                level: 1,
-            };
-        });
+// ========== 自定义确认弹窗 ==========
+let confirmCallback = null;
 
-        state.items.forEach(item => {
-            state.itemStates[item.id] = {
-                level: 2,
-            };
-        });
-        
-        // 清空推荐结果
-        const resultContainer = document.getElementById('recommendation-result');
-        const calcDetailSection = document.querySelector('.calc-detail-section');
-        if (resultContainer) {
-            resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>配置拥有的雇员后，点击上方按钮计算最优方案</p></div>';
+function showConfirmDialog({ title = '确认', message = '', onConfirm = null }) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-title');
+    const messageEl = document.getElementById('confirm-message');
+    if (!modal || !titleEl || !messageEl) return;
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    confirmCallback = onConfirm;
+
+    modal.classList.remove('hidden');
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById('confirm-modal');
+    if (modal) modal.classList.add('hidden');
+    confirmCallback = null;
+}
+
+function clearAllLocalData() {
+    showConfirmDialog({
+        title: '⚠️ 危险操作',
+        message: '确定要清除所有本地数据吗？这将包括雇员配置、菜品配置、设置和公告已读状态。此操作不可撤销！',
+        onConfirm: () => {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(ITEM_STORAGE_KEY);
+            localStorage.removeItem(ADVANCED_SETTINGS_KEY);
+            localStorage.removeItem(ANNOUNCEMENT_READ_KEY);
+
+            // 重置状态
+            ADVANCED_SETTINGS.decorationBonus = 0.09;
+            ADVANCED_SETTINGS.baseTraffic = 2400;
+            ADVANCED_SETTINGS.shopCount = 5;
+
+            // 重置雇员状态
+            state.employees.forEach(emp => {
+                state.employeeStates[emp.id] = {
+                    owned: false,
+                    level: 1,
+                };
+            });
+
+            state.items.forEach(item => {
+                state.itemStates[item.id] = {
+                    level: 2,
+                };
+            });
+
+            // 清空推荐结果
+            const resultContainer = document.getElementById('recommendation-result');
+            const calcDetailSection = document.querySelector('.calc-detail-section');
+            if (resultContainer) {
+                resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>配置拥有的雇员后，点击上方按钮计算最优方案</p></div>';
+            }
+            if (calcDetailSection) {
+                calcDetailSection.classList.add('hidden');
+            }
+
+            closeAdvancedSettingsModal();
+
+            // 刷新页面以应用新数据
+            location.reload();
         }
-        if (calcDetailSection) {
-            calcDetailSection.classList.add('hidden');
-        }
-        
-        closeAdvancedSettingsModal();
-        
-        // 刷新页面以应用新数据
-        location.reload();
-    }
+    });
 }
 
 // ========== 更新雇员列表 ==========
@@ -528,6 +575,17 @@ function initUI() {
     updateEmployeeList();
     initCollapsibleSections();
     initWindVaneResizeObserver();
+    initCyclePredictionSwitch();
+}
+
+function initCyclePredictionSwitch() {
+    const switchEl = document.getElementById('cycle-prediction-switch');
+    if (!switchEl) return;
+    switchEl.checked = ADVANCED_SETTINGS.cyclePrediction;
+    switchEl.addEventListener('change', () => {
+        ADVANCED_SETTINGS.cyclePrediction = switchEl.checked;
+        saveAdvancedSettings();
+    });
 }
 
 // ========== 初始化可折叠菜单 ==========
@@ -542,6 +600,13 @@ function initCollapsibleSections() {
             itemSettingsSection.classList.toggle('collapsed');
             if (itemSettingsArrow) {
                 itemSettingsArrow.textContent = itemSettingsSection.classList.contains('collapsed') ? '☰' : '▼';
+            }
+            // 展开时重新检查菜品设置布局（折叠时容器宽度为0，初次渲染会误判为单列）
+            if (!itemSettingsSection.classList.contains('collapsed')) {
+                requestAnimationFrame(() => {
+                    checkItemSettingsLayout();
+                    initItemSettingsResizeObserver();
+                });
             }
         });
     }
@@ -616,39 +681,71 @@ function checkWindVaneLayout() {
     const container = document.querySelector('.windvane-container');
     const currentCard = document.getElementById('current-windvane');
     const nextCard = document.getElementById('next-windvane');
-    
+
     if (!container || !currentCard || !nextCard) return;
-    
-    const containerWidth = container.offsetWidth;
-    const gap = 12;
-    const availableWidthPerCard = (containerWidth - gap) / 2;
-    
+
+    // 测量期间禁用过渡，避免垂直/水平切换时 section.card 高度过渡被频繁打断而抽搐
+    const section = container.closest('.card');
+    if (section) section.style.transition = 'none';
+
+    // 强制水平布局来检测溢出
     const wasVertical = container.classList.contains('vertical');
     if (wasVertical) {
         container.classList.remove('vertical');
     }
-    
-    const currentCardContentWidth = currentCard.scrollWidth;
-    const nextCardContentWidth = nextCard.scrollWidth;
-    
-    if (currentCardContentWidth > availableWidthPerCard || nextCardContentWidth > availableWidthPerCard) {
+    // 强制重排
+    container.offsetWidth;
+
+    // 测量 card 的真实内容宽度：临时让 card 按 max-content 自适应
+    // 不能用 scrollWidth，因为 windvane-card 没有 overflow:hidden，nowrap 溢出时 scrollWidth 不反映溢出
+    const measureContentWidth = (card) => {
+        const origFlex = card.style.flex;
+        const origWidth = card.style.width;
+        card.style.flex = '0 0 auto';
+        card.style.width = 'max-content';
+        const w = card.offsetWidth;
+        card.style.flex = origFlex;
+        card.style.width = origWidth;
+        return w;
+    };
+
+    const currentContentWidth = measureContentWidth(currentCard);
+    const nextContentWidth = measureContentWidth(nextCard);
+    // 强制重排以恢复 flex:1 布局后再读取容器宽度
+    container.offsetWidth;
+    const containerWidth = container.clientWidth;
+    const gap = 12;
+    const neededWidth = currentContentWidth + nextContentWidth + gap;
+    const tolerance = 2;
+
+    if (neededWidth > containerWidth + tolerance) {
         container.classList.add('vertical');
     } else {
         container.classList.remove('vertical');
     }
+
+    // 下一帧恢复过渡
+    if (section) {
+        requestAnimationFrame(() => { section.style.transition = ''; });
+    }
 }
 
 let windVaneResizeObserver = null;
+let windVaneLayoutTimer = null;
 
 function initWindVaneResizeObserver() {
-    const container = document.querySelector('.windvane-container');
-    if (!container || windVaneResizeObserver) return;
-    
+    // 观察父级 .card-body 而非 windvane-container 本身
+    // 避免 windvane-container 自身因 vertical 切换导致高度变化 → 触发 ResizeObserver → 死循环
+    const cardBody = document.querySelector('.windvane-section .card-body');
+    if (!cardBody || windVaneResizeObserver) return;
+
     windVaneResizeObserver = new ResizeObserver(() => {
-        checkWindVaneLayout();
+        // debounce：连续 resize 时只执行最后一次，避免高频触发测量
+        if (windVaneLayoutTimer) clearTimeout(windVaneLayoutTimer);
+        windVaneLayoutTimer = setTimeout(checkWindVaneLayout, 50);
     });
-    
-    windVaneResizeObserver.observe(container);
+
+    windVaneResizeObserver.observe(cardBody);
 }
 
 // ========== 检查风向标是否适用于菜品 ==========
@@ -922,10 +1019,15 @@ function updateRecommendationLayout() {
         maxEmployeeItemWidth = Math.max(maxEmployeeItemWidth, nameWidth + levelWidth + 24 + 10);
     });
 
-    // === 计算四种状态的阈值 ===
+    // === 计算五种状态的阈值 ===
     // 两列时，取两列中更宽的作为统一列宽，确保不被压扁
     const colWidthH = Math.max(maxDishItemWidthH, maxEmployeeItemWidth);
     const colWidthV = Math.max(maxDishItemWidthV, maxEmployeeItemWidth);
+
+    // 堆叠布局（菜名在上，价格在下横向排列）的最小宽度
+    // 取 max(信息区宽, 价格横向宽) + padding
+    const stackedItemWidth = Math.max(maxInfoWidth, maxPriceHWidth) + 24; // padding 12*2
+    const oneColStacked = stackedItemWidth;
 
     // 状态1: 两列 + 价格左右
     const twoColPriceH = colWidthH * 2 + gap;
@@ -942,6 +1044,7 @@ function updateRecommendationLayout() {
     // === 设置布局类 ===
     recSections.classList.remove('single-column');
     recSections.classList.remove('price-vertical');
+    recSections.classList.remove('dish-stacked');
 
     if (containerWidth >= twoColPriceH) {
         // 状态1: 两列 + 价格左右
@@ -951,10 +1054,14 @@ function updateRecommendationLayout() {
     } else if (containerWidth >= oneColPriceH) {
         // 状态3: 单列 + 价格左右
         recSections.classList.add('single-column');
-    } else {
+    } else if (containerWidth >= oneColPriceV) {
         // 状态4: 单列 + 价格上下
         recSections.classList.add('single-column');
         recSections.classList.add('price-vertical');
+    } else {
+        // 状态5: 单列 + 菜品垂直堆叠（菜名在上，价格在下横着排）
+        recSections.classList.add('single-column');
+        recSections.classList.add('dish-stacked');
     }
 
     // 恢复过渡
@@ -1087,13 +1194,90 @@ function calculateOptimalPlan() {
     }
 
     // 显示计算中状态
-    resultContainer.innerHTML = '<div class="recommendation-placeholder"><p>🔄 正在计算最优方案...</p><p style="font-size: 0.9em; color: var(--text-muted);">这可能需要几秒钟，请稍候...</p></div>';
+    if (ADVANCED_SETTINGS.cyclePrediction) {
+        resultContainer.innerHTML = `
+            <div class="recommendation-placeholder">
+                <p>🔄 正在计算未来6天最优方案...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="calc-progress" style="width: 0%"></div>
+                </div>
+                <p class="progress-text" id="progress-text">准备中... (0/6)</p>
+            </div>
+        `;
+    } else {
+        resultContainer.innerHTML = `
+            <div class="recommendation-placeholder">
+                <p>🔄 正在计算最优方案...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="calc-progress" style="width: 0%"></div>
+                </div>
+                <p class="progress-text" id="progress-text">计算中...</p>
+            </div>
+        `;
+    }
 
     // 使用 setTimeout 让UI先更新
     setTimeout(() => {
-        const bestPlan = findBestPlan(ownedEmployees);
-        renderRecommendation(bestPlan);
+        if (ADVANCED_SETTINGS.cyclePrediction) {
+            calculateCyclePrediction(ownedEmployees);
+        } else {
+            const bestPlan = findBestPlan(ownedEmployees);
+            const progressEl = document.getElementById('calc-progress');
+            const progressText = document.getElementById('progress-text');
+            if (progressEl) progressEl.style.width = '100%';
+            if (progressText) progressText.textContent = '计算完成！';
+            renderRecommendation(bestPlan);
+            scrollToRecommendation();
+        }
     }, 50);
+}
+
+// ========== 6天预测计算 ==========
+function calculateCyclePrediction(ownedEmployees) {
+    const windVanes = getUpcomingWindVanes(6);
+    const originalWindVane = state.selectedWindVane;
+    const progressEl = document.getElementById('calc-progress');
+    const progressText = document.getElementById('progress-text');
+    
+    let dayIndex = 0;
+    const plans = [];
+    
+    function computeNextDay() {
+        if (dayIndex < windVanes.length) {
+            // 算完一天，更新进度（不管有没有渲染完）
+            state.selectedWindVane = windVanes[dayIndex];
+            const plan = findBestPlan(ownedEmployees);
+            plans.push({
+                windVane: windVanes[dayIndex],
+                plan: plan,
+                dayOffset: dayIndex,
+            });
+            
+            // 触发进度更新
+            const pct = Math.round(((dayIndex + 1) / 6) * 100);
+            if (progressEl) progressEl.style.width = `${pct}%`;
+            if (progressText) progressText.textContent = `正在计算第${dayIndex + 1}天 (${windVanes[dayIndex].category})... (${dayIndex + 1}/6)`;
+            
+            dayIndex++;
+            // 无延迟继续下一天，浏览器会在空闲时渲染已更新的进度
+            setTimeout(computeNextDay, 0);
+        } else {
+            // 全部算完
+            state.selectedWindVane = originalWindVane;
+            renderCyclePrediction(plans);
+            scrollToRecommendation();
+        }
+    }
+
+    computeNextDay();
+}
+
+// 计算完成后滚动让最优搭配推荐进入视野
+function scrollToRecommendation() {
+    const target = document.querySelector('.recommendation-section');
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // ========== 核心算法：寻找最优方案（优化版）==========
@@ -1149,8 +1333,6 @@ function findBestEmployeeCombination(candidates) {
         return dishCombo.reduce((sum, item) => sum + (getItemPrice(item) || 0), 0);
     }
     
-    // 生成所有 C(n, maxEmployees) 组合
-    const combinations = [];
     const n = candidates.length;
     const k = getMaxEmployees();
     
@@ -1620,75 +1802,9 @@ function getConditionDescription(bonus, matchedTag = '') {
 }
 
 // ========== 渲染推荐结果 ==========
-function renderRecommendation(plan) {
-    const container = document.getElementById('recommendation-result');
-    const calcDetailSection = document.querySelector('.calc-detail-section');
-    const calcDetailContainer = document.getElementById('calc-detail-result');
-
-    // 如果 plan 无效或者没有有效内容时，也可以显示
-    if (!plan) {
-        container.innerHTML = '<div class="recommendation-placeholder"><p>未能计算出有效方案</p></div>';
-        if (calcDetailSection) {
-            calcDetailSection.classList.add('hidden');
-        }
-        return;
-    }
-
-    // 检查是否有有效数据
-    if (!plan.dishes || plan.dishes.length === 0) {
-        container.innerHTML = '<div class="recommendation-placeholder"><p>没有可用的菜品进行计算</p></div>';
-        if (calcDetailSection) {
-            calcDetailSection.classList.add('hidden');
-        }
-        return;
-    }
-
-    // 显示计算明细区域
-    if (calcDetailSection) {
-        calcDetailSection.classList.remove('hidden');
-    }
-
-    // 雇员列表
-    const employeesHtml = plan.employees.map(emp => `
-        <div class="rec-employee-item">
-            <div class="rec-employee-info">
-                <span class="rec-employee-name">${emp.data.name}</span>
-                <span class="rec-employee-level">Lv.${emp.level}</span>
-            </div>
-        </div>
-    `).join('');
-
-    // 菜品列表
-    const dishesHtml = plan.details.dishDetails.map((d, idx) => `
-        <div class="rec-dish-item">
-            <div class="rec-dish-info">
-                <span class="rec-dish-rank">${idx + 1}</span>
-                <span class="rec-dish-name">${d.item.name}</span>
-            </div>
-            <div class="rec-dish-price-group">
-                <span class="rec-dish-price">${d.basePrice} 方斯</span>
-                <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
-            </div>
-        </div>
-    `).join('');
-
-    // 雇员加成总结
-    const conditionsHtml = `<div class="rec-conditions">
-            <h4>🎯 雇员加成总结</h4>
-            <div class="rec-bonuses">
-                <span class="rec-bonus-item">售价加成: +${plan.details.directBonusFlat.toFixed(2)} +${(plan.details.directBonusPercent * 100).toFixed(1)}%</span>
-                <span class="rec-bonus-item">人流量加成: +${plan.details.trafficBonusFlat.toFixed(0)} +${(plan.details.trafficBonusPercent * 100).toFixed(1)}%</span>
-            </div>
-            ${plan.details.triggeredConditions.length > 0 ? `
-                <h5 style="margin: 12px 0 8px 0;">触发的条件加成</h5>
-                ${plan.details.triggeredConditions.map(c => `
-                    <div class="rec-condition-item triggered">✓ ${c.employee} (Lv.${c.level}): ${c.description}</div>
-                `).join('')}
-            ` : ''}
-        </div>`;
-
-    // 详细计算明细
-    const detailHtml = `
+// ========== 构建计算明细HTML（供单日和6天预测复用）==========
+function buildDetailHtml(plan) {
+    return `
         <p class="rec-calc-formula">单价 = (基础价格 + 风向标加成 + 雇员直接加成) × (1 + 百分比加成)</p>
         <p class="rec-calc-formula">显示每小时收益 = 单价 × (人流量/100)</p>
         <p class="rec-calc-formula">实际每小时收益 = 显示每小时收益 × (1 + 装修加成)²</p>
@@ -1783,6 +1899,86 @@ function renderRecommendation(plan) {
             </div>
         </div>
     `;
+}
+
+function renderRecommendation(plan) {
+    const container = document.getElementById('recommendation-result');
+    const calcDetailSection = document.querySelector('.calc-detail-section');
+    const calcDetailContainer = document.getElementById('calc-detail-result');
+
+    // 如果 plan 无效或者没有有效内容时，也可以显示
+    if (!plan) {
+        container.innerHTML = '<div class="recommendation-placeholder"><p>未能计算出有效方案</p></div>';
+        if (calcDetailSection) {
+            calcDetailSection.classList.add('hidden');
+        }
+        return;
+    }
+
+    // 检查是否有有效数据
+    if (!plan.dishes || plan.dishes.length === 0) {
+        container.innerHTML = '<div class="recommendation-placeholder"><p>没有可用的菜品进行计算</p></div>';
+        if (calcDetailSection) {
+            calcDetailSection.classList.add('hidden');
+        }
+        return;
+    }
+
+    // 显示计算明细区域
+    if (calcDetailSection) {
+        calcDetailSection.classList.remove('hidden');
+        // 恢复原始标题和描述（6天预测模式下点击收益按钮会修改它们）
+        const titleEl = calcDetailSection.querySelector('.card-title');
+        const descEl = calcDetailSection.querySelector('.card-desc');
+        if (titleEl) {
+            titleEl.innerHTML = '<span class="section-icon">📊</span> 计算明细';
+        }
+        if (descEl) {
+            descEl.textContent = '详细的收益计算过程 · 计算过程不四舍五入，下方明细仅做显示';
+        }
+    }
+
+    // 雇员列表
+    const employeesHtml = plan.employees.map(emp => `
+        <div class="rec-employee-item">
+            <div class="rec-employee-info">
+                <span class="rec-employee-name">${emp.data.name}</span>
+                <span class="rec-employee-level">Lv.${emp.level}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // 菜品列表
+    const dishesHtml = plan.details.dishDetails.map((d, idx) => `
+        <div class="rec-dish-item">
+            <div class="rec-dish-info">
+                <span class="rec-dish-rank">${idx + 1}</span>
+                <span class="rec-dish-name">${d.item.name}</span>
+            </div>
+            <div class="rec-dish-price-group">
+                <span class="rec-dish-price">${d.basePrice} 方斯</span>
+                <span class="rec-dish-revenue">${d.revenue.toFixed(2)} 方斯</span>
+            </div>
+        </div>
+    `).join('');
+
+    // 雇员加成总结
+    const conditionsHtml = `<div class="rec-conditions">
+            <h4>🎯 雇员加成总结</h4>
+            <div class="rec-bonuses">
+                <span class="rec-bonus-item">售价加成: +${plan.details.directBonusFlat.toFixed(2)} +${(plan.details.directBonusPercent * 100).toFixed(1)}%</span>
+                <span class="rec-bonus-item">人流量加成: +${plan.details.trafficBonusFlat.toFixed(0)} +${(plan.details.trafficBonusPercent * 100).toFixed(1)}%</span>
+            </div>
+            ${plan.details.triggeredConditions.length > 0 ? `
+                <h5 style="margin: 12px 0 8px 0;">触发的条件加成</h5>
+                ${plan.details.triggeredConditions.map(c => `
+                    <div class="rec-condition-item triggered">✓ ${c.employee} (Lv.${c.level}): ${c.description}</div>
+                `).join('')}
+            ` : ''}
+        </div>`;
+
+    // 详细计算明细（通过独立函数构建）
+    const detailHtml = buildDetailHtml(plan);
 
     container.innerHTML = `
         <div class="recommendation-content">
@@ -1790,11 +1986,17 @@ function renderRecommendation(plan) {
                 <div class="rec-total-wrapper">
                     <div class="rec-total rec-total-no-bonus">
                         <span class="rec-total-label">显示总收益</span>
-                        <span class="rec-total-value">${plan.totalHourlyRevenueBeforeDecoration.toFixed(2)} 方斯/小时</span>
+                        <span class="rec-total-value">
+                            <span class="rec-total-number">${plan.totalHourlyRevenueBeforeDecoration.toFixed(2)}</span>
+                            <span class="rec-total-unit">方斯/小时</span>
+                        </span>
                     </div>
                     <div class="rec-total rec-total-with-bonus">
                         <span class="rec-total-label">实际总收益</span>
-                        <span class="rec-total-value">${plan.totalHourlyRevenue.toFixed(2)} 方斯/小时</span>
+                        <span class="rec-total-value">
+                            <span class="rec-total-number">${plan.totalHourlyRevenue.toFixed(2)}</span>
+                            <span class="rec-total-unit">方斯/小时</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1843,7 +2045,275 @@ function renderRecommendation(plan) {
     requestAnimationFrame(updateRecommendationLayout);
 }
 
+// ========== 渲染6天预测结果 ==========
+function renderCyclePrediction(plans) {
+    const container = document.getElementById('recommendation-result');
+    const calcDetailSection = document.querySelector('.calc-detail-section');
+    
+    if (!plans || plans.length === 0) {
+        container.innerHTML = '<div class="recommendation-placeholder"><p>未能计算出有效方案</p></div>';
+        if (calcDetailSection) calcDetailSection.classList.add('hidden');
+        return;
+    }
+    
+    // 隐藏计算明细（6天预测模式不显示单天明细）
+    if (calcDetailSection) calcDetailSection.classList.add('hidden');
+    
+    // 判断搭配是否全相同（雇员ID集合 + 菜品ID集合）
+    const getComboKey = (plan) => {
+        if (!plan || !plan.employees || !plan.dishes) return '';
+        const empIds = plan.employees.map(e => e.id).sort().join(',');
+        const dishIds = plan.dishes.map(d => d.id).sort().join(',');
+        return empIds + '|' + dishIds;
+    };
+    
+    const firstKey = getComboKey(plans[0].plan);
+    const allSame = plans.every(p => getComboKey(p.plan) === firstKey);
+    
+    // 生成日期标签
+    // 风向标中午12点更新：未到12点时，当前风向标是昨天12点切换的，标签整体前移一天以避免歧义
+    const getDayLabel = (offset) => {
+        const now = new Date();
+        const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+        const adjustedOffset = now < todayNoon ? offset - 1 : offset;
+        if (adjustedOffset === -1) return '昨天';
+        if (adjustedOffset === 0) return '今天';
+        if (adjustedOffset === 1) return '明天';
+        const d = new Date();
+        d.setDate(d.getDate() + adjustedOffset);
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    };
+    
+    // 生成单天卡片HTML，diffPrev 为与前一天对比的差异（新增/移除的雇员和菜品）
+    const renderDayCard = (item, idx, diffPrev) => {
+        const plan = item.plan;
+        const displayRevenue = (plan.totalHourlyRevenueBeforeDecoration ?? 0).toFixed(2);
+        const actualRevenue = plan.totalHourlyRevenue.toFixed(2);
+        const isToday = idx === 0;
+        const needChange = !!diffPrev;
+        
+        // 雇员：标记新增的（前一天没有的）
+        const empHtml = plan.employees.map(e => {
+            const isNew = diffPrev && diffPrev.addedEmpIds.has(e.id);
+            return `<span class="cycle-tag ${isNew ? 'cycle-tag-added' : ''}">${e.data.name}</span>`;
+        }).join('');
+        
+        // 菜品：标记新增的（前一天没有的）
+        const dishHtml = plan.dishes.map(d => {
+            const isNew = diffPrev && diffPrev.addedDishIds.has(d.id);
+            return `<span class="cycle-tag ${isNew ? 'cycle-tag-added' : ''}">${d.name}</span>`;
+        }).join('');
+        
+        // 被替换掉的雇员/菜品（前一天有，今天没有的）
+        let removedHtml = '';
+        if (diffPrev && (diffPrev.removedEmps.length > 0 || diffPrev.removedDishes.length > 0)) {
+            const removedEmpHtml = diffPrev.removedEmps.length > 0
+                ? diffPrev.removedEmps.map(name => `<span class="cycle-tag cycle-tag-removed">${name}</span>`).join('')
+                : '';
+            const removedDishHtml = diffPrev.removedDishes.length > 0
+                ? diffPrev.removedDishes.map(name => `<span class="cycle-tag cycle-tag-removed">${name}</span>`).join('')
+                : '';
+            const parts = [];
+            if (removedEmpHtml) parts.push(`👥 ${removedEmpHtml}`);
+            if (removedDishHtml) parts.push(`🍽️ ${removedDishHtml}`);
+            removedHtml = `<div class="cycle-day-removed">🔄 移除: ${parts.join(' ')}</div>`;
+        }
+        
+        return `
+            <div class="cycle-day-card ${needChange ? 'cycle-day-change' : ''} ${isToday ? 'cycle-day-today' : ''}">
+                <div class="cycle-day-header">
+                    <span class="cycle-day-label">${getDayLabel(item.dayOffset)}</span>
+                    <span class="cycle-day-windvane">${item.windVane.category} +${item.windVane.bonus}</span>
+                </div>
+                <div class="cycle-day-body">
+                    <div class="cycle-day-employees">👥 ${empHtml || '<span class="cycle-tag-empty">无</span>'}</div>
+                    <div class="cycle-day-dishes">🍽️ ${dishHtml || '<span class="cycle-tag-empty">无</span>'}</div>
+                    ${removedHtml}
+                </div>
+                <button class="cycle-detail-btn" data-day-idx="${idx}">
+                    <span class="cycle-detail-btn-row">
+                        <span class="cycle-detail-btn-label">
+                            <span class="label-short">显示</span>
+                            <span class="label-full">显示总收益</span>
+                        </span>
+                        <span class="cycle-detail-btn-value cycle-display-rev">${displayRevenue}<span class="cycle-rev-unit">方斯/小时</span></span>
+                    </span>
+                    <span class="cycle-detail-btn-row">
+                        <span class="cycle-detail-btn-label">
+                            <span class="label-short">实际</span>
+                            <span class="label-full">实际总收益</span>
+                        </span>
+                        <span class="cycle-detail-btn-value cycle-actual-rev">${actualRevenue}<span class="cycle-rev-unit">方斯/小时</span></span>
+                    </span>
+                </button>
+            </div>
+        `;
+    };
+    
+    // 计算与前一天的差异（新增了哪些雇员/菜品，移除了哪些）
+    const computeDiff = (prevPlan, curPlan) => {
+        if (!prevPlan || !curPlan) return null;
+        const prevEmpIds = new Set(prevPlan.employees.map(e => e.id));
+        const prevDishIds = new Set(prevPlan.dishes.map(d => d.id));
+        const curEmpIds = new Set(curPlan.employees.map(e => e.id));
+        const curDishIds = new Set(curPlan.dishes.map(d => d.id));
+        
+        const addedEmpIds = new Set(curPlan.employees.filter(e => !prevEmpIds.has(e.id)).map(e => e.id));
+        const addedDishIds = new Set(curPlan.dishes.filter(d => !prevDishIds.has(d.id)).map(d => d.id));
+        // 被移除的雇员/菜品（保留名字用于展示）
+        const removedEmps = prevPlan.employees.filter(e => !curEmpIds.has(e.id)).map(e => e.data.name);
+        const removedDishes = prevPlan.dishes.filter(d => !curDishIds.has(d.id)).map(d => d.name);
+        
+        // 如果没有任何差异，返回null
+        if (addedEmpIds.size === 0 && addedDishIds.size === 0 && removedEmps.length === 0 && removedDishes.length === 0) return null;
+        return { addedEmpIds, addedDishIds, removedEmps, removedDishes };
+    };
+    
+    let summaryHtml = '';
+    let daysHtml = '';
+    
+    if (allSame) {
+        // 全部相同，无需更换
+        summaryHtml = `<div class="cycle-summary cycle-summary-same">✅ 6天最优搭配相同，无需更换</div>`;
+        daysHtml = plans.map((item, idx) => renderDayCard(item, idx, null)).join('');
+    } else {
+        // 有差异，高亮被更换的雇员/菜品
+        let prevPlan = plans[0].plan;
+        let changeCount = 0;
+        daysHtml = plans.map((item, idx) => {
+            let diff = null;
+            if (idx > 0) {
+                diff = computeDiff(prevPlan, item.plan);
+                if (diff) changeCount++;
+            }
+            prevPlan = item.plan;
+            return renderDayCard(item, idx, diff);
+        }).join('');
+        summaryHtml = `<div class="cycle-summary cycle-summary-change">⚠️ 6天内需更换 ${changeCount} 次搭配（高亮项为新增）</div>`;
+    }
+    
+    container.innerHTML = `
+        <div class="cycle-prediction-content">
+            ${summaryHtml}
+            <div class="cycle-prediction-hint">💡 点击每天右侧的收益按钮可查看该天计算明细</div>
+            <div class="cycle-days-list">${daysHtml}</div>
+        </div>
+    `;
+    
+    // 绑定"查看明细"按钮事件
+    container.querySelectorAll('.cycle-detail-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.dayIdx);
+            const plan = plans[idx];
+            if (!plan || !plan.plan) return;
+            
+            const calcDetailSection = document.querySelector('.calc-detail-section');
+            const detailContainer = document.getElementById('calc-detail-result');
+            if (calcDetailSection && detailContainer) {
+                // 更新明细标题
+                const titleEl = calcDetailSection.querySelector('.card-title');
+                const descEl = calcDetailSection.querySelector('.card-desc');
+                if (titleEl) {
+                    titleEl.innerHTML = '<span class="section-icon">📊</span> 计算明细 · ' + getDayLabel(plan.dayOffset) + ' ' + plan.windVane.category;
+                }
+                if (descEl) {
+                    descEl.textContent = `${getDayLabel(plan.dayOffset)} ${plan.windVane.category} +${plan.windVane.bonus} 方斯 · 实际每小时收益 ${plan.plan.totalHourlyRevenue.toFixed(2)} 方斯`;
+                }
+                detailContainer.innerHTML = buildDetailHtml(plan.plan);
+                calcDetailSection.classList.remove('hidden');
+                // 滚动到明细区域
+                calcDetailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    
+    requestAnimationFrame(() => {
+        updateRecommendationLayout();
+        checkCycleDayLayout();
+        initCycleDayResizeObserver();
+    });
+}
+
+// 动态检测6天预测卡片布局：雇员或菜品换行超过2行时切换为上中下纵向排列
+let cycleDayResizeObserver = null;
+
+// 统计容器内标签占用的行数（通过子元素 offsetTop 去重）
+function countTagRows(container) {
+    if (!container) return 0;
+    const tags = container.querySelectorAll('.cycle-tag, .cycle-tag-empty');
+    if (tags.length === 0) return 0;
+    const tops = new Set();
+    tags.forEach(tag => {
+        // 取整以消除亚像素差异
+        tops.add(Math.round(tag.offsetTop));
+    });
+    return tops.size;
+}
+
+function checkCycleDayLayout() {
+    const cards = document.querySelectorAll('.cycle-day-card');
+    if (cards.length === 0) return;
+
+    // 测量期间禁用过渡
+    const section = cards[0].closest('.card');
+    if (section) section.style.transition = 'none';
+
+    // 先全部恢复横向布局以测量真实换行情况
+    cards.forEach(card => {
+        card.style.transition = 'none';
+        card.classList.remove('vertical');
+    });
+
+    // 强制重排
+    cards[0].getBoundingClientRect();
+
+    cards.forEach(card => {
+        const empContainer = card.querySelector('.cycle-day-employees');
+        const dishContainer = card.querySelector('.cycle-day-dishes');
+        const empRows = countTagRows(empContainer);
+        const dishRows = countTagRows(dishContainer);
+        // 雇员或菜品任意一方超过2行即切换为纵向
+        if (empRows > 2 || dishRows > 2) {
+            card.classList.add('vertical');
+        }
+    });
+
+    cards.forEach(card => card.style.transition = '');
+    if (section) {
+        requestAnimationFrame(() => { section.style.transition = ''; });
+    }
+
+    // 根据布局方向同步更新提示文本
+    const hint = document.querySelector('.cycle-prediction-hint');
+    if (hint) {
+        const hasVertical = Array.from(cards).some(c => c.classList.contains('vertical'));
+        hint.textContent = hasVertical
+            ? '💡 点击每天下方的收益按钮可查看该天计算明细'
+            : '💡 点击每天右侧的收益按钮可查看该天计算明细';
+    }
+}
+
+function initCycleDayResizeObserver() {
+    const container = document.querySelector('.cycle-days-list');
+    if (!container || cycleDayResizeObserver) return;
+
+    cycleDayResizeObserver = new ResizeObserver(() => {
+        checkCycleDayLayout();
+    });
+    cycleDayResizeObserver.observe(container);
+}
+
 // ========== 事件绑定 ==========
+// 窗口 resize 期间禁用过渡，避免 clamp 等响应式值每像素变化时触发动画抽搐
+let resizeTransitionTimer = null;
+window.addEventListener('resize', () => {
+    document.body.classList.add('resizing');
+    if (resizeTransitionTimer) clearTimeout(resizeTransitionTimer);
+    resizeTransitionTimer = setTimeout(() => {
+        document.body.classList.remove('resizing');
+    }, 150);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
@@ -1919,6 +2389,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') {
             closeAnnouncementModal();
             closeAdvancedSettingsModal();
+            closeConfirmModal();
         }
+    });
+
+    // 确认弹窗按钮事件
+    document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    });
+    document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
+    document.getElementById('confirm-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'confirm-modal') {
+            closeConfirmModal();
+        }
+    });
+
+    // GitHub按钮二次确认（使用自定义弹窗）
+    const githubButtons = document.querySelectorAll('.github-link');
+    githubButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showConfirmDialog({
+                title: '跳转确认',
+                message: '确定要跳转到 GitHub 仓库吗？',
+                onConfirm: () => {
+                    // 真正跳转
+                    window.open(btn.href, btn.target || '_self');
+                }
+            });
+        });
     });
 });

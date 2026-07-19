@@ -217,7 +217,15 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    transition: var(--transition);
+    transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* resize 期间禁用所有过渡，避免每像素变化触发动画抽搐 */
+body.resizing *,
+body.resizing *::before,
+body.resizing *::after {
+    transition: none !important;
 }
 
 .card:hover {
@@ -253,6 +261,308 @@ body {
 }
 
 /* ========== 风向标选择 ========== */
+.windvane-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.windvane-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.windvane-toggle-label {
+    font-size: 0.85rem;
+    color: var(--accent-secondary);
+    font-weight: 600;
+}
+
+/* ========== 进度条样式 ========== */
+.progress-bar-container {
+    width: 100%;
+    max-width: 320px;
+    height: 8px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px auto;
+    border: 1px solid var(--border-color);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ========== 6天预测结果样式 ========== */
+.cycle-prediction-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cycle-summary {
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.cycle-summary-same {
+    background: rgba(72, 187, 120, 0.12);
+    color: #2f855a;
+}
+
+.cycle-summary-change {
+    background: rgba(237, 137, 54, 0.12);
+    color: #c05621;
+}
+
+.cycle-days-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cycle-day-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.cycle-day-card.vertical {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.cycle-day-card.vertical .cycle-day-header {
+    flex-direction: row;
+    width: auto;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.cycle-day-card.vertical .cycle-detail-btn {
+    align-self: stretch;
+    min-width: 0;
+}
+
+.cycle-day-today {
+    border-color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.06);
+}
+
+.cycle-day-change {
+    border-color: #ed8936;
+    background: rgba(237, 137, 54, 0.06);
+}
+
+.cycle-day-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 64px;
+    flex-shrink: 0;
+    gap: 2px;
+}
+
+.cycle-day-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+}
+
+.cycle-day-windvane {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.cycle-day-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cycle-day-employees,
+.cycle-day-dishes {
+    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    align-items: center;
+    line-height: 1.5;
+}
+
+.cycle-day-employees {
+    color: #74b9ff;
+}
+
+.cycle-day-dishes {
+    color: var(--text-primary);
+}
+
+.cycle-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.cycle-day-employees .cycle-tag {
+    background: rgba(116, 185, 255, 0.12);
+    color: #74b9ff;
+}
+
+.cycle-day-dishes .cycle-tag {
+    background: rgba(162, 155, 254, 0.14);
+    color: var(--accent-secondary);
+}
+
+.cycle-tag-added,
+.cycle-day-employees .cycle-tag-added,
+.cycle-day-dishes .cycle-tag-added {
+    background: rgba(237, 137, 54, 0.2) !important;
+    color: #c05621 !important;
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(237, 137, 54, 0.4);
+}
+
+.cycle-tag-removed {
+    background: rgba(229, 62, 62, 0.12) !important;
+    color: #c53030;
+    text-decoration: line-through;
+    opacity: 0.85;
+}
+
+.cycle-day-removed {
+    font-size: 0.78rem;
+    margin-top: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    color: var(--text-muted);
+}
+
+.cycle-tag-empty {
+    font-style: italic;
+    opacity: 0.6;
+    font-size: 0.8rem;
+}
+
+.cycle-detail-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+    min-width: 92px;
+    line-height: 1.2;
+}
+
+.cycle-detail-btn-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.cycle-detail-btn-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    /* 太窄时优先牺牲标签空间，让收益数值完整 */
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 水平布局（按钮在右侧）：显示短标签 */
+.cycle-detail-btn-label .label-short { display: inline; }
+.cycle-detail-btn-label .label-full { display: none; }
+
+/* 垂直布局（按钮在下方）：显示完整标签 */
+.cycle-day-card.vertical .cycle-detail-btn-label .label-short { display: none; }
+.cycle-day-card.vertical .cycle-detail-btn-label .label-full { display: inline; }
+
+.cycle-detail-btn-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    /* 收益数值优先完整，不被压缩 */
+    flex-shrink: 0;
+}
+
+.cycle-detail-btn-value.cycle-display-rev {
+    color: #74b9ff;
+}
+
+.cycle-detail-btn-value.cycle-actual-rev {
+    color: var(--accent-primary);
+}
+
+.cycle-rev-unit {
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-left: 2px;
+}
+
+.cycle-detail-btn:hover {
+    border-color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.08);
+}
+
+.cycle-detail-btn:hover .cycle-display-rev {
+    color: #a2d2ff;
+}
+
+.cycle-detail-btn:hover .cycle-actual-rev {
+    color: var(--accent-secondary);
+}
+
+.cycle-prediction-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: -4px;
+    margin-bottom: 2px;
+}
+
 .windvane-container {
     display: flex;
     gap: 12px;
@@ -317,39 +627,6 @@ body {
     font-size: 0.8rem;
 }
 
-.select-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-}
-
-.custom-select {
-    flex: 1;
-    padding: 10px 16px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: var(--transition);
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b90a0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
-}
-
-.custom-select:hover {
-    border-color: var(--accent-primary);
-}
-
-.custom-select:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
-}
-
 .hidden {
     display: none !important;
 }
@@ -367,13 +644,14 @@ body {
 /* ========== 雇员管理 ========== */
 .employee-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(min-content, 1fr));
     gap: 12px;
+    overflow-x: auto;
 }
 
 /* 单列布局 */
 .employee-list.single-column {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(min-content, 1fr);
 }
 
 .employee-card {
@@ -385,6 +663,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     transition: var(--transition);
+    min-width: 200px;
 }
 
 .employee-card:hover {
@@ -483,59 +762,6 @@ body {
     box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
 }
 
-/* 雇员加成汇总 */
-.employee-summary {
-    display: flex;
-    gap: 16px;
-    padding: 14px 18px;
-    background: var(--bg-primary);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-}
-
-.summary-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-}
-
-.summary-label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.summary-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--accent-secondary);
-}
-
-
-
-/* 条件加成状态标签 */
-.condition-tag {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    border: 1px solid;
-}
-
-.condition-tag.triggered {
-    background: var(--green-bg);
-    color: var(--green);
-    border-color: rgba(0, 206, 201, 0.3);
-}
-
-.condition-tag.not-triggered {
-    background: rgba(255, 107, 107, 0.08);
-    color: var(--red);
-    border-color: rgba(255, 107, 107, 0.2);
-    opacity: 0.7;
-}
-
-
-
 /* ========== 推荐方案区域 ========== */
 .recommendation-section .card-body {
     display: flex;
@@ -633,8 +859,19 @@ body {
 .rec-total-value {
     font-size: 1.5rem;
     font-weight: 700;
-    white-space: nowrap;
     display: inline-block;
+    line-height: 1.2;
+}
+
+.rec-total-number {
+    white-space: nowrap;
+}
+
+.rec-total-unit {
+    font-size: 1.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-left: 4px;
 }
 
 .rec-total-no-bonus .rec-total-value {
@@ -789,6 +1026,39 @@ body {
 
 .rec-sections.price-vertical .rec-dish-revenue {
     text-align: right;
+}
+
+/* 菜品项垂直堆叠：上面菜名一行，下面价格横着排 */
+.rec-sections.dish-stacked .rec-dish-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.rec-sections.dish-stacked .rec-dish-info {
+    width: 100%;
+}
+
+.rec-sections.dish-stacked .rec-dish-name {
+    flex-shrink: 1;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.rec-sections.dish-stacked .rec-dish-price-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+    width: 100%;
+}
+
+.rec-sections.dish-stacked .rec-dish-price,
+.rec-sections.dish-stacked .rec-dish-revenue {
+    text-align: left;
+    flex-shrink: 0;
 }
 
 .rec-conditions {
@@ -972,29 +1242,6 @@ body {
     color: var(--green);
     font-weight: 700;
     font-size: 0.88rem;
-}
-
-/* 待计算状态 */
-.calc-step-pending .calc-step-label {
-    color: var(--orange);
-}
-
-.calc-step-pending .calc-step-value {
-    color: var(--orange);
-}
-
-.pending-tag {
-    font-size: 0.65rem;
-    padding: 1px 4px;
-    background: var(--orange-bg);
-    color: var(--orange);
-    border-radius: 4px;
-    margin-left: 4px;
-}
-
-.formula-note {
-    color: var(--orange);
-    font-size: 0.7rem;
 }
 
 /* 人流量和装修汇总 */
@@ -1232,11 +1479,6 @@ body {
         display: none;
     }
 
-    .employee-summary {
-        flex-direction: column;
-        gap: 8px;
-    }
-
     .ranking-item {
         flex-wrap: wrap;
     }
@@ -1441,23 +1683,29 @@ body {
     box-shadow: 0 8px 24px rgba(36, 41, 46, 0.5);
 }
 
-/* ========== 响应式切换：740px 以上使用悬浮按钮 ========== */
-@media (min-width: 740px) {
+/* ========== 响应式切换：910px 以上使用悬浮按钮 ========== */
+@media (min-width: 910px) {
     /* 隐藏底部按钮条 */
     .bottom-bar {
         display: none;
     }
-    
-    /* 显示悬浮按钮组 */
+
+    /* 直接显示完整悬浮按钮组 */
     .floating-btn-group {
         display: flex;
+        right: 24px;
     }
-    
-    /* 恢复原来的底部边距，左右同时增加宽度 */
+
     .app-container {
         padding-bottom: 20px;
-        padding-left: 90px;
-        padding-right: 90px;
+    }
+}
+
+/* 740px 起左右 padding 同步渐进增长，全程对称不虚空 */
+@media (min-width: 740px) {
+    .app-container {
+        padding-left: clamp(20px, calc(20px + (100vw - 740px) * 0.25), 90px);
+        padding-right: clamp(20px, calc(20px + (100vw - 740px) * 0.25), 90px);
     }
 }
 
@@ -1785,6 +2033,22 @@ body {
     gap: 12px;
     justify-content: flex-end;
     margin-top: 24px;
+}
+
+/* 确认弹窗专用样式 */
+.confirm-modal-container {
+    max-width: 420px;
+}
+
+#confirm-modal {
+    z-index: 1100;
+}
+
+.confirm-message {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
 }
 
 /* ========== 开关样式 ========== */
