@@ -2073,10 +2073,10 @@ function renderCyclePrediction(plans) {
     // 生成日期标签
     // 风向标中午12点更新：未到12点时，当前风向标是昨天12点切换的，标签整体前移一天以避免歧义
     const getDayLabel = (offset) => {
+        if (offset === 0) return '当前';
         const now = new Date();
         const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
         const adjustedOffset = now < todayNoon ? offset - 1 : offset;
-        if (adjustedOffset === -1) return '昨天';
         if (adjustedOffset === 0) return '今天';
         if (adjustedOffset === 1) return '明天';
         const d = new Date();
