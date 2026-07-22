@@ -141,5 +141,16 @@
       "4": [],
       "5": [{ "type": "conditional", "conditionType": "tagCount", "condition": { "tag": "饮料", "count": 3 }, "effectType": "direct", "effectValue": 0.03, "isPercent": true }]
     }
+  },
+  {
+    "id": "employee_yiluoyi",
+    "name": "伊洛伊",
+    "levels": {
+      "1": [{ "type": "traffic", "value": 18 }],
+      "2": [],
+      "3": [{ "type": "traffic", "value": 18 }],
+      "4": [],
+      "5": [{ "type": "traffic", "value": 27 }]
+    }
   }
 ]
