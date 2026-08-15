@@ -1322,48 +1322,88 @@ function findBestPlan(ownedEmployees) {
     return bestPlan;
 }
 
-// ========== 搜索最优的雇员组合 ==========
+// ========== 搜索最优的雇员组合（带等价/降级剪枝优化）==========
 function findBestEmployeeCombination(candidates) {
     let bestTotalHourlyRevenue = -Infinity;
     let bestResult = null;
     const EPSILON = 0.01; // 收益差值小于0.01时视为相等
-    
+
     // 计算组合的原始价格总和
     function calculateOriginalPriceTotal(dishCombo) {
         return dishCombo.reduce((sum, item) => sum + (getItemPrice(item) || 0), 0);
     }
-    
+
+    // === 预计算每个候选雇员的"加成签名" ===
+    // 固定加成维度：[directBonusFlat, trafficBonusFlat, trafficBonusPercent]（不含条件触发部分）
+    // 条件加成签名：conditionalBonuses 规范化序列化，用于判断两个雇员在不同菜品下的条件触发行为是否一致
+    const signatures = candidates.map(emp => {
+        const bonuses = getEmployeeAccumulatedBonuses(emp);
+        const fixed = [bonuses.directBonusFlat, bonuses.trafficBonusFlat, bonuses.trafficBonusPercent];
+        // 条件加成签名：按 conditionType+condition+effectType+effectValue+isPercent 排序后拼接
+        const condSig = bonuses.conditionalBonuses
+            .map(b => `${b.conditionType}|${JSON.stringify(b.condition)}|${b.effectType}|${b.effectValue}|${b.isPercent ? 1 : 0}`)
+            .sort()
+            .join('##');
+        return { fixed, condSig };
+    });
+
+    // === 已计算组合的记录，用于支配剪枝 ===
+    // 每个元素：{ fixedSum: [d,t,tp], condSig: string }
+    // 安全性论证：
+    //  - 菜品候选与 employeeCombo 无关（只依赖 state.items），所以两个组合面对相同菜品候选集
+    //  - condSig 相同 → 对任何 dishCombo，条件触发逻辑相同，收益差异只来自 fixedSum
+    //  - 若 prev.fixedSum 在所有维度 ≥ 当前，且 condSig 相同 → prev 收益必然 ≥ 当前，可安全跳过
+    const computedCombos = [];
+
     const n = candidates.length;
     const k = getMaxEmployees();
-    
+
     // 生成组合的索引
     const indices = [];
     for (let i = 0; i < k; i++) indices.push(i);
-    
+
     while (true) {
-        // 获取当前组合的雇员
-        const employeeCombo = indices.map(i => candidates[i]);
-        // 计算这个组合的收益
-        const result = findBestDishes(employeeCombo);
-        
-        // 更新最优解（使用 epsilon 避免浮点数精度问题）
-        const revenueDiff = result.totalHourlyRevenue - bestTotalHourlyRevenue;
-        if (revenueDiff > EPSILON) {
-            // 收益明显更高
-            bestTotalHourlyRevenue = result.totalHourlyRevenue;
-            bestResult = {
-                employees: employeeCombo,
-                dishes: result.dishes,
-                totalRevenue: result.totalRevenue,
-                totalHourlyRevenue: result.totalHourlyRevenue,
-                totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
-                details: result.details,
-                originalPriceTotal: calculateOriginalPriceTotal(result.dishes),
-            };
-        } else if (Math.abs(revenueDiff) <= EPSILON && bestResult) {
-            // 收益相近（视为相等），优先原始价格更高的
-            const currentOriginalTotal = calculateOriginalPriceTotal(result.dishes);
-            if (currentOriginalTotal > bestResult.originalPriceTotal) {
+        // 计算当前组合的 fixedSum 和 condSig
+        const fixedSum = [0, 0, 0];
+        const condSigParts = [];
+        for (let j = 0; j < k; j++) {
+            const sig = signatures[indices[j]];
+            for (let d = 0; d < 3; d++) fixedSum[d] += sig.fixed[d];
+            condSigParts.push(sig.condSig);
+        }
+        condSigParts.sort();
+        const comboCondSig = condSigParts.join('||');
+
+        // 支配检查：是否存在已计算组合 prev，使得 prev.condSig == 当前 condSig
+        // 且 prev.fixedSum 在所有维度 ≥ 当前 fixedSum（至少一个 > 或全相等）
+        let dominated = false;
+        for (let p = 0; p < computedCombos.length; p++) {
+            const prev = computedCombos[p];
+            if (prev.condSig !== comboCondSig) continue; // 条件加成不同，不能剪枝
+            let allGE = true;   // prev 所有维度 >= 当前
+            let someGT = false; // prev 至少一个维度 > 当前（严格更好）
+            for (let d = 0; d < 3; d++) {
+                if (prev.fixedSum[d] < fixedSum[d]) { allGE = false; break; }
+                if (prev.fixedSum[d] > fixedSum[d]) someGT = true;
+            }
+            if (allGE) {
+                // prev 固定加成总和不劣于当前，且条件加成定义相同 → prev 收益必然 ≥ 当前
+                // 包括两种情况：
+                //   1) someGT=true：prev 严格更好（降级替换，如 c=+1% 换成 d=+0.5%）
+                //   2) someGT=false：完全等价（等价替换，如 a=+1 换成 b=+1）
+                dominated = true;
+                break;
+            }
+        }
+
+        if (!dominated) {
+            // 获取当前组合的雇员并计算收益
+            const employeeCombo = indices.map(i => candidates[i]);
+            const result = findBestDishes(employeeCombo);
+
+            // 更新最优解（使用 epsilon 避免浮点数精度问题）
+            const revenueDiff = result.totalHourlyRevenue - bestTotalHourlyRevenue;
+            if (revenueDiff > EPSILON) {
                 bestTotalHourlyRevenue = result.totalHourlyRevenue;
                 bestResult = {
                     employees: employeeCombo,
@@ -1372,23 +1412,40 @@ function findBestEmployeeCombination(candidates) {
                     totalHourlyRevenue: result.totalHourlyRevenue,
                     totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
                     details: result.details,
-                    originalPriceTotal: currentOriginalTotal,
+                    originalPriceTotal: calculateOriginalPriceTotal(result.dishes),
                 };
+            } else if (Math.abs(revenueDiff) <= EPSILON && bestResult) {
+                const currentOriginalTotal = calculateOriginalPriceTotal(result.dishes);
+                if (currentOriginalTotal > bestResult.originalPriceTotal) {
+                    bestTotalHourlyRevenue = result.totalHourlyRevenue;
+                    bestResult = {
+                        employees: employeeCombo,
+                        dishes: result.dishes,
+                        totalRevenue: result.totalRevenue,
+                        totalHourlyRevenue: result.totalHourlyRevenue,
+                        totalHourlyRevenueBeforeDecoration: result.totalHourlyRevenueBeforeDecoration,
+                        details: result.details,
+                        originalPriceTotal: currentOriginalTotal,
+                    };
+                }
             }
+
+            // 记录已计算组合（只保存剪枝所需的最小信息）
+            computedCombos.push({ fixedSum: [...fixedSum], condSig: comboCondSig });
         }
-        
+
         // 生成下一个组合
         let i = k - 1;
         while (i >= 0 && indices[i] === n - k + i) i--;
-        
+
         if (i < 0) break;
-        
+
         indices[i]++;
         for (let j = i + 1; j < k; j++) {
             indices[j] = indices[i] + j - i;
         }
     }
-    
+
     return bestResult;
 }
 
@@ -2189,7 +2246,7 @@ function renderCyclePrediction(plans) {
             prevPlan = item.plan;
             return renderDayCard(item, idx, diff);
         }).join('');
-        summaryHtml = `<div class="cycle-summary cycle-summary-change">⚠️ 6天内需更换 ${changeCount} 次搭配（高亮项为新增）</div>`;
+        summaryHtml = `<div class="cycle-summary cycle-summary-change">⚠️ 6天内需更换 ${changeCount} 次搭配（高亮项为改动）</div>`;
     }
     
     container.innerHTML = `

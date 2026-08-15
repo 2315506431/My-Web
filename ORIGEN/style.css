@@ -1059,6 +1059,7 @@ body.resizing *::after {
 .rec-sections.dish-stacked .rec-dish-revenue {
     text-align: left;
     flex-shrink: 0;
+    display: inline-block;
 }
 
 .rec-conditions {
