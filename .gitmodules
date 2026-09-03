@@ -1,3 +1,4 @@
 [submodule "NTE-ORIGEN"]
 	path = NTE-ORIGEN
 	url = https://github.com/2315506431/NTE-ORIGEN.git
+	branch = main
