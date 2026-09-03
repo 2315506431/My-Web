@@ -152,5 +152,16 @@
       "4": [],
       "5": [{ "type": "traffic", "value": 27 }]
     }
+  },
+  {
+    "id": "employee_lingke",
+    "name": "灵可",
+    "levels": {
+      "1": [{ "type": "traffic", "value": 18 }],
+      "2": [],
+      "3": [{ "type": "traffic", "value": 18 }],
+      "4": [],
+      "5": [{ "type": "traffic", "value": 27 }]
+    }
   }
 ]
